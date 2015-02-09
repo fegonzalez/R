@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>EmacsWiki: Emacs Speaks Statistics</title><link rel="alternate" type="application/wiki" title="Edit this page" href="http://www.emacswiki.org/emacs?action=edit;id=EmacsSpeaksStatistics" />
+<link type="text/css" rel="stylesheet" href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/css/bootstrap-combined.min.css" />
+<link type="text/css" rel="stylesheet" href="/css/bootstrap.css" />
+<meta name="robots" content="INDEX,FOLLOW" /><link rel="alternate" type="application/rss+xml" title="EmacsWiki" href="http://www.emacswiki.org/emacs?action=rss" /><link rel="alternate" type="application/rss+xml" title="EmacsWiki: EmacsSpeaksStatistics" href="http://www.emacswiki.org/emacs?action=rss;rcidonly=EmacsSpeaksStatistics" />
+<link rel="alternate" type="application/rss+xml"
+      title="Emacs Wiki with page content"
+      href="http://www.emacswiki.org/full.rss" />
+<link rel="alternate" type="application/rss+xml"
+      title="Emacs Wiki with page content and diff"
+      href="http://www.emacswiki.org/full-diff.rss" />
+<link rel="alternate" type="application/rss+xml"
+      title="Emacs Wiki including minor differences"
+      href="http://www.emacswiki.org/minor-edits.rss" />
+<link rel="alternate" type="application/rss+xml"
+      title="Changes for EmacsSpeaksStatistics only"
+      href="http://www.emacswiki.org/emacs?action=rss;rcidonly=EmacsSpeaksStatistics" /><meta content="width=device-width" name="viewport" />
+<script type="text/javascript" src="/outliner.0.5.0.62-toc.js"></script>
+<script type="text/javascript">
+
+  function addOnloadEvent(fnc) {
+    if ( typeof window.addEventListener != "undefined" )
+      window.addEventListener( "load", fnc, false );
+    else if ( typeof window.attachEvent != "undefined" ) {
+      window.attachEvent( "onload", fnc );
+    }
+    else {
+      if ( window.onload != null ) {
+	var oldOnload = window.onload;
+	window.onload = function ( e ) {
+	  oldOnload( e );
+	  window[fnc]();
+	};
+      }
+      else
+	window.onload = fnc;
+    }
+  }
+
+  // https://stackoverflow.com/questions/280634/endswith-in-javascript
+  if (typeof String.prototype.endsWith !== 'function') {
+    String.prototype.endsWith = function(suffix) {
+      return this.indexOf(suffix, this.length - suffix.length) !== -1;
+    };
+  }
+
+  var initToc=function() {
+
+    var outline = HTML5Outline(document.body);
+    if (outline.sections.length == 1) {
+      outline.sections = outline.sections[0].sections;
+    }
+
+    if (outline.sections.length > 1
+	|| outline.sections.length == 1
+           && outline.sections[0].sections.length > 0) {
+
+      var toc = document.getElementById('toc');
+
+      if (!toc) {
+	var divs = document.getElementsByTagName('div');
+	for (var i = 0; i < divs.length; i++) {
+	  if (divs[i].getAttribute('class') == 'toc') {
+	    toc = divs[i];
+	    break;
+	  }
+	}
+      }
+
+      if (!toc) {
+	var h2 = document.getElementsByTagName('h2')[0];
+	if (h2) {
+	  toc = document.createElement('div');
+	  toc.setAttribute('class', 'toc');
+	  h2.parentNode.insertBefore(toc, h2);
+	}
+      }
+
+      if (toc) {
+        var html = outline.asHTML(true);
+        toc.innerHTML = html;
+
+	items = toc.getElementsByTagName('a');
+	for (var i = 0; i < items.length; i++) {
+	  while (items[i].textContent.endsWith('â')) {
+            var text = items[i].childNodes[0].nodeValue;
+	    items[i].childNodes[0].nodeValue = text.substring(0, text.length - 1);
+	  }
+	}
+      }
+    }
+  }
+
+  addOnloadEvent(initToc);
+  </script>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.0/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://emacswiki.org/bootstrap.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /></head><body class="http://www.emacswiki.org/emacs"><div class="header"><div class="menu"><span class="gotobar bar"><a class="local" href="http://www.emacswiki.org/emacs/SiteMap">SiteMap</a> <a class="local" href="http://www.emacswiki.org/emacs/Search">Search</a> <a class="local" href="http://www.emacswiki.org/emacs/ElispArea">ElispArea</a> <a href="http://www.emacswiki.org/emacs/HowTo" class="local">HowTo</a> <a class="local" href="http://www.emacswiki.org/emacs/Glossary">Glossary</a> <a class="local" href="http://www.emacswiki.org/emacs/RecentChanges">RecentChanges</a> <a href="http://www.emacswiki.org/emacs/News" class="local">News</a> <a class="local" href="http://www.emacswiki.org/emacs/Problems">Problems</a> <a class="local" href="http://www.emacswiki.org/emacs/Suggestions">Suggestions</a> </span><form method="get" action="http://www.emacswiki.org/emacs" enctype="multipart/form-data" class="search" accept-charset="utf-8"><p><label for="search">Search:</label> <input type="text" name="search"  size="20" accesskey="f" id="search" /> <label for="searchlang">Language:</label> <input type="text" name="lang"  size="10" id="searchlang" /> <input type="submit" name="dosearch" value="Go!" /></p></form></div><h1><a href="http://www.emacswiki.org/emacs?search=%22EmacsSpeaksStatistics%22" title="Click to search for references to this page" rel="nofollow"><span style="padding-right: 0.5ex;">Emacs</span><span style="padding-right: 0.5ex;">Speaks</span><span style="padding-right: 0.5ex;">Statistics</span></a></h1></div><div class="wrapper"><div class="content browse"><p>This page is about <strong><a name="Emacs_Speaks_Statistics" href="http://www.emacswiki.org/emacs?search=%22Emacs+Speaks+Statistics%22" rel="nofollow" class="definition" title="Click to search for references to this permanent anchor">Emacs Speaks Statistics</a></strong>, also sometimes called <a href="http://www.emacswiki.org/emacs/EmacsStatisticalSystem" class="local">EmacsStatisticalSystem</a>, but usually called <strong><a name="ESS" href="http://www.emacswiki.org/emacs?search=%22ESS%22" class="definition" rel="nofollow" title="Click to search for references to this permanent anchor">ESS</a></strong>. As always, you can click the page heading to list all pages related to ESS.</p><p>ESS is a package that integrates various statistical software with Emacs. S, GNU R (a free implementation of S), Stata, <a href="http://www.emacswiki.org/emacs/Julia" class="local">Julia</a>, and SAS modes are all supported by ESS, making it possible to hook writing and programming in Emacs right into your stats. It&#x2019;s pretty slick.</p><ul><li>ESS: <a class="url http" href="http://ESS.R-project.org/">http://ESS.R-project.org/</a></li><li>R: <a class="url http" href="http://www.r-project.org/">http://www.r-project.org/</a></li></ul><p>Consider using the prefix &#x201c;ESS&#x201d; for new ESS-related pages. &#x2013; <a class="local" href="http://www.emacswiki.org/emacs/PaulJohnson">PaulJohnson</a></p><h2>Basic configuration options</h2><pre> (setq ess-eval-visibly nil) <span class="comment">; ESS will not print the evaluated commands, also speeds up the evaluation </span>
+ (setq ess-ask-for-ess-directory nil) <span class="comment">;if you don't want to be prompted each time you start an interactive R session</span></pre><h2>Completion</h2><ul><li><a href="http://www.emacswiki.org/emacs/ESSAuto-complete" class="local">Auto-complete ESS integration</a> &#x2013; [part of ESS]</li><li><a href="http://www.emacswiki.org/emacs/ESSIciclesCompletion" class="local">Icicles Completion</a> &#x2013; Completion for ESS.</li><li><a class="local" href="http://www.emacswiki.org/emacs/ESSr-autoyas">Automatic YASnippets for function arguments</a> &#x2013; Easy insertion and editing of arguments and values of a R function.</li></ul><h2>Code Navigation And Inspection</h2><ul><li><a href="http://www.emacswiki.org/emacs/ESSdescribe-object-at-point" class="local">Describe object at point</a> - [part of ESS]</li><li><a href="http://www.emacswiki.org/emacs/ESSTags-for-directory" class="local">ess-build-tags-for-directory</a> - [part of ESS]</li><li><a class="url http outside" href="https://github.com/vitoshka/imenu-anywhere">imenu-anywhere</a> &#x2013; ido and helm imenu tag selection across all buffers with the same mode</li><li><a class="local" href="http://www.emacswiki.org/emacs/ESSSpeedbar">speedbar</a> &#x2013; configure speed bar with ESS.</li></ul><h2>Debugging</h2><ul><li><a class="url http outside" href="http://code.google.com/p/ess-tracebug/">ess-tracebug</a> &#x2013; [part of ESS]</li></ul><h2>Tips and Tricks</h2><ul><li><a class="local" href="http://www.emacswiki.org/emacs/ESSShiftEnter">Configure Shift+Enter</a> &#x2013; The <a class="local" href="http://www.emacswiki.org/emacs/key_sequence">key sequence</a> `<code>S-&lt;return&gt;</code>&#x2019; can launch R and send commands to R (by <a class="local" href="http://www.emacswiki.org/emacs/FelipeCsaszar">FelipeCsaszar</a>)</li><li><a href="http://www.emacswiki.org/emacs/ESSToolTips" class="local">Create Tooltips to describe objects</a> &#x2013; Tooltips are handy!</li><li><a href="http://www.emacswiki.org/emacs/ESSAutoParens" class="local">Automatic Brackets</a> &#x2013; Configure ESS to automatically close Brackets and Parentheses (by anonymous)</li><li><a class="local" href="http://www.emacswiki.org/emacs/ESSWindowsAdvice">Configure Emacs for R in Windows</a> &#x2013; Concrete advice for Emacs Users Who are Forced to use MS Windows (by <a class="local" href="http://www.emacswiki.org/emacs/PaulJohnson">PaulJohnson</a>).</li><li><a href="http://www.emacswiki.org/emacs/EssSmartUnderscore" class="local">Smarter Ess Underscore behavior</a></li><li><a class="local" href="http://www.emacswiki.org/emacs/ESS-smart-lessthan">Smart lessthan: when you want to leave underscore alone</a></li><li><a href="http://www.emacswiki.org/emacs/ESSRParser" class="local">Format your code with R parser</a></li><li><a href="http://www.emacswiki.org/emacs/ESSReadFromRegion" class="local">Read Table from Emacs Region</a></li><li>ESS can also be used to send a local buffer or some lines of a local buffer on a remote host where the statistical software is available. This can be the case for SAS. Former methods seem obsolete and following this <a class="url http outside" href="http://emacs.1067599.n5.nabble.com/Fwd-ess-sas-interactive-remote-td283565i20.html">thread</a>, you should first execute the emacs-command shell and use from this buffer the usual ssh command (ssh user@remotehost) to connect to the remote host. Then, from this &#x201c;<b>*shell</b>*&#x201d; (the name is important; using emacs command ssh directly will give a different buffer name) buffer, execute the emacs-command &#x201c;ess-sas-interactive&#x201d;, it will launch sas (with -stdio) on the remote host in an interactive mode. Then move to your local .sas buffer and use the standard ESS commands to send (on the remote host) your line, region or whole buffer, to be executed by the remote sas. Of course, the libraries and data files to be used should reside on the remote host. </li></ul></div><div class="wrapper close"></div></div><div class="footer"><hr /><span class="translation bar"><br />  <a class="translation new" rel="nofollow" href="http://www.emacswiki.org/emacs?action=translate;id=EmacsSpeaksStatistics;missing=de_es_fr_it_ja_ko_pt_ru_se_uk_zh">Add Translation</a></span><div class="edit bar"><a accesskey="c" class="comment local edit" href="http://www.emacswiki.org/emacs/Comments_on_EmacsSpeaksStatistics">Talk</a> <a href="http://www.emacswiki.org/emacs?action=edit;id=EmacsSpeaksStatistics" accesskey="e" class="edit" rel="nofollow" title="Click to edit this page">Edit this page</a> <a href="http://www.emacswiki.org/emacs?action=history;id=EmacsSpeaksStatistics" rel="nofollow" class="history">View other revisions</a> <a class="admin" rel="nofollow" href="http://www.emacswiki.org/emacs?action=admin;id=EmacsSpeaksStatistics">Administration</a></div><div class="time">Last edited 2014-11-20 01:10 UTC by <a href="http://www.emacswiki.org/emacs/R%c3%bcdiger" class="author" title="80.109.100.138">Rüdiger</a> <a class="diff" rel="nofollow" href="http://www.emacswiki.org/emacs?action=browse;diff=2;id=EmacsSpeaksStatistics">(diff)</a></div><div style="float:right; margin-left:1ex;">
+<!-- Creative Commons License -->
+<a class="licence" href="http://creativecommons.org/licenses/GPL/2.0/"><img alt="CC-GNU GPL" style="border:none" src="/pics/cc-GPL-a.png" /></a>
+<!-- /Creative Commons License -->
+</div>
+
+<!--
+<rdf:RDF xmlns="http://web.resource.org/cc/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<Work rdf:about="">
+   <license rdf:resource="http://creativecommons.org/licenses/GPL/2.0/" />
+  <dc:type rdf:resource="http://purl.org/dc/dcmitype/Software" />
+</Work>
+
+<License rdf:about="http://creativecommons.org/licenses/GPL/2.0/">
+   <permits rdf:resource="http://web.resource.org/cc/Reproduction" />
+   <permits rdf:resource="http://web.resource.org/cc/Distribution" />
+   <requires rdf:resource="http://web.resource.org/cc/Notice" />
+   <permits rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+   <requires rdf:resource="http://web.resource.org/cc/ShareAlike" />
+   <requires rdf:resource="http://web.resource.org/cc/SourceCode" />
+</License>
+</rdf:RDF>
+-->
+
+<p class="legal">
+This work is licensed to you under version 2 of the
+<a href="http://www.gnu.org/">GNU</a> <a href="/GPL">General Public License</a>.
+Alternatively, you may choose to receive this work under any other
+license that grants the right to use, copy, modify, and/or distribute
+the work, as long as that license imposes the restriction that
+derivative works have to grant the same rights and impose the same
+restriction. For example, you may choose to receive this work under
+the
+<a href="http://www.gnu.org/">GNU</a>
+<a href="/FDL">Free Documentation License</a>, the
+<a href="http://creativecommons.org/">CreativeCommons</a>
+<a href="http://creativecommons.org/licenses/sa/1.0/">ShareAlike</a>
+License, the XEmacs manual license, or
+<a href="/OLD">similar licenses</a>.
+</p>
+</div>
+</body>
+</html>

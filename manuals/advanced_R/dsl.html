@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Domain specific languages &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/dsl.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="dsl">Domain specific languages</h1>
+<p>The combination of first class environments, lexical scoping, non-standard evaluation, and metaprogramming gives us a powerful toolkit for creating embedded domain specific languages (DSLs) in R. Embedded DSLs take advantage of a host language’s parsing and execution framework, but adjust the semantics to make them more suitable for a specific task. DSLs are a very large topic, and this chapter will only scratch the surface, focussing on important implementation techniques rather than on how you might come up with the language in the first place. If you’re interested in learning more, I highly recommend <a href="http://amzn.com/0321712943?tag=devtools-20"><em>Domain Specific Languages</em></a> by Martin Fowler. It discusses many options for creating a DSL and provides many examples of different languages. </p>
+<p>R’s most popular DSL is the formula specification, which provides a succinct way of describing the relationship between predictors and the response in a model. Other examples include ggplot2 (for visualisation) and plyr (for data manipulation). Another package that makes extensive use of these ideas is dplyr, which provides <code>translate_sql()</code> to convert R expressions into SQL:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">translate_sql</span>(<span class="kw">sin</span>(x) +<span class="st"> </span><span class="kw">tan</span>(y))
+<span class="co">#&gt; &lt;SQL&gt; SIN(&quot;x&quot;) + TAN(&quot;y&quot;)</span>
+<span class="kw">translate_sql</span>(x &lt;<span class="st"> </span><span class="dv">5</span> &amp;<span class="st"> </span>!(y &gt;=<span class="st"> </span><span class="dv">5</span>))
+<span class="co">#&gt; &lt;SQL&gt; &quot;x&quot; &lt; 5.0 AND NOT((&quot;y&quot; &gt;= 5.0))</span>
+<span class="kw">translate_sql</span>(first %like%<span class="st"> &quot;Had*&quot;</span>)
+<span class="co">#&gt; &lt;SQL&gt; &quot;first&quot; LIKE &#39;Had*&#39;</span>
+<span class="kw">translate_sql</span>(first %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;John&quot;</span>, <span class="st">&quot;Roger&quot;</span>, <span class="st">&quot;Robert&quot;</span>))
+<span class="co">#&gt; &lt;SQL&gt; &quot;first&quot; IN (&#39;John&#39;, &#39;Roger&#39;, &#39;Robert&#39;)</span>
+<span class="kw">translate_sql</span>(like ==<span class="st"> </span><span class="dv">7</span>)
+<span class="co">#&gt; &lt;SQL&gt; &quot;like&quot; = 7.0</span></code></pre>
+<p>This chapter will develop two simple, but useful DSLs: one to generate HTML, and the other to turn mathematical expressions expressed in R code into LaTeX.</p>
+<h5>Prerequisites</h5>
+<p>This chapter together pulls together many techniques discussed elsewhere in the book. In particular, you’ll need to understand environments, functionals, non-standard evaluation, and metaprogramming.</p>
+<h2 id="html">HTML</h2>
+<p>HTML (hypertext markup language) is the language that underlies the majority of the web. It’s a special case of SGML (standard generalised markup language), and it’s similar but not identical to XML (extensible markup language). HTML looks like this: </p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;h1</span><span class="ot"> id=</span><span class="st">&#39;first&#39;</span><span class="kw">&gt;</span>A heading<span class="kw">&lt;/h1&gt;</span>
+  <span class="kw">&lt;p&gt;</span>Some text <span class="dv">&amp;amp;</span> <span class="kw">&lt;b&gt;</span>some bold text.<span class="kw">&lt;/b&gt;&lt;/p&gt;</span>
+  <span class="kw">&lt;img</span><span class="ot"> src=</span><span class="st">&#39;myimg.png&#39;</span><span class="ot"> width=</span><span class="st">&#39;100&#39;</span><span class="ot"> height=</span><span class="st">&#39;100&#39;</span> <span class="kw">/&gt;</span>
+<span class="kw">&lt;/body&gt;</span></code></pre>
+<p>Even if you’ve never looked at HTML before, you can still see that the key component of its coding structure is tags, <code>&lt;tag&gt;&lt;/tag&gt;</code>. Tags can be contained inside other tags and intermingled with text. Generally, HTML ignores whitespaces (a sequence of whitespace is equivalent to a single space) so you could put the previous example on a single line and it would still display the same in a browser:</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;body&gt;&lt;h1</span><span class="ot"> id=</span><span class="st">&#39;first&#39;</span><span class="kw">&gt;</span>A heading<span class="kw">&lt;/h1&gt;&lt;p&gt;</span>Some text <span class="dv">&amp;amp;</span> <span class="kw">&lt;b&gt;</span>some bold
+text.<span class="kw">&lt;/b&gt;&lt;/p&gt;&lt;img</span><span class="ot"> src=</span><span class="st">&#39;myimg.png&#39;</span><span class="ot"> width=</span><span class="st">&#39;100&#39;</span><span class="ot"> height=</span><span class="st">&#39;100&#39;</span> <span class="kw">/&gt;</span>
+<span class="kw">&lt;/body&gt;</span></code></pre>
+<p>However, like R code, you usually want to indent HTML to make the structure more obvious.</p>
+<p>There are over 100 HTML tags. But to illustrate HTML, we’re going to focus on just a few:</p>
+<ul>
+<li><code>&lt;body&gt;</code>: the top-level tag that all content is enclosed within</li>
+<li><code>&lt;h1&gt;</code>: creates a heading-1, the top level heading</li>
+<li><code>&lt;p&gt;</code>: creates a paragraph</li>
+<li><code>&lt;b&gt;</code>: emboldens text</li>
+<li><code>&lt;img&gt;</code>: embeds an image</li>
+</ul>
+<p>(You probably guessed what these did already!)</p>
+<p>Tags can also have named attributes. They look like <code>&lt;tag a=&quot;a&quot; b=&quot;b&quot;&gt;&lt;/tag&gt;</code>. Tag values should always be enclosed in either single or double quotes. Two important attributes used with just about every tag are <code>id</code> and <code>class</code>. These are used in conjunction with CSS (cascading style sheets) in order to control the style of the document.</p>
+<p>Some tags, like <code>&lt;img&gt;</code>, can’t have any content. These are called <strong>void tags</strong> and have a slightly different syntax. Instead of writing <code>&lt;img&gt;&lt;/img&gt;</code>, you write <code>&lt;img /&gt;</code>. Since they have no content, attributes are more important. In fact, <code>img</code> has three that are used for almost every image: <code>src</code> (where the image lives), <code>width</code>, and <code>height</code>.</p>
+<p>Because <code>&lt;</code> and <code>&gt;</code> have special meanings in HTML, you can’t write them directly. Instead you have to use the HTML escapes: <code>&amp;gt;</code> and <code>&amp;lt;</code>. And, since those escapes use <code>&amp;</code>, if you want a literal ampersand you have to escape with <code>&amp;amp;</code>.</p>
+<h3>Goal</h3>
+<p>Our goal is to make it easy to generate HTML from R. To give a concrete example, we want to generate the following HTML with code that looks as similar to the HTML as possible.</p>
+<pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;h1</span><span class="ot"> id=</span><span class="st">&#39;first&#39;</span><span class="kw">&gt;</span>A heading<span class="kw">&lt;/h1&gt;</span>
+  <span class="kw">&lt;p&gt;</span>Some text <span class="dv">&amp;amp;</span> <span class="kw">&lt;b&gt;</span>some bold text.<span class="kw">&lt;/b&gt;&lt;/p&gt;</span>
+  <span class="kw">&lt;img</span><span class="ot"> src=</span><span class="st">&#39;myimg.png&#39;</span><span class="ot"> width=</span><span class="st">&#39;100&#39;</span><span class="ot"> height=</span><span class="st">&#39;100&#39;</span> <span class="kw">/&gt;</span>
+<span class="kw">&lt;/body&gt;</span></code></pre>
+<p>To do so, we will work our way up to the following DSL:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">with_html</span>(<span class="kw">body</span>(
+  <span class="kw">h1</span>(<span class="st">&quot;A heading&quot;</span>, <span class="dt">id =</span> <span class="st">&quot;first&quot;</span>),
+  <span class="kw">p</span>(<span class="st">&quot;Some text &amp;&quot;</span>, <span class="kw">b</span>(<span class="st">&quot;some bold text.&quot;</span>)),
+  <span class="kw">img</span>(<span class="dt">src =</span> <span class="st">&quot;myimg.png&quot;</span>, <span class="dt">width =</span> <span class="dv">100</span>, <span class="dt">height =</span> <span class="dv">100</span>)
+))</code></pre>
+<p>Note that the nesting of function calls is the same as the nesting of tags: unnamed arguments become the content of the tag, and named arguments become their attributes. Because tags and text are clearly distinct in this API, we can automatically escape <code>&amp;</code> and other special characters.</p>
+<h3>Escaping</h3>
+<p>Escaping is so fundamental to DSLs that it’ll be our first topic. To create a way of escaping characters, we need to give “&amp;” a special meaning without ending up double-escaping. The easiest way to do this is to create an S3 class that distinguishes between regular text (that needs escaping) and HTML (that doesn’t). </p>
+<pre class="sourceCode r"><code class="sourceCode r">html &lt;-<span class="st"> </span>function(x) <span class="kw">structure</span>(x, <span class="dt">class =</span> <span class="st">&quot;html&quot;</span>)
+print.html &lt;-<span class="st"> </span>function(x, ...) {
+  out &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;&lt;HTML&gt; &quot;</span>, x)
+  <span class="kw">cat</span>(<span class="kw">paste</span>(<span class="kw">strwrap</span>(out), <span class="dt">collapse =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>)
+}</code></pre>
+<p>We then write an escape method that leaves HTML unchanged and escapes the special characters (<code>&amp;</code>, <code>&lt;</code>, <code>&gt;</code>) for ordinary text. We also add a list method for convenience.</p>
+<pre class="sourceCode r"><code class="sourceCode r">escape &lt;-<span class="st"> </span>function(x) <span class="kw">UseMethod</span>(<span class="st">&quot;escape&quot;</span>)
+escape.html &lt;-<span class="st"> </span>function(x) x
+escape.character &lt;-<span class="st"> </span>function(x) {
+  x &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;&amp;amp;&quot;</span>, x)
+  x &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;&lt;&quot;</span>, <span class="st">&quot;&amp;lt;&quot;</span>, x)
+  x &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;&gt;&quot;</span>, <span class="st">&quot;&amp;gt;&quot;</span>, x)
+
+  <span class="kw">html</span>(x)
+}
+escape.list &lt;-<span class="st"> </span>function(x) {
+  <span class="kw">lapply</span>(x, escape)
+}
+
+<span class="co"># Now we check that it works</span>
+<span class="kw">escape</span>(<span class="st">&quot;This is some text.&quot;</span>)
+<span class="co">#&gt; &lt;HTML&gt; This is some text.</span>
+<span class="kw">escape</span>(<span class="st">&quot;x &gt; 1 &amp; y &lt; 2&quot;</span>)
+<span class="co">#&gt; &lt;HTML&gt; x &amp;gt; 1 &amp;amp; y &amp;lt; 2</span>
+
+<span class="co"># Double escaping is not a problem</span>
+<span class="kw">escape</span>(<span class="kw">escape</span>(<span class="st">&quot;This is some text. 1 &gt; 2&quot;</span>))
+<span class="co">#&gt; &lt;HTML&gt; This is some text. 1 &amp;gt; 2</span>
+
+<span class="co"># And text we know is HTML doesn&#39;t get escaped.</span>
+<span class="kw">escape</span>(<span class="kw">html</span>(<span class="st">&quot;&lt;hr /&gt;&quot;</span>))
+<span class="co">#&gt; &lt;HTML&gt; &lt;hr /&gt;</span></code></pre>
+<p>Escaping is an important component for many DSLs.</p>
+<h3>Basic tag functions</h3>
+<p>Next, we’ll write a few simple tag functions and then figure out how to generalise this function to cover all possible HTML tags. Let’s start with <code>&lt;p&gt;</code>. HTML tags can have both attributes (e.g., id or class) and children (like <code>&lt;b&gt;</code> or <code>&lt;i&gt;</code>). We need some way of separating these in the function call. Given that attributes are named values and children don’t have names, it seems natural to separate using named arguments from unnamed ones. For example, a call to <code>p()</code> might look like:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">p</span>(<span class="st">&quot;Some text.&quot;</span>, <span class="kw">b</span>(<span class="st">&quot;some bold text&quot;</span>), <span class="dt">class =</span> <span class="st">&quot;mypara&quot;</span>)</code></pre>
+<p>We could list all the possible attributes of the <code>&lt;p&gt;</code> tag in the function definition. However, that’s hard not only because there are many attributes, but also because it’s possible to use <a href="http://html5doctor.com/html5-custom-data-attributes/">custom attributes</a>. Instead, we’ll just use <code>...</code> and separate the components based on whether or not they are named. To do this correctly, we need to be aware of an inconsistency in <code>names()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(<span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>))
+<span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot;</span>
+<span class="kw">names</span>(<span class="kw">c</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dv">2</span>))
+<span class="co">#&gt; [1] &quot;a&quot; &quot;&quot;</span>
+<span class="kw">names</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))
+<span class="co">#&gt; NULL</span></code></pre>
+<p>With this in mind, we create two helper functions to extract the named and unnamed components of a vector:</p>
+<pre class="sourceCode r"><code class="sourceCode r">named &lt;-<span class="st"> </span>function(x) {
+  if (<span class="kw">is.null</span>(<span class="kw">names</span>(x))) <span class="kw">return</span>(<span class="ot">NULL</span>)
+  x[<span class="kw">names</span>(x) !=<span class="st"> &quot;&quot;</span>]
+}
+unnamed &lt;-<span class="st"> </span>function(x) {
+  if (<span class="kw">is.null</span>(<span class="kw">names</span>(x))) <span class="kw">return</span>(x)
+  x[<span class="kw">names</span>(x) ==<span class="st"> &quot;&quot;</span>]
+}</code></pre>
+<p>We can now create our <code>p()</code> function. Notice that there’s one new function here: <code>html_attributes()</code>. It uses a list of name-value pairs to create the correct specification of HTML attributes. It’s a little complicated (in part, because it deals with some idiosyncracies of HTML that I haven’t mentioned.). However, because it’s not that important and doesn’t introduce any new ideas, I won’t discuss it here (you can find the source online).</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">source</span>(<span class="st">&quot;dsl-html-attributes.r&quot;</span>, <span class="dt">local =</span> <span class="ot">TRUE</span>)
+p &lt;-<span class="st"> </span>function(...) {
+  args &lt;-<span class="st"> </span><span class="kw">list</span>(...)
+  attribs &lt;-<span class="st"> </span><span class="kw">html_attributes</span>(<span class="kw">named</span>(args))
+  children &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">escape</span>(<span class="kw">unnamed</span>(args)))
+
+  <span class="kw">html</span>(<span class="kw">paste0</span>(
+    <span class="st">&quot;&lt;p&quot;</span>, attribs, <span class="st">&quot;&gt;&quot;</span>,
+    <span class="kw">paste</span>(children, <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>),
+    <span class="st">&quot;&lt;/p&gt;&quot;</span>
+  ))
+}
+
+<span class="kw">p</span>(<span class="st">&quot;Some text&quot;</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;p&gt;Some text&lt;/p&gt;</span>
+<span class="kw">p</span>(<span class="st">&quot;Some text&quot;</span>, <span class="dt">id =</span> <span class="st">&quot;myid&quot;</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;p id = &#39;myid&#39;&gt;Some text&lt;/p&gt;</span>
+<span class="kw">p</span>(<span class="st">&quot;Some text&quot;</span>, <span class="dt">image =</span> <span class="ot">NULL</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;p image&gt;Some text&lt;/p&gt;</span>
+<span class="kw">p</span>(<span class="st">&quot;Some text&quot;</span>, <span class="dt">class =</span> <span class="st">&quot;important&quot;</span>, <span class="st">&quot;data-value&quot;</span> =<span class="st"> </span><span class="dv">10</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;p class = &#39;important&#39; data-value = &#39;10&#39;&gt;Some text&lt;/p&gt;</span></code></pre>
+<h3>Tag functions</h3>
+<p>With this definition of <code>p()</code>, it’s pretty easy to see how we can apply this approach to different tags: we just need to replace <code>&quot;p&quot;</code> with a variable. We’ll use a closure to make it easy to generate a tag function given a tag name:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tag &lt;-<span class="st"> </span>function(tag) {
+  <span class="kw">force</span>(tag)
+  function(...) {
+    args &lt;-<span class="st"> </span><span class="kw">list</span>(...)
+    attribs &lt;-<span class="st"> </span><span class="kw">html_attributes</span>(<span class="kw">named</span>(args))
+    children &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">escape</span>(<span class="kw">unnamed</span>(args)))
+
+    <span class="kw">html</span>(<span class="kw">paste0</span>(
+      <span class="st">&quot;&lt;&quot;</span>, tag, attribs, <span class="st">&quot;&gt;&quot;</span>,
+      <span class="kw">paste</span>(children, <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>),
+      <span class="st">&quot;&lt;/&quot;</span>, tag, <span class="st">&quot;&gt;&quot;</span>
+    ))
+  }
+}</code></pre>
+<p>(We’re forcing the evaluation of <code>tag</code> with the expectation that we’ll be calling this function from a loop. This will help to avoid potential bugs caused by lazy evaluation.)</p>
+<p>Now we can run our earlier example:</p>
+<pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span><span class="kw">tag</span>(<span class="st">&quot;p&quot;</span>)
+b &lt;-<span class="st"> </span><span class="kw">tag</span>(<span class="st">&quot;b&quot;</span>)
+i &lt;-<span class="st"> </span><span class="kw">tag</span>(<span class="st">&quot;i&quot;</span>)
+<span class="kw">p</span>(<span class="st">&quot;Some text.&quot;</span>, <span class="kw">b</span>(<span class="st">&quot;Some bold text&quot;</span>), <span class="kw">i</span>(<span class="st">&quot;Some italic text&quot;</span>),
+  <span class="dt">class =</span> <span class="st">&quot;mypara&quot;</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;p class = &#39;mypara&#39;&gt;Some text.&lt;b&gt;Some bold text&lt;/b&gt;&lt;i&gt;Some</span>
+<span class="co">#&gt; italic text&lt;/i&gt;&lt;/p&gt;</span></code></pre>
+<p>Before we continue writing functions for every possible HTML tag, we need to create a variant of <code>tag()</code> for void tags. It can be very similar to <code>tag()</code>, but if there are any unnamed tags, it needs to throw an error. Also note that the tag itself will look slightly different:</p>
+<pre class="sourceCode r"><code class="sourceCode r">void_tag &lt;-<span class="st"> </span>function(tag) {
+  <span class="kw">force</span>(tag)
+  function(...) {
+    args &lt;-<span class="st"> </span><span class="kw">list</span>(...)
+    if (<span class="kw">length</span>(<span class="kw">unnamed</span>(args)) &gt;<span class="st"> </span><span class="dv">0</span>) {
+      <span class="kw">stop</span>(<span class="st">&quot;Tag &quot;</span>, tag, <span class="st">&quot; can not have children&quot;</span>, <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+    }
+    attribs &lt;-<span class="st"> </span><span class="kw">html_attributes</span>(<span class="kw">named</span>(args))
+
+    <span class="kw">html</span>(<span class="kw">paste0</span>(<span class="st">&quot;&lt;&quot;</span>, tag, attribs, <span class="st">&quot; /&gt;&quot;</span>))
+  }
+}
+
+img &lt;-<span class="st"> </span><span class="kw">void_tag</span>(<span class="st">&quot;img&quot;</span>)
+<span class="kw">img</span>(<span class="dt">src =</span> <span class="st">&quot;myimage.png&quot;</span>, <span class="dt">width =</span> <span class="dv">100</span>, <span class="dt">height =</span> <span class="dv">100</span>)
+<span class="co">#&gt; &lt;HTML&gt; &lt;img src = &#39;myimage.png&#39; width = &#39;100&#39; height = &#39;100&#39; /&gt;</span></code></pre>
+<h3>Processing all tags</h3>
+<p>Next we need a list of all the HTML tags:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tags &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;abbr&quot;</span>, <span class="st">&quot;address&quot;</span>, <span class="st">&quot;article&quot;</span>, <span class="st">&quot;aside&quot;</span>, <span class="st">&quot;audio&quot;</span>, 
+  <span class="st">&quot;b&quot;</span>,<span class="st">&quot;bdi&quot;</span>, <span class="st">&quot;bdo&quot;</span>, <span class="st">&quot;blockquote&quot;</span>, <span class="st">&quot;body&quot;</span>, <span class="st">&quot;button&quot;</span>, <span class="st">&quot;canvas&quot;</span>, 
+  <span class="st">&quot;caption&quot;</span>,<span class="st">&quot;cite&quot;</span>, <span class="st">&quot;code&quot;</span>, <span class="st">&quot;colgroup&quot;</span>, <span class="st">&quot;data&quot;</span>, <span class="st">&quot;datalist&quot;</span>, 
+  <span class="st">&quot;dd&quot;</span>, <span class="st">&quot;del&quot;</span>,<span class="st">&quot;details&quot;</span>, <span class="st">&quot;dfn&quot;</span>, <span class="st">&quot;div&quot;</span>, <span class="st">&quot;dl&quot;</span>, <span class="st">&quot;dt&quot;</span>, <span class="st">&quot;em&quot;</span>, 
+  <span class="st">&quot;eventsource&quot;</span>,<span class="st">&quot;fieldset&quot;</span>, <span class="st">&quot;figcaption&quot;</span>, <span class="st">&quot;figure&quot;</span>, <span class="st">&quot;footer&quot;</span>, 
+  <span class="st">&quot;form&quot;</span>, <span class="st">&quot;h1&quot;</span>, <span class="st">&quot;h2&quot;</span>, <span class="st">&quot;h3&quot;</span>, <span class="st">&quot;h4&quot;</span>, <span class="st">&quot;h5&quot;</span>, <span class="st">&quot;h6&quot;</span>, <span class="st">&quot;head&quot;</span>, <span class="st">&quot;header&quot;</span>, 
+  <span class="st">&quot;hgroup&quot;</span>, <span class="st">&quot;html&quot;</span>, <span class="st">&quot;i&quot;</span>,<span class="st">&quot;iframe&quot;</span>, <span class="st">&quot;ins&quot;</span>, <span class="st">&quot;kbd&quot;</span>, <span class="st">&quot;label&quot;</span>, 
+  <span class="st">&quot;legend&quot;</span>, <span class="st">&quot;li&quot;</span>, <span class="st">&quot;mark&quot;</span>, <span class="st">&quot;map&quot;</span>,<span class="st">&quot;menu&quot;</span>, <span class="st">&quot;meter&quot;</span>, <span class="st">&quot;nav&quot;</span>, 
+  <span class="st">&quot;noscript&quot;</span>, <span class="st">&quot;object&quot;</span>, <span class="st">&quot;ol&quot;</span>, <span class="st">&quot;optgroup&quot;</span>, <span class="st">&quot;option&quot;</span>, <span class="st">&quot;output&quot;</span>, 
+  <span class="st">&quot;p&quot;</span>, <span class="st">&quot;pre&quot;</span>, <span class="st">&quot;progress&quot;</span>, <span class="st">&quot;q&quot;</span>, <span class="st">&quot;ruby&quot;</span>, <span class="st">&quot;rp&quot;</span>,<span class="st">&quot;rt&quot;</span>, <span class="st">&quot;s&quot;</span>, <span class="st">&quot;samp&quot;</span>, 
+  <span class="st">&quot;script&quot;</span>, <span class="st">&quot;section&quot;</span>, <span class="st">&quot;select&quot;</span>, <span class="st">&quot;small&quot;</span>, <span class="st">&quot;span&quot;</span>, <span class="st">&quot;strong&quot;</span>, 
+  <span class="st">&quot;style&quot;</span>, <span class="st">&quot;sub&quot;</span>, <span class="st">&quot;summary&quot;</span>, <span class="st">&quot;sup&quot;</span>, <span class="st">&quot;table&quot;</span>, <span class="st">&quot;tbody&quot;</span>, <span class="st">&quot;td&quot;</span>, 
+  <span class="st">&quot;textarea&quot;</span>, <span class="st">&quot;tfoot&quot;</span>, <span class="st">&quot;th&quot;</span>, <span class="st">&quot;thead&quot;</span>, <span class="st">&quot;time&quot;</span>, <span class="st">&quot;title&quot;</span>, <span class="st">&quot;tr&quot;</span>,
+  <span class="st">&quot;u&quot;</span>, <span class="st">&quot;ul&quot;</span>, <span class="st">&quot;var&quot;</span>, <span class="st">&quot;video&quot;</span>)
+
+void_tags &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;area&quot;</span>, <span class="st">&quot;base&quot;</span>, <span class="st">&quot;br&quot;</span>, <span class="st">&quot;col&quot;</span>, <span class="st">&quot;command&quot;</span>, <span class="st">&quot;embed&quot;</span>,
+  <span class="st">&quot;hr&quot;</span>, <span class="st">&quot;img&quot;</span>, <span class="st">&quot;input&quot;</span>, <span class="st">&quot;keygen&quot;</span>, <span class="st">&quot;link&quot;</span>, <span class="st">&quot;meta&quot;</span>, <span class="st">&quot;param&quot;</span>, 
+  <span class="st">&quot;source&quot;</span>, <span class="st">&quot;track&quot;</span>, <span class="st">&quot;wbr&quot;</span>)</code></pre>
+<p>If you look at this list carefully, you’ll see there are quite a few tags that have the same name as base R functions (<code>body</code>, <code>col</code>, <code>q</code>, <code>source</code>, <code>sub</code>, <code>summary</code>, <code>table</code>), and others that have the same name as popular packages (e.g., <code>map</code>). This means we don’t want to make all the functions available by default, in either the global environment or the package environment. Instead, we’ll put them in a list and add some additional code to make it easy to use them when desired. First, we make a named list:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tag_fs &lt;-<span class="st"> </span><span class="kw">c</span>(
+  <span class="kw">setNames</span>(<span class="kw">lapply</span>(tags, tag), tags),
+  <span class="kw">setNames</span>(<span class="kw">lapply</span>(void_tags, void_tag), void_tags)
+)</code></pre>
+<p>This gives us an explicit (but verbose) way to call tag functions:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tag_fs$<span class="kw">p</span>(<span class="st">&quot;Some text.&quot;</span>, tag_fs$<span class="kw">b</span>(<span class="st">&quot;Some bold text&quot;</span>),
+  tag_fs$<span class="kw">i</span>(<span class="st">&quot;Some italic text&quot;</span>))
+<span class="co">#&gt; &lt;HTML&gt; &lt;p&gt;Some text.&lt;b&gt;Some bold text&lt;/b&gt;&lt;i&gt;Some italic</span>
+<span class="co">#&gt; text&lt;/i&gt;&lt;/p&gt;</span></code></pre>
+<p>We can then finish off our HTML DSL with a function that allows us to evaluate code in the context of that list:</p>
+<pre class="sourceCode r"><code class="sourceCode r">with_html &lt;-<span class="st"> </span>function(code) {
+  <span class="kw">eval</span>(<span class="kw">substitute</span>(code), tag_fs)
+}</code></pre>
+<p>This gives us a succinct API which allows us to write HTML when we need it but doesn’t clutter up the namespace when we don’t.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">with_html</span>(<span class="kw">body</span>(
+  <span class="kw">h1</span>(<span class="st">&quot;A heading&quot;</span>, <span class="dt">id =</span> <span class="st">&quot;first&quot;</span>),
+  <span class="kw">p</span>(<span class="st">&quot;Some text &amp;&quot;</span>, <span class="kw">b</span>(<span class="st">&quot;some bold text.&quot;</span>)),
+  <span class="kw">img</span>(<span class="dt">src =</span> <span class="st">&quot;myimg.png&quot;</span>, <span class="dt">width =</span> <span class="dv">100</span>, <span class="dt">height =</span> <span class="dv">100</span>)
+))
+<span class="co">#&gt; &lt;HTML&gt; &lt;body&gt;&lt;h1 id = &#39;first&#39;&gt;A heading&lt;/h1&gt;&lt;p&gt;Some text</span>
+<span class="co">#&gt; &amp;amp;&lt;b&gt;some bold text.&lt;/b&gt;&lt;/p&gt;&lt;img src = &#39;myimg.png&#39; width =</span>
+<span class="co">#&gt; &#39;100&#39; height = &#39;100&#39; /&gt;&lt;/body&gt;</span></code></pre>
+<p>If you want to access the R function overridden by an HTML tag with the same name inside <code>with_html()</code>, you can use the full <code>package::function</code> specification.</p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>The escaping rules for <code>&lt;script&gt;</code> and <code>&lt;style&gt;</code> tags are different: you don’t want to escape angle brackets or ampersands, but you do want to escape <code>&lt;/script&gt;</code> or <code>&lt;/style&gt;</code>. Adapt the code above to follow these rules.</p></li>
+<li><p>The use of <code>...</code> for all functions has some big downsides. There’s no input validation and there will be little information in the documentation or autocomplete about how they are used in the function. Create a new function that, when given a named list of tags and their<br /> attribute names (like below), creates functions which address this problem.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">list</span>(
+  <span class="dt">a =</span> <span class="kw">c</span>(<span class="st">&quot;href&quot;</span>),
+  <span class="dt">img =</span> <span class="kw">c</span>(<span class="st">&quot;src&quot;</span>, <span class="st">&quot;width&quot;</span>, <span class="st">&quot;height&quot;</span>)
+)</code></pre>
+<p>All tags should get <code>class</code> and <code>id</code> attributes.</p></li>
+<li><p>Currently the HTML doesn’t look terribly pretty, and it’s hard to see the structure. How could you adapt <code>tag()</code> to do indenting and formatting?</p></li>
+</ol>
+<h2 id="latex">LaTeX</h2>
+<p>The next DSL will convert R expressions into their LaTeX math equivalents. (This is a bit like <code>?plotmath</code>, but for text instead of plots.) LaTeX is the lingua franca of mathematicians and statisticians: whenever you want to describe an equation in text (e.g., in an email), you write it as a LaTeX equation. Since many reports are produced using both R and LaTeX, it might be useful to be able to automatically convert mathematical expressions from one language to the other. </p>
+<p>Because we need to convert both functions and names, this mathematical DSL will be more complicated than the HTML DSL. We’ll also need to create a “default” conversion, so that functions we don’t know about get a standard conversion. Like the HTML DSL, we’ll also write functionals to make it easier to generate the translators.</p>
+<p>Before we begin, let’s quickly cover how formulas are expressed in LaTeX.</p>
+<h3>LaTeX mathematics</h3>
+<p>LaTeX mathematics are complex. Fortunately, they are <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics">well documented</a>. That said, they have a fairly simple structure:</p>
+<ul>
+<li><p>Most simple mathematical equations are written in the same way you’d type them in R: <code>x * y</code>, <code>z ^ 5</code>. Subscripts are written using <code>_</code> (e.g., <code>x_1</code>).</p></li>
+<li><p>Special characters start with a <code>\</code>: <code>\pi</code> = π, <code>\pm</code> = ±, and so on. There are a huge number of symbols available in LaTeX. Googling for <code>latex math symbols</code> will return many <a href="http://www.sunilpatel.co.uk/latex-type/latex-math-symbols/">lists</a>. There’s even <a href="http://detexify.kirelabs.org/classify.html">a service</a> that will look up the symbol you sketch in the browser.</p></li>
+<li><p>More complicated functions look like <code>\name{arg1}{arg2}</code>. For example, to write a fraction you’d use <code>\frac{a}{b}</code>. To write a square root, you’d use <code>\sqrt{a}</code>.</p></li>
+<li><p>To group elements together use <code>{}</code>: i.e., <code>x ^ a + b</code> vs. <code>x ^ {a + b}</code>.</p></li>
+<li><p>In good math typesetting, a distinction is made between variables and functions. But without extra information, LaTeX doesn’t know whether <code>f(a * b)</code> represents calling the function <code>f</code> with input <code>a * b</code>, or is shorthand for <code>f * (a * b)</code>. If <code>f</code> is a function, you can tell LaTeX to typeset it using an upright font with <code>\textrm{f}(a * b)</code>.</p></li>
+</ul>
+<h3>Goal</h3>
+<p>Our goal is to use these rules to automatically convert an R expression to its appropriate LaTeX representation. We’ll tackle this in four stages:</p>
+<ul>
+<li><p>Convert known symbols: <code>pi</code> -&gt; <code>\pi</code></p></li>
+<li><p>Leave other symbols unchanged: <code>x</code> -&gt; <code>x</code>, <code>y</code> -&gt; <code>y</code></p></li>
+<li><p>Convert known functions to their special forms: <code>sqrt(frac(a, b))</code> -&gt; <code>\sqrt{\frac{a, b}}</code></p></li>
+<li><p>Wrap unknown functions with <code>\textrm</code>: <code>f(a)</code> -&gt; <code>\textrm{f}(a)</code></p></li>
+</ul>
+<p>We’ll code this translation in the opposite direction of what we did with the HTML DSL. We’ll start with infrastructure, because that makes it easy to experiment with our DSL, and then work our way back down to generate the desired output.</p>
+<h3><code>to_math</code></h3>
+<p>To begin, we need a wrapper function that will convert R expressions into LaTeX math expressions. This will work the same way as <code>to_html()</code>: capture the unevaluated expression and evaluate it in a special environment. However, the special environment is no longer fixed. It will vary depending on the expression. We do this in order to be able to deal with symbols and functions that we haven’t yet seen.</p>
+<pre class="sourceCode r"><code class="sourceCode r">to_math &lt;-<span class="st"> </span>function(x) {
+  expr &lt;-<span class="st"> </span><span class="kw">substitute</span>(x)
+  <span class="kw">eval</span>(expr, <span class="kw">latex_env</span>(expr))
+}</code></pre>
+<h3>Known symbols</h3>
+<p>Our first step is to create an environment that will convert the special LaTeX symbols used for Greek, e.g., <code>pi</code> to <code>\pi</code>. This is the same basic trick used in <code>subset</code> that makes it possible to select column ranges by name (<code>subset(mtcars, , cyl:wt)</code>): bind a name to a string in a special environment.</p>
+<p>We create that environment by naming a vector, converting the vector into a list, and converting the list into an environment.</p>
+<pre class="sourceCode r"><code class="sourceCode r">greek &lt;-<span class="st"> </span><span class="kw">c</span>(
+  <span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;theta&quot;</span>, <span class="st">&quot;tau&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;vartheta&quot;</span>, <span class="st">&quot;pi&quot;</span>, <span class="st">&quot;upsilon&quot;</span>,
+  <span class="st">&quot;gamma&quot;</span>, <span class="st">&quot;gamma&quot;</span>, <span class="st">&quot;varpi&quot;</span>, <span class="st">&quot;phi&quot;</span>, <span class="st">&quot;delta&quot;</span>, <span class="st">&quot;kappa&quot;</span>, <span class="st">&quot;rho&quot;</span>,
+  <span class="st">&quot;varphi&quot;</span>, <span class="st">&quot;epsilon&quot;</span>, <span class="st">&quot;lambda&quot;</span>, <span class="st">&quot;varrho&quot;</span>, <span class="st">&quot;chi&quot;</span>, <span class="st">&quot;varepsilon&quot;</span>,
+  <span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;psi&quot;</span>, <span class="st">&quot;zeta&quot;</span>, <span class="st">&quot;nu&quot;</span>, <span class="st">&quot;varsigma&quot;</span>, <span class="st">&quot;omega&quot;</span>, <span class="st">&quot;eta&quot;</span>,
+  <span class="st">&quot;xi&quot;</span>, <span class="st">&quot;Gamma&quot;</span>, <span class="st">&quot;Lambda&quot;</span>, <span class="st">&quot;Sigma&quot;</span>, <span class="st">&quot;Psi&quot;</span>, <span class="st">&quot;Delta&quot;</span>, <span class="st">&quot;Xi&quot;</span>, 
+  <span class="st">&quot;Upsilon&quot;</span>, <span class="st">&quot;Omega&quot;</span>, <span class="st">&quot;Theta&quot;</span>, <span class="st">&quot;Pi&quot;</span>, <span class="st">&quot;Phi&quot;</span>)
+greek_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">paste0</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">&quot;</span>, greek), greek)
+greek_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(<span class="kw">as.list</span>(greek_list), <span class="dt">parent =</span> <span class="kw">emptyenv</span>())</code></pre>
+<p>We can then check it:</p>
+<pre class="sourceCode r"><code class="sourceCode r">latex_env &lt;-<span class="st"> </span>function(expr) {
+  greek_env
+}
+
+<span class="kw">to_math</span>(pi)
+<span class="co">#&gt; [1] &quot;\\pi&quot;</span>
+<span class="kw">to_math</span>(beta)
+<span class="co">#&gt; [1] &quot;\\beta&quot;</span></code></pre>
+<h3>Unknown symbols</h3>
+<p>If a symbol isn’t Greek, we want to leave it as is. This is tricky because we don’t know in advance what symbols will be used, and we can’t possibly generate them all. So we’ll use a little bit of metaprogramming to find out what symbols are present in an expression. The <code>all_names</code> function takes an expression and does the following: if it’s a name, it converts it to a string; if it’s a call, it recurses down through its arguments.</p>
+<pre class="sourceCode r"><code class="sourceCode r">all_names &lt;-<span class="st"> </span>function(x) {
+  if (<span class="kw">is.atomic</span>(x)) {
+    <span class="kw">character</span>()
+  } else if (<span class="kw">is.name</span>(x)) {
+    <span class="kw">as.character</span>(x)
+  } else if (<span class="kw">is.call</span>(x) ||<span class="st"> </span><span class="kw">is.pairlist</span>(x)) {
+    children &lt;-<span class="st"> </span><span class="kw">lapply</span>(x[-<span class="dv">1</span>], all_names)
+    <span class="kw">unique</span>(<span class="kw">unlist</span>(children))
+  } else {
+    <span class="kw">stop</span>(<span class="st">&quot;Don&#39;t know how to handle type &quot;</span>, <span class="kw">typeof</span>(x), 
+      <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+  }
+}
+
+<span class="kw">all_names</span>(<span class="kw">quote</span>(x +<span class="st"> </span>y +<span class="st"> </span><span class="kw">f</span>(a, b, c, <span class="dv">10</span>)))
+<span class="co">#&gt; [1] &quot;x&quot; &quot;y&quot; &quot;a&quot; &quot;b&quot; &quot;c&quot;</span></code></pre>
+<p>We now want to take that list of symbols, and convert it to an environment so that each symbol is mapped to its corresponding string representation (e.g., so <code>eval(quote(x), env)</code> yields <code>&quot;x&quot;</code>). We again use the pattern of converting a named character vector to a list, then converting the list to an environment.</p>
+<pre class="sourceCode r"><code class="sourceCode r">latex_env &lt;-<span class="st"> </span>function(expr) {
+  names &lt;-<span class="st"> </span><span class="kw">all_names</span>(expr)
+  symbol_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">as.list</span>(names), names)
+  symbol_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(symbol_list)
+
+  symbol_env
+}
+
+<span class="kw">to_math</span>(x)
+<span class="co">#&gt; [1] &quot;x&quot;</span>
+<span class="kw">to_math</span>(longvariablename)
+<span class="co">#&gt; [1] &quot;longvariablename&quot;</span>
+<span class="kw">to_math</span>(pi)
+<span class="co">#&gt; [1] &quot;pi&quot;</span></code></pre>
+<p>This works, but we need to combine it with the Greek symbols environment. Since we want to give preference to Greek over defaults (e.g., <code>to_math(pi)</code> should give <code>&quot;\\pi&quot;</code>, not <code>&quot;pi&quot;</code>), <code>symbol_env</code> needs to be the parent of <code>greek_env</code>. To do that, we need to make a copy of <code>greek_env</code> with a new parent. While R doesn’t come with a function for cloning environments, we can easily create one by combining two existing functions:</p>
+<pre class="sourceCode r"><code class="sourceCode r">clone_env &lt;-<span class="st"> </span>function(env, <span class="dt">parent =</span> <span class="kw">parent.env</span>(env)) {
+  <span class="kw">list2env</span>(<span class="kw">as.list</span>(env), <span class="dt">parent =</span> parent)
+}</code></pre>
+<p>This gives us a function that can convert both known (Greek) and unknown symbols.</p>
+<pre class="sourceCode r"><code class="sourceCode r">latex_env &lt;-<span class="st"> </span>function(expr) {
+  <span class="co"># Unknown symbols</span>
+  names &lt;-<span class="st"> </span><span class="kw">all_names</span>(expr)
+  symbol_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">as.list</span>(names), names)
+  symbol_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(symbol_list)
+
+  <span class="co"># Known symbols</span>
+  <span class="kw">clone_env</span>(greek_env, symbol_env)
+}
+
+<span class="kw">to_math</span>(x)
+<span class="co">#&gt; [1] &quot;x&quot;</span>
+<span class="kw">to_math</span>(longvariablename)
+<span class="co">#&gt; [1] &quot;longvariablename&quot;</span>
+<span class="kw">to_math</span>(pi)
+<span class="co">#&gt; [1] &quot;\\pi&quot;</span></code></pre>
+<h3>Known functions</h3>
+<p>Next we’ll add functions to our DSL. We’ll start with a couple of helper closures that make it easy to add new unary and binary operators. These functions are very simple: they only assemble strings. (Again we use <code>force()</code> to make sure the arguments are evaluated at the right time.)</p>
+<pre class="sourceCode r"><code class="sourceCode r">unary_op &lt;-<span class="st"> </span>function(left, right) {
+  <span class="kw">force</span>(left)
+  <span class="kw">force</span>(right)
+  function(e1) {
+    <span class="kw">paste0</span>(left, e1, right)
+  }
+}
+
+binary_op &lt;-<span class="st"> </span>function(sep) {
+  <span class="kw">force</span>(sep)
+  function(e1, e2) {
+    <span class="kw">paste0</span>(e1, sep, e2)
+  }
+}</code></pre>
+<p>Using these helpers, we can map a few illustrative examples of converting R to LaTeX. Note that with R’s lexical scoping rules helping us, we can easily provide new meanings for standard functions like <code>+</code>, <code>-</code>, and <code>*</code>, and even <code>(</code> and <code>{</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Binary operators</span>
+f_env &lt;-<span class="st"> </span><span class="kw">new.env</span>(<span class="dt">parent =</span> <span class="kw">emptyenv</span>())
+f_env$<span class="st">&quot;+&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot; + &quot;</span>)
+f_env$<span class="st">&quot;-&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot; - &quot;</span>)
+f_env$<span class="st">&quot;*&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot; * &quot;</span>)
+f_env$<span class="st">&quot;/&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot; / &quot;</span>)
+f_env$<span class="st">&quot;^&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot;^&quot;</span>)
+f_env$<span class="st">&quot;[&quot;</span> &lt;-<span class="st"> </span><span class="kw">binary_op</span>(<span class="st">&quot;_&quot;</span>)
+
+<span class="co"># Grouping</span>
+f_env$<span class="st">&quot;{&quot;</span> &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">left{ &quot;</span>, <span class="st">&quot; </span><span class="ch">\\</span><span class="st">right}&quot;</span>)
+f_env$<span class="st">&quot;(&quot;</span> &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">left( &quot;</span>, <span class="st">&quot; </span><span class="ch">\\</span><span class="st">right)&quot;</span>)
+f_env$paste &lt;-<span class="st"> </span>paste
+
+<span class="co"># Other math functions</span>
+f_env$sqrt &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">sqrt{&quot;</span>, <span class="st">&quot;}&quot;</span>)
+f_env$sin &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">sin(&quot;</span>, <span class="st">&quot;)&quot;</span>)
+f_env$log &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">log(&quot;</span>, <span class="st">&quot;)&quot;</span>)
+f_env$abs &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">left| &quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">right| &quot;</span>)
+f_env$frac &lt;-<span class="st"> </span>function(a, b) {
+  <span class="kw">paste0</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">frac{&quot;</span>, a, <span class="st">&quot;}{&quot;</span>, b, <span class="st">&quot;}&quot;</span>)
+}
+
+<span class="co"># Labelling</span>
+f_env$hat &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">hat{&quot;</span>, <span class="st">&quot;}&quot;</span>)
+f_env$tilde &lt;-<span class="st"> </span><span class="kw">unary_op</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">tilde{&quot;</span>, <span class="st">&quot;}&quot;</span>)</code></pre>
+<p>We again modify <code>latex_env()</code> to include this environment. It should be the last environment R looks for names in: in other words, <code>sin(sin)</code> should work.</p>
+<pre class="sourceCode r"><code class="sourceCode r">latex_env &lt;-<span class="st"> </span>function(expr) {
+  <span class="co"># Known functions</span>
+  f_env
+
+  <span class="co"># Default symbols</span>
+  names &lt;-<span class="st"> </span><span class="kw">all_names</span>(expr)
+  symbol_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">as.list</span>(names), names)
+  symbol_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(symbol_list, <span class="dt">parent =</span> f_env)
+
+  <span class="co"># Known symbols</span>
+  greek_env &lt;-<span class="st"> </span><span class="kw">clone_env</span>(greek_env, <span class="dt">parent =</span> symbol_env)
+}
+
+<span class="kw">to_math</span>(<span class="kw">sin</span>(x +<span class="st"> </span>pi))
+<span class="co">#&gt; [1] &quot;\\sin(x + \\pi)&quot;</span>
+<span class="kw">to_math</span>(<span class="kw">log</span>(x_i ^<span class="st"> </span><span class="dv">2</span>))
+<span class="co">#&gt; [1] &quot;\\log(x_i^2)&quot;</span>
+<span class="kw">to_math</span>(<span class="kw">sin</span>(sin))
+<span class="co">#&gt; [1] &quot;\\sin(sin)&quot;</span></code></pre>
+<h3>Unknown functions</h3>
+<p>Finally, we’ll add a default for functions that we don’t yet know about. Like the unknown names, we can’t know in advance what these will be, so we again use a little metaprogramming to figure them out:</p>
+<pre class="sourceCode r"><code class="sourceCode r">all_calls &lt;-<span class="st"> </span>function(x) {
+  if (<span class="kw">is.atomic</span>(x) ||<span class="st"> </span><span class="kw">is.name</span>(x)) {
+    <span class="kw">character</span>()
+  } else if (<span class="kw">is.call</span>(x)) {
+    fname &lt;-<span class="st"> </span><span class="kw">as.character</span>(x[[<span class="dv">1</span>]])
+    children &lt;-<span class="st"> </span><span class="kw">lapply</span>(x[-<span class="dv">1</span>], all_calls)
+    <span class="kw">unique</span>(<span class="kw">c</span>(fname, <span class="kw">unlist</span>(children)))
+  } else if (<span class="kw">is.pairlist</span>(x)) {
+    <span class="kw">unique</span>(<span class="kw">unlist</span>(<span class="kw">lapply</span>(x[-<span class="dv">1</span>], all_calls), <span class="dt">use.names =</span> <span class="ot">FALSE</span>))
+  } else {
+    <span class="kw">stop</span>(<span class="st">&quot;Don&#39;t know how to handle type &quot;</span>, <span class="kw">typeof</span>(x), <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+  }
+}
+
+<span class="kw">all_calls</span>(<span class="kw">quote</span>(<span class="kw">f</span>(g +<span class="st"> </span>b, c, <span class="kw">d</span>(a))))
+<span class="co">#&gt; [1] &quot;f&quot; &quot;+&quot; &quot;d&quot;</span></code></pre>
+<p>And we need a closure that will generate the functions for each unknown call.</p>
+<pre class="sourceCode r"><code class="sourceCode r">unknown_op &lt;-<span class="st"> </span>function(op) {
+  <span class="kw">force</span>(op)
+  function(...) {
+    contents &lt;-<span class="st"> </span><span class="kw">paste</span>(..., <span class="dt">collapse =</span> <span class="st">&quot;, &quot;</span>)
+    <span class="kw">paste0</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">mathrm{&quot;</span>, op, <span class="st">&quot;}(&quot;</span>, contents, <span class="st">&quot;)&quot;</span>)
+  }
+}</code></pre>
+<p>And again we update <code>latex_env()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">latex_env &lt;-<span class="st"> </span>function(expr) {
+  calls &lt;-<span class="st"> </span><span class="kw">all_calls</span>(expr)
+  call_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">lapply</span>(calls, unknown_op), calls)
+  call_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(call_list)
+
+  <span class="co"># Known functions</span>
+  f_env &lt;-<span class="st"> </span><span class="kw">clone_env</span>(f_env, call_env)
+
+  <span class="co"># Default symbols</span>
+  symbols &lt;-<span class="st"> </span><span class="kw">all_names</span>(expr)
+  symbol_list &lt;-<span class="st"> </span><span class="kw">setNames</span>(<span class="kw">as.list</span>(symbols), symbols)
+  symbol_env &lt;-<span class="st"> </span><span class="kw">list2env</span>(symbol_list, <span class="dt">parent =</span> f_env)
+
+  <span class="co"># Known symbols</span>
+  greek_env &lt;-<span class="st"> </span><span class="kw">clone_env</span>(greek_env, <span class="dt">parent =</span> symbol_env)
+}
+
+<span class="kw">to_math</span>(<span class="kw">f</span>(a *<span class="st"> </span>b))
+<span class="co">#&gt; [1] &quot;\\mathrm{f}(a * b)&quot;</span></code></pre>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Add escaping. The special symbols that should be escaped by adding a backslash in front of them are <code>\</code>, <code>$</code>, and <code>%</code>. Just as with HTML, you’ll need to make sure you don’t end up double-escaping. So you’ll need to create a small S3 class and then use that in function operators. That will also allow you to embed arbitrary LaTeX if needed.</p></li>
+<li><p>Complete the DSL to support all the functions that <code>plotmath</code> supports.</p></li>
+<li><p>There’s a repeating pattern in <code>latex_env()</code>: we take a character vector, do something to each piece, convert it to a list, and then convert the list to an environment. Write a function that automates this task, and then rewrite <code>latex_env()</code>.</p></li>
+<li><p>Study the source code for <code>dplyr</code>. An important part of its structure is <code>partial_eval()</code> which helps manage expressions when some of the components refer to variables in the database while others refer to local R objects. Note that you could use very similar ideas if you needed to translate small R expressions into other languages, like JavaScript or Python.</p></li>
+</ol>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

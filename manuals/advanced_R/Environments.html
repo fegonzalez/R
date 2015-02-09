@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Environments &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/Environments.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="environments">Environments</h1>
+<p>The environment is the data structure that powers scoping. This chapter dives deep into environments, describing their structure in depth, and using them to improve your understanding of the four scoping rules described in <a href="Functions.html#lexical-scoping">lexical scoping</a>. </p>
+<p>Environments can also be useful data structures in their own right because they have reference semantics. When you modify a binding in an environment, the environment is not copied; it’s modified in place. Reference semantics are not often needed, but can be extremely useful.</p>
+<h5>Quiz</h5>
+<p>If you can answer the following questions correctly, you already know the most important topics in this chapter. You can find the answers at the end of the chapter in <a href="Environments.html#env-answers">answers</a>.</p>
+<ol style="list-style-type: decimal">
+<li><p>List at least three ways that an environment is different to a list.</p></li>
+<li><p>What is the parent of the global environment? What is the only environment that doesn’t have a parent?</p></li>
+<li><p>What is the enclosing environment of a function? Why is it important?</p></li>
+<li><p>How do you determine the environment from which a function was called?</p></li>
+<li><p>How are <code>&lt;-</code> and <code>&lt;&lt;-</code> different?</p></li>
+</ol>
+<h5>Outline</h5>
+<ul>
+<li><p><a href="Environments.html#env-basics">Environment basics</a> introduces you to the basic properties of an environment and shows you how to create your own.</p></li>
+<li><p><a href="Environments.html#env-recursion">Recursing over environments</a> provides a function template for computing with environments, illustrating the idea with a useful function.</p></li>
+<li><p><a href="Environments.html#function-envs">Function environments</a> revises R’s scoping rules in more depth, showing how they correspond to four types of environment associated with each function.</p></li>
+<li><p><a href="Environments.html#binding">Binding names to values</a> describes the rules that names must follow (and how to bend them), and shows some variations on binding a name to a value.</p></li>
+<li><p><a href="Environments.html#explicit-envs">Explicit environments</a> discusses three problems where environments are useful data structures in their own right, independent of the role they place in scoping.</p></li>
+</ul>
+<h5>Prerequisites</h5>
+<p>This chapter uses many functions from the <code>pryr</code> package to pry open R and look inside at the messy details. You can install <code>pryr</code> by running <code>install.packages(&quot;pryr&quot;)</code></p>
+<h2 id="env-basics">Environment basics</h2>
+<p>The job of an environment is to associate, or <strong>bind</strong>, a set of names to a set of values. You can think of an environment as a bag of names:  </p>
+<p><img src='diagrams/environments.png/bag-of-names.png' width=113 height=113 /></p>
+<p>Each name points to an object stored elsewhere in memory:</p>
+<pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+e$a &lt;-<span class="st"> </span><span class="ot">FALSE</span>
+e$b &lt;-<span class="st"> &quot;a&quot;</span>
+e$c &lt;-<span class="st"> </span><span class="fl">2.3</span>
+e$d &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">3</span></code></pre>
+<p><img src='diagrams/environments.png/bindings.png' width=226 height=141 /></p>
+<p>The objects don’t live in the environment so multiple names can point to the same object:</p>
+<pre class="sourceCode r"><code class="sourceCode r">e$a &lt;-<span class="st"> </span>e$d</code></pre>
+<p><img src='diagrams/environments.png/multiple-names.png' width=226 height=141 /></p>
+<p>Confusingly they can also point to different objects that have the same value:</p>
+<pre class="sourceCode r"><code class="sourceCode r">e$a &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">3</span></code></pre>
+<p><img src='diagrams/environments.png/copies.png' width=226 height=141 /></p>
+<p>If an object has no names pointing to it, it gets automatically deleted by the garbage collector. This process is described in more detail in <a href="memory.html#gc">gc</a>.</p>
+<p>Every environment has a parent, another environment. In diagrams, I’ll represent the pointer to parent with a small black circle. The parent is used to implement lexical scoping: if a name is not found in an environment, then R will look in its parent (and so on). Only one environment doesn’t have a parent: the <strong>empty</strong> environment. </p>
+<p><img src='diagrams/environments.png/parents.png' width=226 height=141 /></p>
+<p>We use the metaphor of a family to refer to environments. The grandparent of an environment is the parent’s parent, and the ancestors include all parent environments up to the empty environment. It’s rare to talk about the children of an environment because there are no back links: given an environment we have no way to find its children.</p>
+<p>Generally, an environment is similar to a list, with four important exceptions:</p>
+<ul>
+<li><p>Every object in an environment has a unique name.</p></li>
+<li><p>The objects in an environment are not ordered (i.e., it doesn’t make sense to ask what the first object in an environment is).</p></li>
+<li><p>An environment has a parent.</p></li>
+<li><p>Environments have reference semantics.</p></li>
+</ul>
+<p>More technically, an environment is made up of two components, the <strong>frame</strong>, which contains the name-object bindings (and behaves much like a named list), and the parent environment. Unfortunately “frame” is used inconsistently in R. For example, <code>parent.frame()</code> doesn’t give you the parent frame of an environment. Instead, it gives you the <em>calling</em> environment. This is discussed in more detail in <a href="Environments.html#calling-environments">calling environments</a>.  </p>
+<p>There are four special environments:</p>
+<ul>
+<li><p>The <code>globalenv()</code>, or global environment, is the interactive workspace. This is the environment in which you normally work. The parent of the global environment is the last package that you attached with <code>library()</code> or <code>require()</code>.</p></li>
+<li><p>The <code>baseenv()</code>, or base environment, is the environment of the base package. Its parent is the empty environment.</p></li>
+<li><p>The <code>emptyenv()</code>, or empty environment, is the ultimate ancestor of all environments, and the only environment without a parent.</p></li>
+<li><p>The <code>environment()</code> is the current environment.</p></li>
+</ul>
+<p><code>search()</code> lists all parents of the global environment. This is called the search path because objects in these environments can be found from the top-level interactive workspace. It contains one environment for each attached package and any other objects that you’ve <code>attach()</code>ed. It also contains a special environment called <code>Autoloads</code> which is used to save memory by only loading package objects (like big datasets) when needed. </p>
+<p>You can access any environment on the search list using <code>as.environment()</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">search</span>()
+<span class="co">#&gt; [1] &quot;.GlobalEnv&quot;        &quot;package:stats&quot;     &quot;package:graphics&quot; </span>
+<span class="co">#&gt; [4] &quot;package:grDevices&quot; &quot;package:utils&quot;     &quot;package:datasets&quot; </span>
+<span class="co">#&gt; [7] &quot;package:methods&quot;   &quot;Autoloads&quot;         &quot;package:base&quot;     </span>
+
+<span class="kw">as.environment</span>(<span class="st">&quot;package:stats&quot;</span>)
+<span class="co">#&gt; &lt;environment: package:stats&gt;</span></code></pre>
+<p><code>globalenv()</code>, <code>baseenv()</code>, the environments on the search path, and <code>emptyenv()</code> are connected as shown below. Each time you load a new package with <code>library()</code> it is inserted between the global environment and the package that was previously at the top of the search path.</p>
+<p><img src='diagrams/environments.png/search-path.png' width=425 height=127 /></p>
+<p>To create an environment manually, use <code>new.env()</code>. You can list the bindings in the environment’s frame with <code>ls()</code> and see its parent with <code>parent.env()</code>. </p>
+<pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+<span class="co"># the default parent provided by new.env() is environment from </span>
+<span class="co"># which it is called - in this case that&#39;s the global environment.</span>
+<span class="kw">parent.env</span>(e)
+<span class="co">#&gt; &lt;environment: R_GlobalEnv&gt;</span>
+<span class="kw">ls</span>(e)
+<span class="co">#&gt; character(0)</span></code></pre>
+<p>The easiest way to modify the bindings in an environment is to treat it like a list:</p>
+<pre class="sourceCode r"><code class="sourceCode r">e$a &lt;-<span class="st"> </span><span class="dv">1</span>
+e$b &lt;-<span class="st"> </span><span class="dv">2</span>
+<span class="kw">ls</span>(e)
+<span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot;</span>
+e$a
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>By default, <code>ls()</code> only shows names that don’t begin with <code>.</code>. Use <code>all.names = TRUE</code> to show all bindings in an environment: </p>
+<pre class="sourceCode r"><code class="sourceCode r">e$.a &lt;-<span class="st"> </span><span class="dv">2</span>
+<span class="kw">ls</span>(e)
+<span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot;</span>
+<span class="kw">ls</span>(e, <span class="dt">all.names =</span> <span class="ot">TRUE</span>)
+<span class="co">#&gt; [1] &quot;a&quot;  &quot;.a&quot; &quot;b&quot;</span></code></pre>
+<p>Another useful way to view an environment is <code>ls.str()</code>. It is more useful than <code>str()</code> because it shows each object in the environment. Like <code>ls()</code>, it also has an <code>all.names</code> argument.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(e)
+<span class="co">#&gt; &lt;environment: 0x24352f0&gt;</span>
+<span class="kw">ls.str</span>(e)
+<span class="co">#&gt; a :  num 1</span>
+<span class="co">#&gt; b :  num 2</span></code></pre>
+<p>Given a name, you can extract the value to which it is bound with <code>$</code>, <code>[[</code>, or <code>get()</code>:</p>
+<ul>
+<li><p><code>$</code> and <code>[[</code> look only in one environment and return <code>NULL</code> if there is no binding associated with the name.  </p></li>
+<li><p><code>get()</code> uses the regular scoping rules and throws an error if the binding is not found. </p></li>
+</ul>
+<pre class="sourceCode r"><code class="sourceCode r">e$c &lt;-<span class="st"> </span><span class="dv">3</span>
+e$c
+<span class="co">#&gt; [1] 3</span>
+e[[<span class="st">&quot;c&quot;</span>]]
+<span class="co">#&gt; [1] 3</span>
+<span class="kw">get</span>(<span class="st">&quot;c&quot;</span>, <span class="dt">envir =</span> e)
+<span class="co">#&gt; [1] 3</span></code></pre>
+<p>Deleting objects from environments works a little differently from lists. With a list you can remove an entry by setting it to <code>NULL</code>. In environments, that will create a new binding to <code>NULL</code>. Instead, use <code>rm()</code> to remove the binding.  </p>
+<pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+
+e$a &lt;-<span class="st"> </span><span class="dv">1</span>
+e$a &lt;-<span class="st"> </span><span class="ot">NULL</span>
+<span class="kw">ls</span>(e)
+<span class="co">#&gt; [1] &quot;a&quot;</span>
+
+<span class="kw">rm</span>(<span class="st">&quot;a&quot;</span>, <span class="dt">envir =</span> e)
+<span class="kw">ls</span>(e)
+<span class="co">#&gt; character(0)</span></code></pre>
+<p>You can determine if a binding exists in an environment with <code>exists()</code>. Like <code>get()</code>, its default behaviour is to follow the regular scoping rules and look in parent environments. If you don’t want this behavior, use <code>inherits = FALSE</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">10</span>
+<span class="kw">exists</span>(<span class="st">&quot;x&quot;</span>, <span class="dt">envir =</span> e)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">exists</span>(<span class="st">&quot;x&quot;</span>, <span class="dt">envir =</span> e, <span class="dt">inherits =</span> <span class="ot">FALSE</span>)
+<span class="co">#&gt; [1] FALSE</span></code></pre>
+<p>To compare enviroments, you must use <code>identical()</code> not <code>==</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">identical</span>(<span class="kw">globalenv</span>(), <span class="kw">environment</span>())
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">globalenv</span>() ==<span class="st"> </span><span class="kw">environment</span>()
+<span class="co">#&gt; Error in globalenv() == environment(): comparison (1) is possible only for atomic and list types</span></code></pre>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>List three ways in which an environment differs from a list.</p></li>
+<li><p>If you don’t supply an explicit environment, where do <code>ls()</code> and <code>rm()</code> look? Where does <code>&lt;-</code> make bindings?</p></li>
+<li><p>Using <code>parent.env()</code> and a loop (or a recursive function), verify that the ancestors of <code>globalenv()</code> include <code>baseenv()</code> and <code>emptyenv()</code>. Use the same basic idea to implement your own version of <code>search()</code>.</p></li>
+</ol>
+<h2 id="env-recursion">Recursing over environments</h2>
+<p>Environments form a tree, so it’s often convenient to write a recursive function. This section shows you how by applying your new knowledge of environments to understand the helpful <code>pryr::where()</code>. Given a name, <code>where()</code> finds the environment <em>where</em> that name is defined, using R’s regular scoping rules: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pryr)
+x &lt;-<span class="st"> </span><span class="dv">5</span>
+<span class="kw">where</span>(<span class="st">&quot;x&quot;</span>)
+<span class="co">#&gt; &lt;environment: R_GlobalEnv&gt;</span>
+<span class="kw">where</span>(<span class="st">&quot;mean&quot;</span>)
+<span class="co">#&gt; &lt;environment: base&gt;</span></code></pre>
+<p>The definition of <code>where()</code> is straightforward. It has two arguments: the name to look for (as a string), and the environment in which to start the search. (We’ll learn later why <code>parent.frame()</code> is a good default in <a href="Environments.html#calling-environments">calling environments</a>.)</p>
+<pre class="sourceCode r"><code class="sourceCode r">where &lt;-<span class="st"> </span>function(name, <span class="dt">env =</span> <span class="kw">parent.frame</span>()) {
+  if (<span class="kw">identical</span>(env, <span class="kw">emptyenv</span>())) {
+    <span class="co"># Base case</span>
+    <span class="kw">stop</span>(<span class="st">&quot;Can&#39;t find &quot;</span>, name, <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+    
+  } else if (<span class="kw">exists</span>(name, <span class="dt">envir =</span> env, <span class="dt">inherits =</span> <span class="ot">FALSE</span>)) {
+    <span class="co"># Success case</span>
+    env
+    
+  } else {
+    <span class="co"># Recursive case</span>
+    <span class="kw">where</span>(name, <span class="kw">parent.env</span>(env))
+    
+  }
+}</code></pre>
+<p>There are three cases:</p>
+<ul>
+<li><p>The base case: we’ve reached the empty environment and haven’t found the binding. We can’t go any further, so we throw an error.</p></li>
+<li><p>The successful case: the name exists in this environment, so we return the environment.</p></li>
+<li><p>The recursive case: the name was not found in this environment, so try the parent.</p></li>
+</ul>
+<p>It’s easier to see what’s going on with an example. Imagine you have two environments as in the following diagram:</p>
+<p><img src='diagrams/environments.png/where-ex.png' width=319 height=62 /></p>
+<ul>
+<li><p>If you’re looking for <code>a</code>, <code>where()</code> will find it in the first environment.</p></li>
+<li><p>If you’re looking for <code>b</code>, it’s not in the first environment, so <code>where()</code> will look in its parent and find it there.</p></li>
+<li><p>If you’re looking for <code>c</code>, it’s not in the first environment, or the second environment, so <code>where()</code> reaches the empty environment and throws an error.</p></li>
+</ul>
+<p>It’s natural to work with environments recursively, so <code>where()</code> provides a useful template. Removing the specifics of <code>where()</code> shows the structure more clearly:</p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(..., <span class="dt">env =</span> <span class="kw">parent.frame</span>()) {
+  if (<span class="kw">identical</span>(env, <span class="kw">emptyenv</span>())) {
+    <span class="co"># base case</span>
+  } else if (success) {
+    <span class="co"># success case</span>
+  } else {
+    <span class="co"># recursive case</span>
+    <span class="kw">f</span>(..., <span class="dt">env =</span> <span class="kw">parent.env</span>(env))
+  }
+}</code></pre>
+<div class="sidebar">
+<h3>
+Iteration vs. recursion
+</h3>
+
+<p>It’s possible to use a loop instead of recursion. This might run slightly faster (because we eliminate some function calls), but I think it’s harder to understand. I include it because you might find it easier to see what’s happening if you’re less familiar with recursive functions.</p>
+<pre class="sourceCode r"><code class="sourceCode r">is_empty &lt;-<span class="st"> </span>function(x) <span class="kw">identical</span>(x, <span class="kw">emptyenv</span>())
+
+f2 &lt;-<span class="st"> </span>function(..., <span class="dt">env =</span> <span class="kw">parent.frame</span>()) {
+  while(!<span class="kw">is_empty</span>(env)) {
+    if (success) {
+      <span class="co"># success case</span>
+      <span class="kw">return</span>()
+    }
+    <span class="co"># inspect parent</span>
+    env &lt;-<span class="st"> </span><span class="kw">parent.env</span>(env)
+  }
+
+  <span class="co"># base case</span>
+}</code></pre>
+</div>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Modify <code>where()</code> to find all environments that contain a binding for <code>name</code>.</p></li>
+<li><p>Write your own version of <code>get()</code> using a function written in the style of <code>where()</code>.</p></li>
+<li><p>Write a function called <code>fget()</code> that finds only function objects. It should have two arguments, <code>name</code> and <code>env</code>, and should obey the regular scoping rules for functions: if there’s an object with a matching name that’s not a function, look in the parent. For an added challenge, also add an <code>inherits</code> argument which controls whether the function recurses up the parents or only looks in one environment.</p></li>
+<li><p>Write your own version of <code>exists(inherits = FALSE)</code> (Hint: use <code>ls()</code>.) Write a recursive version that behaves like <code>exists(inherits = TRUE)</code>.</p></li>
+</ol>
+<h2 id="function-envs">Function environments</h2>
+<p>Most environments are not created by you with <code>new.env()</code> but are created as a consequence of using functions. This section discusses the four types of environments associated with a function: enclosing, binding, execution, and calling. </p>
+<p>The <strong>enclosing</strong> environment is the environment where the function was created. Every function has one and only one enclosing environment. For the three other types of environment, there may be 0, 1, or many environments associated with each function:</p>
+<ul>
+<li><p>Binding a function to a name with <code>&lt;-</code> defines a <strong>binding</strong> environment.</p></li>
+<li><p>Calling a function creates an ephemeral <strong>execution</strong> environment that stores variables created during execution.</p></li>
+<li><p>Every execution environment is associated with a <strong>calling</strong> environment, which tells you where the function was called.</p></li>
+</ul>
+<p>The following sections will explain why each of these environments is important, how to access them, and how you might use them.</p>
+<h3>The enclosing environment</h3>
+<p>When a function is created, it gains a reference to the environment where it was made. This is the <strong>enclosing environment</strong> and is used for lexical scoping. You can determine the enclosing environment of a function by calling <code>environment()</code> with a function as its first argument: </p>
+<pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span><span class="dv">1</span>
+f &lt;-<span class="st"> </span>function(x) x +<span class="st"> </span>y
+<span class="kw">environment</span>(f)
+<span class="co">#&gt; &lt;environment: R_GlobalEnv&gt;</span></code></pre>
+<p>In diagrams, I’ll depict functions as rounded rectangles. The enclosing environment of a function is given by a small black circle:</p>
+<p><img src='diagrams/environments.png/enclosing.png' width=198 height=71 /></p>
+<h3>Binding environments</h3>
+<p>The previous diagram is too simple because functions don’t have names. Instead, the name of a function is defined by a binding. The binding environments of a function are all the environments which have a binding to it. The following diagram better reflects this relationship because the enclosing environment contains a binding from <code>f</code> to the function: </p>
+<p><img src='diagrams/environments.png/binding.png' width=198 height=113 /></p>
+<p>In this case the enclosing and binding environments are the same. They will be different if you assign a function into a different environment:</p>
+<pre class="sourceCode r"><code class="sourceCode r">e &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+e$g &lt;-<span class="st"> </span>function() <span class="dv">1</span></code></pre>
+<p><img src='diagrams/environments.png/binding-2.png' width=198 height=113 /></p>
+<p>The enclosing environment belongs to the function, and never changes, even if the function is moved to a different environment. The enclosing environment determines how the function finds values; the binding environments determine how we find the function.</p>
+<p>The distinction between the binding environment and the enclosing environment is important for package namespaces. Package namespaces keep packages independent. For example, if package A uses the base <code>mean()</code> function, what happens if package B creates its own <code>mean()</code> function? Namespaces ensure that package A continues to use the base <code>mean()</code> function, and that package A is not affected by package B (unless explicitly asked for). </p>
+<p>Namespaces are implemented using environments, taking advantage of the fact that functions don’t have to live in their enclosing environments. For example, take the base function <code>sd()</code>. It’s binding and enclosing environments are different:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">environment</span>(sd)
+<span class="co">#&gt; &lt;environment: namespace:stats&gt;</span>
+<span class="kw">where</span>(<span class="st">&quot;sd&quot;</span>)
+<span class="co"># &lt;environment: package:stats&gt;</span></code></pre>
+<p>The definition of <code>sd()</code> uses <code>var()</code>, but if we make our own version of <code>var()</code> it doesn’t affect <code>sd()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">10</span>
+<span class="kw">sd</span>(x)
+<span class="co">#&gt; [1] 3.02765</span>
+var &lt;-<span class="st"> </span>function(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) <span class="dv">100</span>
+<span class="kw">sd</span>(x)
+<span class="co">#&gt; [1] 3.02765</span></code></pre>
+<p>This works because every package has two environments associated with it: the <em>package</em> environment and the <em>namespace</em> environment. The package environment contains every publicly accessible function, and is placed on the search path. The namespace environment contains all functions (including internal functions), and its parent environment is a special imports environment that contains bindings to all the functions that the package needs. Every exported function in a package is bound into the <em>package</em> environment, but enclosed by the <em>namespace</em> environment. This complicated relationship is illustrated by the following diagram:</p>
+<p><img src='diagrams/environments.png/namespace.png' width=425 height=226 /></p>
+<p>When we type <code>var</code> into the console, it’s found first in the global environment. When <code>sd()</code> looks for <code>var()</code> it finds it first in its namespace environment so never looks in the <code>globalenv()</code>.</p>
+<h3>Execution environments</h3>
+<p>What will the following function return the first time it’s run? What about the second? </p>
+<pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>function(x) {
+  if (!<span class="kw">exists</span>(<span class="st">&quot;a&quot;</span>, <span class="dt">inherits =</span> <span class="ot">FALSE</span>)) {
+    <span class="kw">message</span>(<span class="st">&quot;Defining a&quot;</span>)
+    a &lt;-<span class="st"> </span><span class="dv">1</span>
+  } else {
+    a &lt;-<span class="st"> </span>a +<span class="st"> </span><span class="dv">1</span>
+  }
+  a
+}
+<span class="kw">g</span>(<span class="dv">10</span>)
+<span class="kw">g</span>(<span class="dv">10</span>)</code></pre>
+<p>This function returns the same value every time it is called because of the fresh start principle, described in <a href="Functions.html#fresh-start">a fresh start</a>. Each time a function is called, a new environment is created to host execution. The parent of the execution environment is the enclosing environment of the function. Once the function has completed, this environment is thrown away.</p>
+<p>Let’s depict that graphically with a simpler function. I draw execution environments around the function they belong to with a dotted border.</p>
+<pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span>function(x) {
+  a &lt;-<span class="st"> </span><span class="dv">2</span>
+  x +<span class="st"> </span>a
+}
+y &lt;-<span class="st"> </span><span class="kw">h</span>(<span class="dv">1</span>)</code></pre>
+<p><img src='diagrams/environments.png/execution.png' width=283 height=425 /></p>
+<p>When you create a function inside another function, the enclosing environment of the child function is the execution environment of the parent, and the execution environment is no longer ephemeral. The following example illustrates that idea with a function factory, <code>plus()</code>. We use that factory to create a function called <code>plus_one()</code>. The enclosing environment of <code>plus_one()</code> is the execution environment of <code>plus()</code> where <code>x</code> is bound to the value 1. </p>
+<pre class="sourceCode r"><code class="sourceCode r">plus &lt;-<span class="st"> </span>function(x) {
+  function(y) x +<span class="st"> </span>y
+}
+plus_one &lt;-<span class="st"> </span><span class="kw">plus</span>(<span class="dv">1</span>)
+<span class="kw">identical</span>(<span class="kw">parent.env</span>(<span class="kw">environment</span>(plus_one)), <span class="kw">environment</span>(plus))
+<span class="co">#&gt; [1] TRUE</span></code></pre>
+<p><img src='diagrams/environments.png/closure-2.png' width=241 height=198 /></p>
+<p>You’ll learn more about function factories in <a href="Functional-programming.html#functional-programming">functional programming</a>.</p>
+<h3 id="calling-environments">Calling environments</h3>
+<p>Look at the following code. What do you expect <code>i()</code> to return when the code is run? </p>
+<pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span>function() {
+  x &lt;-<span class="st"> </span><span class="dv">10</span>
+  function() {
+    x
+  }
+}
+i &lt;-<span class="st"> </span><span class="kw">h</span>()
+x &lt;-<span class="st"> </span><span class="dv">20</span>
+<span class="kw">i</span>()</code></pre>
+<p>The top-level <code>x</code> (bound to 20) is a red herring: using the regular scoping rules, <code>h()</code> looks first where it is defined and finds that the value associated with <code>x</code> is 10. However, it’s still meaningful to ask what value <code>x</code> is associated with in the environment where <code>i()</code> is called: <code>x</code> is 10 in the environment where <code>h()</code> is defined, but it is 20 in the environment where <code>h()</code> is called.</p>
+<p>We can access this environment using the unfortunately named <code>parent.frame()</code>. This function returns the <strong>environment</strong> where the function was called. We can also use this function to look up the value of names in that environment:</p>
+<pre class="sourceCode r"><code class="sourceCode r">f2 &lt;-<span class="st"> </span>function() {
+  x &lt;-<span class="st"> </span><span class="dv">10</span>
+  function() {
+    def &lt;-<span class="st"> </span><span class="kw">get</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">environment</span>())
+    cll &lt;-<span class="st"> </span><span class="kw">get</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">parent.frame</span>())
+    <span class="kw">list</span>(<span class="dt">defined =</span> def, <span class="dt">called =</span> cll)
+  }
+}
+g2 &lt;-<span class="st"> </span><span class="kw">f2</span>()
+x &lt;-<span class="st"> </span><span class="dv">20</span>
+<span class="kw">str</span>(<span class="kw">g2</span>())
+<span class="co">#&gt; List of 2</span>
+<span class="co">#&gt;  $ defined: num 10</span>
+<span class="co">#&gt;  $ called : num 20</span></code></pre>
+<p>In more complicated scenarios, there’s not just one parent call, but a sequence of calls which lead all the way back to the initiating function, called from the top-level. The following code generates a call stack three levels deep. The open-ended arrows represent the calling environment of each execution environment.</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">0</span>
+y &lt;-<span class="st"> </span><span class="dv">10</span>
+f &lt;-<span class="st"> </span>function() {
+  x &lt;-<span class="st"> </span><span class="dv">1</span>
+  <span class="kw">g</span>()
+}
+g &lt;-<span class="st"> </span>function() {
+  x &lt;-<span class="st"> </span><span class="dv">2</span>
+  <span class="kw">h</span>()
+}
+h &lt;-<span class="st"> </span>function() {
+  x &lt;-<span class="st"> </span><span class="dv">3</span>
+  x +<span class="st"> </span>y
+}
+<span class="kw">f</span>()
+<span class="co">#&gt; [1] 13</span></code></pre>
+<p><img src='diagrams/environments.png/calling.png' width=312 height=170 /></p>
+<p>Note that each execution environment has two parents: a calling environment and an enclosing environment. R’s regular scoping rules only use the enclosing parent; <code>parent.frame()</code> allows you to access the calling parent.</p>
+<p>Looking up variables in the calling environment rather than in the enclosing environment is called <strong>dynamic scoping</strong>. Few languages implement dynamic scoping (Emacs Lisp is a <a href="http://www.gnu.org/software/emacs/emacs-paper.html#SEC15">notable exception</a>.) This is because dynamic scoping makes it much harder to reason about how a function operates: not only do you need to know how it was defined, you also need to know in what context it was called. Dynamic scoping is primarily useful for developing functions that aid interactive data analysis. It is one of the topics discussed in <a href="Computing-on-the-language.html#nse">non-standard evaluation</a>.  </p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>List the four environments associated with a function. What does each one do? Why is the distinction between enclosing and binding environments particularly important?</p></li>
+<li><p>Draw a diagram that shows the enclosing environments of this function:</p>
+<pre class="sourceCode r"><code class="sourceCode r">f1 &lt;-<span class="st"> </span>function(x1) {
+  f2 &lt;-<span class="st"> </span>function(x2) {
+    f3 &lt;-<span class="st"> </span>function(x3) {
+      x1 +<span class="st"> </span>x2 +<span class="st"> </span>x3
+    }
+    <span class="kw">f3</span>(<span class="dv">3</span>)
+  }
+  <span class="kw">f2</span>(<span class="dv">2</span>)
+}
+<span class="kw">f1</span>(<span class="dv">1</span>)</code></pre></li>
+<li><p>Expand your previous diagram to show function bindings.</p></li>
+<li><p>Expand it again to show the execution and calling environments.</p></li>
+<li><p>Write an enhanced version of <code>str()</code> that provides more information about functions. Show where the function was found and what environment it was defined in.</p></li>
+</ol>
+<h2 id="binding">Binding names to values</h2>
+<p>Assignment is the act of binding (or rebinding) a name to a value in an environment. It is the counterpart to scoping, the set of rules that determines how to find the value associated with a name. Compared to most languages, R has extremely flexible tools for binding names to values. In fact, you can not only bind values to names, but you can also bind expressions (promises) or even functions, so that every time you access the value associated with a name, you get something different! </p>
+<p>You’ve probably used regular assignment in R thousands of times. Regular assignment creates a binding between a name and an object in the current environment. Names usually consist of letters, digits, <code>.</code> and <code>_</code>, and can’t begin with <code>_</code>. If you try to use a name that doesn’t follow these rules, you get an error:</p>
+<pre class="sourceCode r"><code class="sourceCode r">_abc &lt;-<span class="st"> </span><span class="dv">1</span>
+<span class="co"># Error: unexpected input in &quot;_&quot;</span></code></pre>
+<p>Reserved words (like <code>TRUE</code>, <code>NULL</code>, <code>if</code>, and <code>function</code>) follow the rules but are reserved by R for other purposes:</p>
+<pre class="sourceCode r"><code class="sourceCode r">if &lt;-<span class="st"> </span><span class="dv">10</span>
+<span class="co">#&gt; Error: unexpected assignment in &quot;if &lt;-&quot;</span></code></pre>
+<p>A complete list of reserved words can be found in <code>?Reserved</code>.   </p>
+<p>It’s possible to override the usual rules and use a name with any sequence of characters by surrounding the name with backticks:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="st">`</span><span class="dt">a + b</span><span class="st">`</span> &lt;-<span class="st"> </span><span class="dv">3</span>
+<span class="st">`</span><span class="dt">:)</span><span class="st">`</span> &lt;-<span class="st"> &quot;smile&quot;</span>
+<span class="st">`</span><span class="dt">    </span><span class="st">`</span> &lt;-<span class="st"> &quot;spaces&quot;</span>
+<span class="kw">ls</span>()
+<span class="co">#  [1] &quot;    &quot;   &quot;:)&quot;     &quot;a + b&quot;</span>
+<span class="st">`</span><span class="dt">:)</span><span class="st">`</span>
+<span class="co">#  [1] &quot;smile&quot;</span></code></pre>
+<div class="sidebar">
+<h3>
+Quotes
+</h3>
+
+<p>You can also create non-syntactic bindings using single and double quotes instead of backticks, but I don’t recommend it. The ability to use strings on the left hand side of the assignment arrow is a historical artefact, used before R supported backticks.</p>
+</div>
+<p>The regular assignment arrow, <code>&lt;-</code>, always creates a variable in the current environment. The deep assignment arrow, <code>&lt;&lt;-</code>, never creates a variable in the current environment, but instead modifies an existing variable found by walking up the parent environments. You can also do deep binding with <code>assign()</code>: <code>name &lt;&lt;- value</code> is equivalent to <code>assign(&quot;name&quot;, value, inherits = TRUE)</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">0</span>
+f &lt;-<span class="st"> </span>function() {
+  x &lt;&lt;-<span class="st"> </span><span class="dv">1</span>
+}
+<span class="kw">f</span>()
+x
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>If <code>&lt;&lt;-</code> doesn’t find an existing variable, it will create one in the global environment. This is usually undesirable, because global variables introduce non-obvious dependencies between functions. <code>&lt;&lt;-</code> is most often used in conjunction with a closure, as described in <a href="Functional-programming.html#closures">Closures</a>.</p>
+<p>There are two other special types of binding, delayed and active:</p>
+<ul>
+<li><p>Rather than assigning the result of an expression immediately, a <strong>delayed binding</strong> creates and stores a promise to evaluate the expression when needed. We can create delayed bindings with the special assignment operator <code>%&lt;d-%</code>, provided by the pryr package.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pryr)
+<span class="kw">system.time</span>(b %&lt;d-%<span class="st"> </span>{<span class="kw">Sys.sleep</span>(<span class="dv">1</span>); <span class="dv">1</span>})
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.001   0.000   0.000</span>
+<span class="kw">system.time</span>(b)
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.000   0.000   1.001</span></code></pre>
+<p><code>%&lt;d-%</code> is a wrapper around the base <code>delayedAssign()</code> function, which you may need to use directly if you need more control. Delayed bindings are used to implement <code>autoload()</code>, which makes R behave as if the package data is in memory, even though it’s only loaded from disk when you ask for it. </p></li>
+<li><p><strong>Active</strong> are not bound to a constant object. Instead, they’re re-computed every time they’re accessed:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x %&lt;a-%<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1</span>)
+x
+<span class="co">#&gt; [1] 0.8661068</span>
+x
+<span class="co">#&gt; [1] 0.5377323</span>
+<span class="kw">rm</span>(x)</code></pre>
+<p><code>%&lt;a-%</code> is a wrapper for the base function <code>makeActiveBinding()</code>. You may want to use this function directly if you want more control. Active bindings are used to implement reference class fields. </p></li>
+</ul>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>What does this function do? How does it differ from <code>&lt;&lt;-</code> and why might you prefer it?</p>
+<pre class="sourceCode r"><code class="sourceCode r">rebind &lt;-<span class="st"> </span>function(name, value, <span class="dt">env =</span> <span class="kw">parent.frame</span>()) {
+  if (<span class="kw">identical</span>(env, <span class="kw">emptyenv</span>())) {
+    <span class="kw">stop</span>(<span class="st">&quot;Can&#39;t find &quot;</span>, name, <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+  } else if (<span class="kw">exists</span>(name, <span class="dt">envir =</span> env, <span class="dt">inherits =</span> <span class="ot">FALSE</span>)) {
+    <span class="kw">assign</span>(name, value, <span class="dt">envir =</span> env)
+  } else {
+    <span class="kw">rebind</span>(name, value, <span class="kw">parent.env</span>(env))
+  }
+}
+<span class="kw">rebind</span>(<span class="st">&quot;a&quot;</span>, <span class="dv">10</span>)
+<span class="co">#&gt; Error: Can&#39;t find a</span>
+a &lt;-<span class="st"> </span><span class="dv">5</span>
+<span class="kw">rebind</span>(<span class="st">&quot;a&quot;</span>, <span class="dv">10</span>)
+a
+<span class="co">#&gt; [1] 10</span></code></pre></li>
+<li><p>Create a version of <code>assign()</code> that will only bind new names, never re-bind old names. Some programming languages only do this, and are known as <a href="http://en.wikipedia.org/wiki/Assignment_(computer_science)#Single_assignment">single assignment languages</a>.</p></li>
+<li><p>Write an assignment function that can do active, delayed, and locked bindings. What might you call it? What arguments should it take? Can you guess which sort of assignment it should do based on the input?</p></li>
+</ol>
+<h2 id="explicit-envs">Explicit environments</h2>
+<p>As well as powering scoping, environments are also useful data structures in their own right because they have <strong>reference semantics</strong>. Unlike most objects in R, when you modify an environment, it does not make a copy. For example, look at this <code>modify()</code> function.  </p>
+<pre class="sourceCode r"><code class="sourceCode r">modify &lt;-<span class="st"> </span>function(x) {
+  x$a &lt;-<span class="st"> </span><span class="dv">2</span>
+  <span class="kw">invisible</span>()
+}</code></pre>
+<p>If you apply it to a list, the original list is not changed because modifying a list actually creates and modifies a copy.</p>
+<pre class="sourceCode r"><code class="sourceCode r">x_l &lt;-<span class="st"> </span><span class="kw">list</span>()
+x_l$a &lt;-<span class="st"> </span><span class="dv">1</span>
+<span class="kw">modify</span>(x_l)
+x_l$a
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>However, if you apply it to an environment, the original environment <em>is</em> modified:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x_e &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+x_e$a &lt;-<span class="st"> </span><span class="dv">1</span>
+<span class="kw">modify</span>(x_e)
+x_e$a
+<span class="co">#&gt; [1] 2</span></code></pre>
+<p>Just as you can use a list to pass data between functions, you can also use an environment. When creating your own environment, note that you should set its parent environment to be the empty environment. This ensures you don’t accidentally inherit objects from somewhere else:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span>
+e1 &lt;-<span class="st"> </span><span class="kw">new.env</span>()
+<span class="kw">get</span>(<span class="st">&quot;x&quot;</span>, <span class="dt">envir =</span> e1)
+<span class="co">#&gt; [1] 1</span>
+
+e2 &lt;-<span class="st"> </span><span class="kw">new.env</span>(<span class="dt">parent =</span> <span class="kw">emptyenv</span>())
+<span class="kw">get</span>(<span class="st">&quot;x&quot;</span>, <span class="dt">envir =</span> e2)
+<span class="co">#&gt; Error in get(&quot;x&quot;, envir = e2): object &#39;x&#39; not found</span></code></pre>
+<p>Environments are data structures useful for solving three common problems:</p>
+<ul>
+<li>Avoiding copies of large data.</li>
+<li>Managing state within a package.</li>
+<li>Efficiently looking up values from names.</li>
+</ul>
+<p>These are described in turn below.</p>
+<h3>Avoiding copies</h3>
+<p>Since environments have reference semantics, you’ll never accidentally create a copy. This makes it a useful vessel for large objects. It’s a common technique for bioconductor packages which often have to manage large genomic objects. Changes to R 3.1.0 have made this use substantially less important because modifying a list no longer makes a deep copy. Previously, modifying a single element of a list would cause every element to be copied, an expensive operation if some elements are large. Now, modifying a list efficiently reuses existing vectors, saving much time.</p>
+<h3>Package state</h3>
+<p>Explicit environments are useful in packages because they allow you to maintain state across function calls. Normally, objects in a package are locked, so you can’t modify them directly. Instead, you can do something like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r">my_env &lt;-<span class="st"> </span><span class="kw">new.env</span>(<span class="dt">parent =</span> <span class="kw">emptyenv</span>())
+my_env$a &lt;-<span class="st"> </span><span class="dv">1</span>
+
+get_a &lt;-<span class="st"> </span>function() {
+  my_env$a
+}
+set_a &lt;-<span class="st"> </span>function(value) {
+  old &lt;-<span class="st"> </span>my_env$a
+  my_env$a &lt;-<span class="st"> </span>value
+  <span class="kw">invisible</span>(old)
+}</code></pre>
+<p>Returning the old value from setter functions is a good pattern because it makes it easier to reset the previous value in conjunction with <code>on.exit()</code> (see more in <a href="Functions.html#on-exit">on exit</a>).</p>
+<h3>As a hashmap</h3>
+<p>A hashmap is a data structure that takes constant, O(1), time to find an object based on its name. Environments provide this behaviour by default, so can be used to simulate a hashmap. See the CRAN package <code>hash</code> for a complete development of this idea.  </p>
+<h2 id="env-answers">Quiz answers</h2>
+<ol style="list-style-type: decimal">
+<li><p>There are four ways: every object in an environment must have a name; order doesn’t matter; environments have parents; environments have reference semantics.</p></li>
+<li><p>The parent of the global environment is the last package that you loaded. The only environment that doesn’t have a parent is the empty environment.</p></li>
+<li><p>The enclosing environment of a function is the environment where it was created. It determines where a function looks for variables.</p></li>
+<li><p>Use <code>parent.frame()</code>.</p></li>
+<li><p><code>&lt;-</code> always creates a binding in the current environment; <code>&lt;&lt;-</code> rebinds an existing name in a parent of the current environment.</p></li>
+</ol>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

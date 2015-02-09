@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OO field guide &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/OO-essentials.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="oo">OO field guide</h1>
+<p>This chapter is a field guide for recognising and working with R’s objects in the wild. R has three object oriented systems (plus the base types), so it can be a bit intimidating. The goal of this guide is not to make you an expert in all four systems, but to help you identify which system you’re working with and to help you use it effectively. </p>
+<p>Central to any object-oriented system are the concepts of class and method. A <strong>class</strong> defines the behaviour of <strong>objects</strong> by describing their attributes and their relationship to other classes. The class is also used when selecting <strong>methods</strong>, functions that behave differently depending on the class of their input. Classes are usually organised in a hierarchy: if a method does not exist for a child, then the parent’s method is used instead; the child <strong>inherits</strong> behaviour from the parent.</p>
+<p>R’s three OO systems differ in how classes and methods are defined:</p>
+<ul>
+<li><p><strong>S3</strong> implements a style of OO programming called generic-function OO. This is different from most programming languages, like Java, C++, and C#, which implement message-passing OO. With message-passing, messages (methods) are sent to objects and the object determines which function to call. Typically, this object has a special appearance in the method call, usually appearing before the name of the method/message: e.g., <code>canvas.drawRect(&quot;blue&quot;)</code>. S3 is different. While computations are still carried out via methods, a special type of function called a <strong>generic function</strong> decides which method to call, e.g., <code>drawRect(canvas, &quot;blue&quot;)</code>. S3 is a very casual system. It has no formal definition of classes.</p></li>
+<li><p><strong>S4</strong> works similarly to S3, but is more formal. There are two major differences to S3. S4 has formal class definitions, which describe the representation and inheritance for each class, and has special helper functions for defining generics and methods. S4 also has multiple dispatch, which means that generic functions can pick methods based on the class of any number of arguments, not just one.</p></li>
+<li><p><strong>Reference classes</strong>, called RC for short, are quite different from S3 and S4. RC implements message-passing OO, so methods belong to classes, not functions. <code>$</code> is used to separate objects and methods, so method calls look like <code>canvas$drawRect(&quot;blue&quot;)</code>. RC objects are also mutable: they don’t use R’s usual copy-on-modify semantics, but are modified in place. This makes them harder to reason about, but allows them to solve problems that are difficult to solve with S3 or S4.</p></li>
+</ul>
+<p>There’s also one other system that’s not quite OO, but it’s important to mention here:</p>
+<ul>
+<li><strong>base types</strong>, the internal C-level types that underlie the other OO systems. Base types are mostly manipulated using C code, but they’re important to know about because they provide the building blocks for the other OO systems.</li>
+</ul>
+<p>The following sections describe each system in turn, starting with base types. You’ll learn how to recognise the OO system that an object belongs to, how method dispatch works, and how to create new objects, classes, generics, and methods for that system. The chapter concludes with a few remarks on when to use each system.</p>
+<h5>Prerequisites</h5>
+<p>You’ll need the pryr package, <code>install.packages(&quot;pryr&quot;)</code>, to access useful functions for examining OO properties.</p>
+<h5>Quiz</h5>
+<p>Think you know this material already? If you can answer the following questions correctly, you can safely skip this chapter. Find the answers at the end of the chapter in <a href="OO-essentials.html#oo-answers">answers</a>.</p>
+<ol style="list-style-type: decimal">
+<li><p>How do you tell what OO system (base, S3, S4, or RC) an object is associated with?</p></li>
+<li><p>How do you determine the base type (like integer or list) of an object?</p></li>
+<li><p>What is a generic function?</p></li>
+<li><p>What are the main differences between S3 and S4? What are the main differences between S4 &amp; RC?</p></li>
+</ol>
+<h5>Outline</h5>
+<ul>
+<li><p><a href="OO-essentials.html#base-types">Base types</a> teaches you about R’s base object system. Only R-core can add new classes to this system, but it’s important to know about because it underpins the three other systems.</p></li>
+<li><p><a href="OO-essentials.html#s3">S3</a> shows you the basics of the S3 object system. It’s the simplest and most commonly used OO system.</p></li>
+<li><p><a href="OO-essentials.html#s4">S4</a> discusses the more formal and rigorous S4 system.</p></li>
+<li><p><a href="OO-essentials.html#rc">RC</a> teaches you about R’s newest OO system: reference classes, or RC for short.</p></li>
+<li><p><a href="OO-essentials.html#picking-a-system">Picking a system</a> advises on which OO system to use if you’re starting a new project.</p></li>
+</ul>
+<h2 id="base-types">Base types</h2>
+<p>Underlying every R object is a C structure (or struct) that describes how that object is stored in memory. The struct includes the contents of the object, the information needed for memory management, and, most importantly for this section, a <strong>type</strong>. This is the <strong>base type</strong> of an R object. Base types are not really an object system because only the R core team can create new types. As a result, new base types are added very rarely: the most recent change, in 2011, added two exotic types that you never see in R, but are useful for diagnosing memory problems (<code>NEWSXP</code> and <code>FREESXP</code>). Prior to that, the last type added was a special base type for S4 objects (<code>S4SXP</code>) in 2005.   </p>
+<p><a href="Data-structures.html#data-structures">Data structures</a> explains the most common base types (atomic vectors and lists), but base types also encompass functions, environments, and other more exotic objects likes names, calls, and promises that you’ll learn about later in the book. You can determine an object’s base type with <code>typeof()</code>. Unfortunately the names of base types are not used consistently throughout R, and type and the corresponding “is” function may use different names: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The type of a function is &quot;closure&quot;</span>
+f &lt;-<span class="st"> </span>function() {}
+<span class="kw">typeof</span>(f)
+<span class="co">#&gt; [1] &quot;closure&quot;</span>
+<span class="kw">is.function</span>(f)
+<span class="co">#&gt; [1] TRUE</span>
+
+<span class="co"># The type of a primitive function is &quot;builtin&quot;</span>
+<span class="kw">typeof</span>(sum)
+<span class="co">#&gt; [1] &quot;builtin&quot;</span>
+<span class="kw">is.primitive</span>(sum)
+<span class="co">#&gt; [1] TRUE</span></code></pre>
+<p>You may have heard of <code>mode()</code> and <code>storage.mode()</code>. I recommend ignoring these functions because they’re just aliases of the names returned by <code>typeof()</code>, and exist solely for S compatibility. Read their source code if you want to understand exactly what they do. </p>
+<p>Functions that behave differently for different base types are almost always written in C, where dispatch occurs using switch statements (e.g., <code>switch(TYPEOF(x))</code>). Even if you never write C code, it’s important to understand base types because everything else is built on top of them: S3 objects can be built on top of any base type, S4 objects use a special base type, and RC objects are a combination of S4 and environments (another base type). To see if an object is a pure base type, i.e., it doesn’t also have S3, S4, or RC behaviour, check that <code>is.object(x)</code> returns <code>FALSE</code>.</p>
+<h2 id="s3">S3</h2>
+<p>S3 is R’s first and simplest OO system. It is the only OO system used in the base and stats packages, and it’s the most commonly used system in CRAN packages. S3 is informal and ad hoc, but it has a certain elegance in its minimalism: you can’t take away any part of it and still have a useful OO system.  </p>
+<h3>Recognising objects, generic functions, and methods</h3>
+<p>Most objects that you encounter are S3 objects. But unfortunately there’s no simple way to test if an object is an S3 object in base R. The closest you can come is <code>is.object(x) &amp; !isS4(x)</code>, i.e., it’s an object, but not S4. An easier way is to use <code>pryr::otype()</code>: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pryr)
+
+df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">x =</span> <span class="dv">1</span>:<span class="dv">10</span>, <span class="dt">y =</span> letters[<span class="dv">1</span>:<span class="dv">10</span>])
+<span class="kw">otype</span>(df)    <span class="co"># A data frame is an S3 class</span>
+<span class="co">#&gt; [1] &quot;S3&quot;</span>
+<span class="kw">otype</span>(df$x)  <span class="co"># A numeric vector isn&#39;t</span>
+<span class="co">#&gt; [1] &quot;base&quot;</span>
+<span class="kw">otype</span>(df$y)  <span class="co"># A factor is</span>
+<span class="co">#&gt; [1] &quot;S3&quot;</span></code></pre>
+<p>In S3, methods belong to functions, called <strong>generic functions</strong>, or generics for short. S3 methods do not belong to objects or classes. This is different from most other programming languages, but is a legitimate OO style.   </p>
+<p>To determine if a function is an S3 generic, you can inspect its source code for a call to <code>UseMethod()</code>: that’s the function that figures out the correct method to call, the process of <strong>method dispatch</strong>. Similar to <code>otype()</code>, pryr also provides <code>ftype()</code> which describes the object system, if any, associated with a function: </p>
+<pre class="sourceCode r"><code class="sourceCode r">mean
+<span class="co">#&gt; function (x, ...) </span>
+<span class="co">#&gt; UseMethod(&quot;mean&quot;)</span>
+<span class="co">#&gt; &lt;bytecode: 0x293e700&gt;</span>
+<span class="co">#&gt; &lt;environment: namespace:base&gt;</span>
+<span class="kw">ftype</span>(mean)
+<span class="co">#&gt; [1] &quot;s3&quot;      &quot;generic&quot;</span></code></pre>
+<p>Some S3 generics, like <code>[</code>, <code>sum()</code>, and <code>cbind()</code>, don’t call <code>UseMethod()</code> because they are implemented in C. Instead, they call the C functions <code>DispatchGroup()</code> or <code>DispatchOrEval()</code>. Functions that do method dispatch in C code are called <strong>internal generics</strong> and are documented in <code>?&quot;internal generic&quot;</code>. <code>ftype()</code> knows about these special cases too.</p>
+<p>Given a class, the job of an S3 generic is to call the right S3 method. You can recognise S3 methods by their names, which look like <code>generic.class()</code>. For example, the Date method for the <code>mean()</code> generic is called <code>mean.Date()</code>, and the factor method for <code>print()</code> is called <code>print.factor()</code>.  </p>
+<p>This is the reason that most modern style guides discourage the use of <code>.</code> in function names: it makes them look like S3 methods. For example, is <code>t.test()</code> the <code>test</code> method for <code>t</code> objects? Similarly, the use of <code>.</code> in class names can also be confusing: is <code>print.data.frame()</code> the <code>print()</code> method for <code>data.frames</code>, or the <code>print.data()</code> method for <code>frames</code>? <code>pryr::ftype()</code> knows about these exceptions, so you can use it to figure out if a function is an S3 method or generic:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ftype</span>(t.data.frame) <span class="co"># data frame method for t()</span>
+<span class="co">#&gt; [1] &quot;s3&quot;     &quot;method&quot;</span>
+<span class="kw">ftype</span>(t.test)       <span class="co"># generic function for t tests</span>
+<span class="co">#&gt; [1] &quot;s3&quot;      &quot;generic&quot;</span></code></pre>
+<p>You can see all the methods that belong to a generic with <code>methods()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">methods</span>(<span class="st">&quot;mean&quot;</span>)
+<span class="co">#&gt; [1] mean.Date     mean.default  mean.difftime mean.POSIXct  mean.POSIXlt</span>
+<span class="kw">methods</span>(<span class="st">&quot;t.test&quot;</span>)
+<span class="co">#&gt; [1] t.test.default* t.test.formula*</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;    Non-visible functions are asterisked</span></code></pre>
+<p>(Apart from methods defined in the base package, most S3 methods will not be visible: use <code>getS3method()</code> to read their source code.)</p>
+<p>You can also list all generics that have a method for a given class:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">methods</span>(<span class="dt">class =</span> <span class="st">&quot;ts&quot;</span>)
+<span class="co">#&gt;  [1] aggregate.ts     as.data.frame.ts cbind.ts*        cycle.ts*       </span>
+<span class="co">#&gt;  [5] diffinv.ts*      diff.ts*         kernapply.ts*    lines.ts*       </span>
+<span class="co">#&gt;  [9] monthplot.ts*    na.omit.ts*      Ops.ts*          plot.ts         </span>
+<span class="co">#&gt; [13] print.ts*        time.ts*         [&lt;-.ts*          [.ts*           </span>
+<span class="co">#&gt; [17] t.ts*            window&lt;-.ts*     window.ts*      </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;    Non-visible functions are asterisked</span></code></pre>
+<p>There’s no way to list all S3 classes, as you’ll learn in the following section.</p>
+<h3>Defining classes and creating objects</h3>
+<p>S3 is a simple and ad hoc system; it has no formal definition of a class. To make an object an instance of a class, you just take an existing base object and set the class attribute. You can do that during creation with <code>structure()</code>, or after the fact with <code>class&lt;-()</code>:  </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create and assign class in one step</span>
+foo &lt;-<span class="st"> </span><span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="st">&quot;foo&quot;</span>)
+
+<span class="co"># Create, then set class</span>
+foo &lt;-<span class="st"> </span><span class="kw">list</span>()
+<span class="kw">class</span>(foo) &lt;-<span class="st"> &quot;foo&quot;</span></code></pre>
+<p>S3 objects are usually built on top of lists, or atomic vectors with attributes. (You can refresh your memory of attributes with <a href="Data-structures.html#attributes">attributes</a>.) You can also turn functions into S3 objects. Other base types are either rarely seen in R, or have unusual semantics that don’t work well with attributes.</p>
+<p>You can determine the class of any object using <code>class(x)</code>, and see if an object inherits from a specific class using <code>inherits(x, &quot;classname&quot;)</code>. </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(foo)
+<span class="co">#&gt; [1] &quot;foo&quot;</span>
+<span class="kw">inherits</span>(foo, <span class="st">&quot;foo&quot;</span>)
+<span class="co">#&gt; [1] TRUE</span></code></pre>
+<p>The class of an S3 object can be a vector, which describes behaviour from most to least specific. For example, the class of the <code>glm()</code> object is <code>c(&quot;glm&quot;, &quot;lm&quot;)</code> indicating that generalised linear models inherit behaviour from linear models. Class names are usually lower case, and you should avoid <code>.</code>. Otherwise, opinion is mixed whether to use underscores (<code>my_class</code>) or CamelCase (<code>MyClass</code>) for multi-word class names.</p>
+<p>Most S3 classes provide a constructor function:</p>
+<pre class="sourceCode r"><code class="sourceCode r">foo &lt;-<span class="st"> </span>function(x) {
+  if (!<span class="kw">is.numeric</span>(x)) <span class="kw">stop</span>(<span class="st">&quot;X must be numeric&quot;</span>)
+  <span class="kw">structure</span>(<span class="kw">list</span>(x), <span class="dt">class =</span> <span class="st">&quot;foo&quot;</span>)
+}</code></pre>
+<p>You should use it if it’s available (like for <code>factor()</code> and <code>data.frame()</code>). This ensures that you’re creating the class with the correct components. Constructor functions usually have the same name as the class.</p>
+<p>Apart from developer supplied constructor functions, S3 has no checks for correctness. This means you can change the class of existing objects:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create a linear model</span>
+mod &lt;-<span class="st"> </span><span class="kw">lm</span>(<span class="kw">log</span>(mpg) ~<span class="st"> </span><span class="kw">log</span>(disp), <span class="dt">data =</span> mtcars)
+<span class="kw">class</span>(mod)
+<span class="co">#&gt; [1] &quot;lm&quot;</span>
+<span class="kw">print</span>(mod)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Call:</span>
+<span class="co">#&gt; lm(formula = log(mpg) ~ log(disp), data = mtcars)</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Coefficients:</span>
+<span class="co">#&gt; (Intercept)    log(disp)  </span>
+<span class="co">#&gt;      5.3810      -0.4586</span>
+
+<span class="co"># Turn it into a data frame (?!)</span>
+<span class="kw">class</span>(mod) &lt;-<span class="st"> &quot;data.frame&quot;</span>
+<span class="co"># But unsurprisingly this doesn&#39;t work very well</span>
+<span class="kw">print</span>(mod)
+<span class="co">#&gt;  [1] coefficients  residuals     effects       rank          fitted.values</span>
+<span class="co">#&gt;  [6] assign        qr            df.residual   xlevels       call         </span>
+<span class="co">#&gt; [11] terms         model        </span>
+<span class="co">#&gt; &lt;0 rows&gt; (or 0-length row.names)</span>
+<span class="co"># However, the data is still there</span>
+mod$coefficients
+<span class="co">#&gt; (Intercept)   log(disp) </span>
+<span class="co">#&gt;   5.3809725  -0.4585683</span></code></pre>
+<p>If you’ve used other OO languages, this might make you feel queasy. But surprisingly, this flexibility causes few problems: while you <em>can</em> change the type of an object, you never should. R doesn’t protect you from yourself: you can easily shoot yourself in the foot. As long as you don’t aim the gun at your foot and pull the trigger, you won’t have a problem.</p>
+<h3>Creating new methods and generics</h3>
+<p>To add a new generic, create a function that calls <code>UseMethod()</code>. <code>UseMethod()</code> takes two arguments: the name of the generic function, and the argument to use for method dispatch. If you omit the second argument it will dispatch on the first argument to the function. There’s no need to pass any of the arguments of the generic to <code>UseMethod()</code> and you shouldn’t do so. <code>UseMethod()</code> uses black magic to find them out for itself.  </p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x) <span class="kw">UseMethod</span>(<span class="st">&quot;f&quot;</span>)</code></pre>
+<p>A generic isn’t useful without some methods. To add a method, you just create a regular function with the correct (<code>generic.class</code>) name: </p>
+<pre class="sourceCode r"><code class="sourceCode r">f.a &lt;-<span class="st"> </span>function(x) <span class="st">&quot;Class a&quot;</span>
+
+a &lt;-<span class="st"> </span><span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="st">&quot;a&quot;</span>)
+<span class="kw">class</span>(a)
+<span class="co">#&gt; [1] &quot;a&quot;</span>
+<span class="kw">f</span>(a)
+<span class="co">#&gt; [1] &quot;Class a&quot;</span></code></pre>
+<p>Adding a method to an existing generic works in the same way:</p>
+<pre class="sourceCode r"><code class="sourceCode r">mean.a &lt;-<span class="st"> </span>function(x) <span class="st">&quot;a&quot;</span>
+<span class="kw">mean</span>(a)
+<span class="co">#&gt; [1] &quot;a&quot;</span></code></pre>
+<p>As you can see, there’s no check to make sure that the method returns the class compatible with the generic. It’s up to you to make sure that your method doesn’t violate the expectations of existing code.</p>
+<h3>Method dispatch</h3>
+<p>S3 method dispatch is relatively simple. <code>UseMethod()</code> creates a vector of function names, like <code>paste0(&quot;generic&quot;, &quot;.&quot;, c(class(x), &quot;default&quot;))</code> and looks for each in turn. The “default” class makes it possible to set up a fall back method for otherwise unknown classes. </p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(x) <span class="kw">UseMethod</span>(<span class="st">&quot;f&quot;</span>)
+f.a &lt;-<span class="st"> </span>function(x) <span class="st">&quot;Class a&quot;</span>
+f.default &lt;-<span class="st"> </span>function(x) <span class="st">&quot;Unknown class&quot;</span>
+
+<span class="kw">f</span>(<span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="st">&quot;a&quot;</span>))
+<span class="co">#&gt; [1] &quot;Class a&quot;</span>
+<span class="co"># No method for b class, so uses method for a class</span>
+<span class="kw">f</span>(<span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="kw">c</span>(<span class="st">&quot;b&quot;</span>, <span class="st">&quot;a&quot;</span>)))
+<span class="co">#&gt; [1] &quot;Class a&quot;</span>
+<span class="co"># No method for c class, so falls back to default</span>
+<span class="kw">f</span>(<span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="st">&quot;c&quot;</span>))
+<span class="co">#&gt; [1] &quot;Unknown class&quot;</span></code></pre>
+<p>Group generic methods add a little more complexity. Group generics make it possible to implement methods for multiple generics with one function. The four group generics and the functions they include are:  </p>
+<ul>
+<li>Math: <code>abs</code>, <code>sign</code>, <code>sqrt</code>, <code>floor</code>, <code>cos</code>, <code>sin</code>, <code>log</code>, <code>exp</code>, …</li>
+<li>Ops: <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>^</code>, <code>%%</code>, <code>%/%</code>, <code>&amp;</code>, <code>|</code>, <code>!</code>, <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>&gt;</code></li>
+<li>Summary: <code>all</code>, <code>any</code>, <code>sum</code>, <code>prod</code>, <code>min</code>, <code>max</code>, <code>range</code></li>
+<li>Complex: <code>Arg</code>, <code>Conj</code>, <code>Im</code>, <code>Mod</code>, <code>Re</code></li>
+</ul>
+<p>Group generics are a relatively advanced technique and are beyond the scope of this chapter but you can find out more about them in <code>?groupGeneric</code>. The most important thing to take away from this is to recognise that <code>Math</code>, <code>Ops</code>, <code>Summary</code>, and <code>Complex</code> aren’t real functions, but instead represent groups of functions. Note that inside a group generic function a special variable <code>.Generic</code> provides the actual generic function called.</p>
+<p>If you have complex class hierarchies it’s sometimes useful to call the “parent” method. It’s a little bit tricky to define exactly what that means, but it’s basically the method that would have been called if the current method did not exist. Again, this is an advanced technique: you can read about it in <code>?NextMethod</code>. </p>
+<p>Because methods are normal R functions, you can call them directly:</p>
+<pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">structure</span>(<span class="kw">list</span>(), <span class="dt">class =</span> <span class="st">&quot;c&quot;</span>)
+<span class="co"># Call the correct method:</span>
+<span class="kw">f.default</span>(c)
+<span class="co">#&gt; [1] &quot;Unknown class&quot;</span>
+<span class="co"># Force R to call the wrong method:</span>
+<span class="kw">f.a</span>(c)
+<span class="co">#&gt; [1] &quot;Class a&quot;</span></code></pre>
+<p>However, this is just as dangerous as changing the class of an object, so you shouldn’t do it. Please don’t point the loaded gun at your foot! The only reason to call the method directly is that sometimes you can get considerable performance improvements by skipping method dispatch. See <a href="Profiling.html#be-lazy">performance</a> for details.</p>
+<p>You can also call an S3 generic with a non-S3 object. Non-internal S3 generics will dispatch on the <strong>implicit class</strong> of base types. (Internal generics don’t do that for performance reasons.) The rules to determine the implicit class of a base type are somewhat complex, but are shown in the function below:  </p>
+<pre class="sourceCode r"><code class="sourceCode r">iclass &lt;-<span class="st"> </span>function(x) {
+  if (<span class="kw">is.object</span>(x)) {
+    <span class="kw">stop</span>(<span class="st">&quot;x is not a primitive type&quot;</span>, <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+  }
+
+  <span class="kw">c</span>(
+    if (<span class="kw">is.matrix</span>(x)) <span class="st">&quot;matrix&quot;</span>,
+    if (<span class="kw">is.array</span>(x) &amp;&amp;<span class="st"> </span>!<span class="kw">is.matrix</span>(x)) <span class="st">&quot;array&quot;</span>,
+    if (<span class="kw">is.double</span>(x)) <span class="st">&quot;double&quot;</span>,
+    if (<span class="kw">is.integer</span>(x)) <span class="st">&quot;integer&quot;</span>,
+    <span class="kw">mode</span>(x)
+  )
+}
+<span class="kw">iclass</span>(<span class="kw">matrix</span>(<span class="dv">1</span>:<span class="dv">5</span>))
+<span class="co">#&gt; [1] &quot;matrix&quot;  &quot;integer&quot; &quot;numeric&quot;</span>
+<span class="kw">iclass</span>(<span class="kw">array</span>(<span class="fl">1.5</span>))
+<span class="co">#&gt; [1] &quot;array&quot;   &quot;double&quot;  &quot;numeric&quot;</span></code></pre>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Read the source code for <code>t()</code> and <code>t.test()</code> and confirm that <code>t.test()</code> is an S3 generic and not an S3 method. What happens if you create an object with class <code>test</code> and call <code>t()</code> with it?</p></li>
+<li><p>What classes have a method for the <code>Math</code> group generic in base R? Read the source code. How do the methods work?</p></li>
+<li><p>R has two classes for representing date time data, <code>POSIXct</code> and <code>POSIXlt</code>, which both inherit from <code>POSIXt</code>. Which generics have different behaviours for the two classes? Which generics share the same behaviour?</p></li>
+<li><p>Which base generic has the greatest number of defined methods?</p></li>
+<li><p><code>UseMethod()</code> calls methods in a special way. Predict what the following code will return, then run it and read the help for <code>UseMethod()</code> to figure out what’s going on. Write down the rules in the simplest form possible.</p>
+<pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span><span class="dv">1</span>
+g &lt;-<span class="st"> </span>function(x) {
+  y &lt;-<span class="st"> </span><span class="dv">2</span>
+  <span class="kw">UseMethod</span>(<span class="st">&quot;g&quot;</span>)
+}
+g.numeric &lt;-<span class="st"> </span>function(x) y
+<span class="kw">g</span>(<span class="dv">10</span>)
+
+h &lt;-<span class="st"> </span>function(x) {
+  x &lt;-<span class="st"> </span><span class="dv">10</span>
+  <span class="kw">UseMethod</span>(<span class="st">&quot;h&quot;</span>)
+}
+h.character &lt;-<span class="st"> </span>function(x) <span class="kw">paste</span>(<span class="st">&quot;char&quot;</span>, x)
+h.numeric &lt;-<span class="st"> </span>function(x) <span class="kw">paste</span>(<span class="st">&quot;num&quot;</span>, x)
+
+<span class="kw">h</span>(<span class="st">&quot;a&quot;</span>)</code></pre></li>
+<li><p>Internal generics don’t dispatch on the implicit class of base types. Carefully read <code>?&quot;internal generic&quot;</code> to determine why the length of <code>f</code> and <code>g</code> is different in the example below. What function helps distinguish between the behaviour of <code>f</code> and <code>g</code>?</p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function() <span class="dv">1</span>
+g &lt;-<span class="st"> </span>function() <span class="dv">2</span>
+<span class="kw">class</span>(g) &lt;-<span class="st"> &quot;function&quot;</span>
+
+<span class="kw">class</span>(f)
+<span class="kw">class</span>(g)
+
+length.function &lt;-<span class="st"> </span>function(x) <span class="st">&quot;function&quot;</span>
+<span class="kw">length</span>(f)
+<span class="kw">length</span>(g)</code></pre></li>
+</ol>
+<h2 id="s4">S4</h2>
+<p>S4 works in a similar way to S3, but it adds formality and rigour. Methods still belong to functions, not classes, but:  </p>
+<ul>
+<li><p>Classes have formal definitions which describe their fields and inheritance structures (parent classes).</p></li>
+<li><p>Method dispatch can be based on multiple arguments to a generic function, not just one.</p></li>
+<li><p>There is a special operator, <code>@</code>, for extracting slots (aka fields) from an S4 object.</p></li>
+</ul>
+<p>All S4 related code is stored in the <code>methods</code> package. This package is always available when you’re running R interactively, but may not be available when running R in batch mode. For this reason, it’s a good idea to include an explicit <code>library(methods)</code> whenever you’re using S4.</p>
+<p>S4 is a rich and complex system. There’s no way to explain it fully in a few pages. Here I’ll focus on the key ideas underlying S4 so you can use existing S4 objects effectively. To learn more, some good references are:</p>
+<ul>
+<li><p><a href="http://www.bioconductor.org/help/course-materials/2010/AdvancedR/S4InBioconductor.pdf">S4 system development in Bioconductor</a></p></li>
+<li><p>John Chambers’ <a href="http://amzn.com/0387759352?tag=devtools-20"><em>Software for Data Analysis</em></a></p></li>
+<li><p><a href="http://stackoverflow.com/search?tab=votes&amp;q=user%3a547331%20%5bs4%5d%20is%3aanswe">Martin Morgan’s answers to S4 questions on stackoverflow</a></p></li>
+</ul>
+<h3>Recognising objects, generic functions, and methods</h3>
+<p>Recognising S4 objects, generics, and methods is easy. You can identify an S4 object because <code>str()</code> describes it as a “formal” class, <code>isS4()</code> returns <code>TRUE</code>, and <code>pryr::otype()</code> returns “S4”. S4 generics and methods are also easy to identify because they are S4 objects with well defined classes.</p>
+<p>There aren’t any S4 classes in the commonly used base packages (stats, graphics, utils, datasets, and base), so we’ll start by creating an S4 object from the built-in stats4 package, which provides some S4 classes and methods associated with maximum likelihood estimation:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stats4)
+
+<span class="co"># From example(mle)</span>
+y &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">26</span>, <span class="dv">17</span>, <span class="dv">13</span>, <span class="dv">12</span>, <span class="dv">20</span>, <span class="dv">5</span>, <span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">5</span>, <span class="dv">4</span>, <span class="dv">8</span>)
+nLL &lt;-<span class="st"> </span>function(lambda) -<span class="st"> </span><span class="kw">sum</span>(<span class="kw">dpois</span>(y, lambda, <span class="dt">log =</span> <span class="ot">TRUE</span>))
+fit &lt;-<span class="st"> </span><span class="kw">mle</span>(nLL, <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">lambda =</span> <span class="dv">5</span>), <span class="dt">nobs =</span> <span class="kw">length</span>(y))
+
+<span class="co"># An S4 object</span>
+<span class="kw">isS4</span>(fit)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">otype</span>(fit)
+<span class="co">#&gt; [1] &quot;S4&quot;</span>
+
+<span class="co"># An S4 generic</span>
+<span class="kw">isS4</span>(nobs)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">ftype</span>(nobs)
+<span class="co">#&gt; [1] &quot;s4&quot;      &quot;generic&quot;</span>
+
+<span class="co"># Retrieve an S4 method, described later</span>
+mle_nobs &lt;-<span class="st"> </span><span class="kw">method_from_call</span>(<span class="kw">nobs</span>(fit))
+<span class="kw">isS4</span>(mle_nobs)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">ftype</span>(mle_nobs)
+<span class="co">#&gt; [1] &quot;s4&quot;     &quot;method&quot;</span></code></pre>
+<p>Use <code>is()</code> with one argument to list all classes that an object inherits from. Use <code>is()</code> with two arguments to test if an object inherits from a specific class.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">is</span>(fit)
+<span class="co">#&gt; [1] &quot;mle&quot;</span>
+<span class="kw">is</span>(fit, <span class="st">&quot;mle&quot;</span>)
+<span class="co">#&gt; [1] TRUE</span></code></pre>
+<p>You can get a list of all S4 generics with <code>getGenerics()</code>, and a list of all S4 classes with <code>getClasses()</code>. This list includes shim classes for S3 classes and base types. You can list all S4 methods with <code>showMethods()</code>, optionally restricting selection either by <code>generic</code> or by <code>class</code> (or both). It’s also a good idea to supply <code>where = search()</code> to restrict the search to methods available in the global environment.</p>
+<h3>Defining classes and creating objects</h3>
+<p>In S3, you can turn any object into an object of a particular class just by setting the class attribute. S4 is much stricter: you must define the representation of a class with <code>setClass()</code>, and create a new object with <code>new()</code>. You can find the documentation for a class with a special syntax: <code>class?className</code>, e.g., <code>class?mle</code>.  </p>
+<p>An S4 class has three key properties:</p>
+<ul>
+<li><p>A <strong>name</strong>: an alpha-numeric class identifier. By convention, S4 class names use UpperCamelCase.</p></li>
+<li><p>A named list of <strong>slots</strong> (fields), which defines slot names and permitted classes. For example, a person class might be represented by a character name and a numeric age: <code>list(name = &quot;character&quot;, age = &quot;numeric&quot;)</code>. </p></li>
+<li><p>A string giving the class it inherits from, or, in S4 terminology, that it <strong>contains</strong>. You can provide multiple classes for multiple inheritance, but this is an advanced technique which adds much complexity.</p></li>
+</ul>
+<p>In <code>slots</code> and <code>contains</code> you can use S4 classes, S3 classes registered with <code>setOldClass()</code>, or the implicit class of a base type. In <code>slots</code> you can also use the special class <code>ANY</code> which does not restrict the input.</p>
+<p>S4 classes have other optional properties like a <code>validity</code> method that tests if an object is valid, and a <code>prototype</code> object that defines default slot values. See <code>?setClass</code> for more details.</p>
+<p>The following example creates a Person class with fields name and age, and an Employee class that inherits from Person. The Employee class inherits the slots and methods from the Person, and adds an additional slot, boss. To create objects we call <code>new()</code> with the name of the class, and name-value pairs of slot values.  </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setClass</span>(<span class="st">&quot;Person&quot;</span>,
+  <span class="dt">slots =</span> <span class="kw">list</span>(<span class="dt">name =</span> <span class="st">&quot;character&quot;</span>, <span class="dt">age =</span> <span class="st">&quot;numeric&quot;</span>))
+<span class="kw">setClass</span>(<span class="st">&quot;Employee&quot;</span>,
+  <span class="dt">slots =</span> <span class="kw">list</span>(<span class="dt">boss =</span> <span class="st">&quot;Person&quot;</span>),
+  <span class="dt">contains =</span> <span class="st">&quot;Person&quot;</span>)
+
+alice &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Person&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;Alice&quot;</span>, <span class="dt">age =</span> <span class="dv">40</span>)
+john &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;Employee&quot;</span>, <span class="dt">name =</span> <span class="st">&quot;John&quot;</span>, <span class="dt">age =</span> <span class="dv">20</span>, <span class="dt">boss =</span> alice)</code></pre>
+<p>Most S4 classes also come with a constructor function with the same name as the class: if that exists, use it instead of calling <code>new()</code> directly.</p>
+<p>To access slots of an S4 object use <code>@</code> or <code>slot()</code>:  </p>
+<pre class="sourceCode r"><code class="sourceCode r">alice@age
+<span class="co">#&gt; [1] 40</span>
+<span class="kw">slot</span>(john, <span class="st">&quot;boss&quot;</span>)
+<span class="co">#&gt; An object of class &quot;Person&quot;</span>
+<span class="co">#&gt; Slot &quot;name&quot;:</span>
+<span class="co">#&gt; [1] &quot;Alice&quot;</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Slot &quot;age&quot;:</span>
+<span class="co">#&gt; [1] 40</span></code></pre>
+<p>(<code>@</code> is equivalent to <code>$</code>, and <code>slot()</code> to <code>[[</code>.)</p>
+<p>If an S4 object contains (inherits from) an S3 class or a base type, it will have a special <code>.Data</code> slot which contains the underlying base type or S3 object: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setClass</span>(<span class="st">&quot;RangedNumeric&quot;</span>,
+  <span class="dt">contains =</span> <span class="st">&quot;numeric&quot;</span>,
+  <span class="dt">slots =</span> <span class="kw">list</span>(<span class="dt">min =</span> <span class="st">&quot;numeric&quot;</span>, <span class="dt">max =</span> <span class="st">&quot;numeric&quot;</span>))
+rn &lt;-<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;RangedNumeric&quot;</span>, <span class="dv">1</span>:<span class="dv">10</span>, <span class="dt">min =</span> <span class="dv">1</span>, <span class="dt">max =</span> <span class="dv">10</span>)
+rn@min
+<span class="co">#&gt; [1] 1</span>
+rn@.Data
+<span class="co">#&gt;  [1]  1  2  3  4  5  6  7  8  9 10</span></code></pre>
+<p>Since R is an interactive programming language, it’s possible to create new classes or redefine existing classes at any time. This can be a problem when you’re interactively experimenting with S4. If you modify a class, make sure you also recreate any objects of that class, otherwise you’ll end up with invalid objects.</p>
+<h3>Creating new methods and generics</h3>
+<p>S4 provides special functions for creating new generics and methods. <code>setGeneric()</code> creates a new generic or converts an existing function into a generic. <code>setMethod()</code> takes the name of the generic, the classes the method should be associated with, and a function that implements the method. For example, we could take <code>union()</code>, which usually just works on vectors, and make it work with data frames:    </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setGeneric</span>(<span class="st">&quot;union&quot;</span>)
+<span class="co">#&gt; [1] &quot;union&quot;</span>
+<span class="kw">setMethod</span>(<span class="st">&quot;union&quot;</span>,
+  <span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;data.frame&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;data.frame&quot;</span>),
+  function(x, y) {
+    <span class="kw">unique</span>(<span class="kw">rbind</span>(x, y))
+  }
+)
+<span class="co">#&gt; [1] &quot;union&quot;</span></code></pre>
+<p>If you create a new generic from scratch, you need to supply a function that calls <code>standardGeneric()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setGeneric</span>(<span class="st">&quot;myGeneric&quot;</span>, function(x) {
+  <span class="kw">standardGeneric</span>(<span class="st">&quot;myGeneric&quot;</span>)
+})
+<span class="co">#&gt; [1] &quot;myGeneric&quot;</span></code></pre>
+<p><code>standardGeneric()</code> is the S4 equivalent to <code>UseMethod()</code>.</p>
+<h3>Method dispatch</h3>
+<p>If an S4 generic dispatches on a single class with a single parent, then S4 method dispatch is the same as S3 dispatch. The main difference is how you set up default values: S4 uses the special class <code>ANY</code> to match any class and “missing” to match a missing argument. Like S3, S4 also has group generics, documented in <code>?S4groupGeneric</code>, and a way to call the “parent” method, <code>callNextMethod()</code>. </p>
+<p>Method dispatch becomes considerably more complicated if you dispatch on multiple arguments, or if your classes use multiple inheritance. The rules are described in <code>?Methods</code>, but they are complicated and it’s difficult to predict which method will be called. For this reason, I strongly recommend avoiding multiple inheritance and multiple dispatch unless absolutely necessary.</p>
+<p>Finally, there are two methods that find which method gets called given the specification of a generic call:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># From methods: takes generic name and class names</span>
+<span class="kw">selectMethod</span>(<span class="st">&quot;nobs&quot;</span>, <span class="kw">list</span>(<span class="st">&quot;mle&quot;</span>))
+
+<span class="co"># From pryr: takes an unevaluated function call</span>
+<span class="kw">method_from_call</span>(<span class="kw">nobs</span>(fit))</code></pre>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Which S4 generic has the most methods defined for it? Which S4 class has the most methods associated with it?</p></li>
+<li><p>What happens if you define a new S4 class that doesn’t “contain” an existing class? (Hint: read about virtual classes in <code>?Classes</code>.)</p></li>
+<li><p>What happens if you pass an S4 object to an S3 generic? What happens if you pass an S3 object to an S4 generic? (Hint: read <code>?setOldClass</code> for the second case.)</p></li>
+</ol>
+<h2 id="rc">RC</h2>
+<p>Reference classes (or RC for short) are the newest OO system in R. They were introduced in version 2.12. They are fundamentally different to S3 and S4 because:   </p>
+<ul>
+<li><p>RC methods belong to objects, not functions</p></li>
+<li><p>RC objects are mutable: the usual R copy-on-modify semantics do not apply</p></li>
+</ul>
+<p>These properties make RC objects behave more like objects do in most other programming languages, e.g., Python, Ruby, Java, and C#. Reference classes are implemented using R code: they are a special S4 class that wraps around an environment.</p>
+<h3>Defining classes and creating objects</h3>
+<p>Since there aren’t any reference classes provided by the base R packages, we’ll start by creating one. RC classes are best used for describing stateful objects, objects that change over time, so we’ll create a simple class to model a bank account.  </p>
+<p>Creating a new RC class is similar to creating a new S4 class, but you use <code>setRefClass()</code> instead of <code>setClass()</code>. The first, and only required argument, is an alphanumeric <strong>name</strong>. While you can use <code>new()</code> to create new RC objects, it’s good style to use the object returned by <code>setRefClass()</code> to generate new objects. (You can also do that with S4 classes, but it’s less common.) </p>
+<pre class="sourceCode r"><code class="sourceCode r">Account &lt;-<span class="st"> </span><span class="kw">setRefClass</span>(<span class="st">&quot;Account&quot;</span>)
+Account$<span class="kw">new</span>()
+<span class="co">#&gt; Reference class object of class &quot;Account&quot;</span></code></pre>
+<p><code>setRefClass()</code> also accepts a list of name-class pairs that define class <strong>fields</strong> (equivalent to S4 slots). Additional named arguments passed to <code>new()</code> will set initial values of the fields. You can get and set field values with <code>$</code>: </p>
+<pre class="sourceCode r"><code class="sourceCode r">Account &lt;-<span class="st"> </span><span class="kw">setRefClass</span>(<span class="st">&quot;Account&quot;</span>,
+  <span class="dt">fields =</span> <span class="kw">list</span>(<span class="dt">balance =</span> <span class="st">&quot;numeric&quot;</span>))
+
+a &lt;-<span class="st"> </span>Account$<span class="kw">new</span>(<span class="dt">balance =</span> <span class="dv">100</span>)
+a$balance
+<span class="co">#&gt; [1] 100</span>
+a$balance &lt;-<span class="st"> </span><span class="dv">200</span>
+a$balance
+<span class="co">#&gt; [1] 200</span></code></pre>
+<p>Instead of supplying a class name for the field, you can provide a single argument function which will act as an accessor method. This allows you to add custom behaviour when getting or setting a field. See <code>?setRefClass</code> for more details.</p>
+<p>Note that RC objects are <strong>mutable</strong>, i.e., they have reference semantics, and are not copied-on-modify: </p>
+<pre class="sourceCode r"><code class="sourceCode r">b &lt;-<span class="st"> </span>a
+b$balance
+<span class="co">#&gt; [1] 200</span>
+a$balance &lt;-<span class="st"> </span><span class="dv">0</span>
+b$balance
+<span class="co">#&gt; [1] 0</span></code></pre>
+<p>For this reason, RC objects come with a <code>copy()</code> method that allow you to make a copy of the object:</p>
+<pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span>a$<span class="kw">copy</span>()
+c$balance
+<span class="co">#&gt; [1] 0</span>
+a$balance &lt;-<span class="st"> </span><span class="dv">100</span>
+c$balance
+<span class="co">#&gt; [1] 0</span></code></pre>
+<p>An object is not very useful without some behaviour defined by <strong>methods</strong>. RC methods are associated with a class and can modify its fields in place. In the following example, note that you access the value of fields with their name, and modify them with <code>&lt;&lt;-</code>. You’ll learn more about <code>&lt;&lt;-</code> in <a href="Environments.html#binding">Environments</a>.   </p>
+<pre class="sourceCode r"><code class="sourceCode r">Account &lt;-<span class="st"> </span><span class="kw">setRefClass</span>(<span class="st">&quot;Account&quot;</span>,
+  <span class="dt">fields =</span> <span class="kw">list</span>(<span class="dt">balance =</span> <span class="st">&quot;numeric&quot;</span>),
+  <span class="dt">methods =</span> <span class="kw">list</span>(
+    <span class="dt">withdraw =</span> function(x) {
+      balance &lt;&lt;-<span class="st"> </span>balance -<span class="st"> </span>x
+    },
+    <span class="dt">deposit =</span> function(x) {
+      balance &lt;&lt;-<span class="st"> </span>balance +<span class="st"> </span>x
+    }
+  )
+)</code></pre>
+<p>You call an RC method in the same way as you access a field:</p>
+<pre class="sourceCode r"><code class="sourceCode r">a &lt;-<span class="st"> </span>Account$<span class="kw">new</span>(<span class="dt">balance =</span> <span class="dv">100</span>)
+a$<span class="kw">deposit</span>(<span class="dv">100</span>)
+a$balance
+<span class="co">#&gt; [1] 200</span></code></pre>
+<p>The final important argument to <code>setRefClass()</code> is <code>contains</code>. This is the name of the parent RC class to inherit behaviour from. The following example creates a new type of bank account that returns an error preventing the balance from going below 0.</p>
+<pre class="sourceCode r"><code class="sourceCode r">NoOverdraft &lt;-<span class="st"> </span><span class="kw">setRefClass</span>(<span class="st">&quot;NoOverdraft&quot;</span>,
+  <span class="dt">contains =</span> <span class="st">&quot;Account&quot;</span>,
+  <span class="dt">methods =</span> <span class="kw">list</span>(
+    <span class="dt">withdraw =</span> function(x) {
+      if (balance &lt;<span class="st"> </span>x) <span class="kw">stop</span>(<span class="st">&quot;Not enough money&quot;</span>)
+      balance &lt;&lt;-<span class="st"> </span>balance -<span class="st"> </span>x
+    }
+  )
+)
+accountJohn &lt;-<span class="st"> </span>NoOverdraft$<span class="kw">new</span>(<span class="dt">balance =</span> <span class="dv">100</span>)
+accountJohn$<span class="kw">deposit</span>(<span class="dv">50</span>)
+accountJohn$balance
+<span class="co">#&gt; [1] 150</span>
+accountJohn$<span class="kw">withdraw</span>(<span class="dv">200</span>)
+<span class="co">#&gt; Error in accountJohn$withdraw(200): Not enough money</span></code></pre>
+<p>All reference classes eventually inherit from <code>envRefClass</code>. It provides useful methods like <code>copy()</code> (shown above), <code>callSuper()</code> (to call the parent field), <code>field()</code> (to get the value of a field given its name), <code>export()</code> (equivalent to <code>as()</code>), and <code>show()</code> (overridden to control printing). See the inheritance section in <code>setRefClass()</code> for more details.</p>
+<h3>Recognising objects and methods</h3>
+<p>You can recognise RC objects because they are S4 objects (<code>isS4(x)</code>) that inherit from “refClass” (<code>is(x, &quot;refClass&quot;)</code>). <code>pryr::otype()</code> will return “RC”. RC methods are also S4 objects, with class <code>refMethodDef</code>.</p>
+<h3>Method dispatch</h3>
+<p>Method dispatch is very simple in RC because methods are associated with classes, not functions. When you call <code>x$f()</code>, R will look for a method f in the class of x, then in its parent, then its parent’s parent, and so on. From within a method, you can call the parent method directly with <code>callSuper(...)</code>. </p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Use a field function to prevent the account balance from being directly manipulated. (Hint: create a “hidden” <code>.balance</code> field, and read the help for the fields argument in <code>setRefClass()</code>.)</p></li>
+<li><p>I claimed that there aren’t any RC classes in base R, but that was a bit of a simplification. Use <code>getClasses()</code> and find which classes <code>extend()</code> from <code>envRefClass</code>. What are the classes used for? (Hint: recall how to look up the documentation for a class.)</p></li>
+</ol>
+<h2 id="picking-a-system">Picking a system</h2>
+<p>Three OO systems is a lot for one language, but for most R programming, S3 suffices. In R you usually create fairly simple objects and methods for pre-existing generic functions like <code>print()</code>, <code>summary()</code>, and <code>plot()</code>. S3 is well suited to this task, and the majority of OO code that I have written in R is S3. S3 is a little quirky, but it gets the job done with a minimum of code. </p>
+<p>If you are creating more complicated systems of interrelated objects, S4 may be more appropriate. A good example is the <code>Matrix</code> package by Douglas Bates and Martin Maechler. It is designed to efficiently store and compute with many different types of sparse matrices. As of version 1.1.3, it defines 102 classes and 20 generic functions. The package is well written and well commented, and the accompanying vignette (<code>vignette(&quot;Intro2Matrix&quot;, package = &quot;Matrix&quot;)</code>) gives a good overview of the structure of the package. S4 is also used extensively by Bioconductor packages, which need to model complicated interrelationships between biological objects. Bioconductor provides many <a href="https://www.google.com/search?q=bioconductor+s4">good resources</a> for learning S4. If you’ve mastered S3, S4 is relatively easy to pick up; the ideas are all the same, it is just more formal, more strict, and more verbose.</p>
+<p>If you’ve programmed in a mainstream OO language, RC will seem very natural. But because they can introduce side effects through mutable state, they are harder to understand. For example, when you usually call <code>f(a, b)</code> in R you can assume that <code>a</code> and <code>b</code> will not be modified. But if <code>a</code> and <code>b</code> are RC objects, they might be modified in the place. Generally, when using RC objects you want to minimise side effects as much as possible, and use them only where mutable states are absolutely required. The majority of functions should still be “functional”, and free of side effects. This makes code easier to reason about and easier for other R programmers to understand.</p>
+<h2 id="oo-answers">Quiz answers</h2>
+<ol style="list-style-type: decimal">
+<li><p>To determine the OO system of an object, you use a process of elimination. If <code>!is.object(x)</code>, it’s a base object. If <code>!isS4(x)</code>, it’s S3. If <code>!is(x, &quot;refClass&quot;)</code>, it’s S4; otherwise it’s RC.</p></li>
+<li><p>Use <code>typeof()</code> to determine the base class of an object.</p></li>
+<li><p>A generic function calls specific methods depending on the class of it inputs. In S3 and S4 object systems, methods belong to generic functions, not classes like in other programming languages.</p></li>
+<li><p>S4 is more formal than S3, and supports multiple inheritance and multiple dispatch. RC objects have reference semantics, and methods belong to classes, not functions.</p></li>
+</ol>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

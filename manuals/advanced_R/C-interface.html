@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>R's C interface &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/C-interface.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="c-api">R’s C interface</h1>
+<p>Reading R’s source code is an extremely powerful technique for improving your programming skills. However, many base R functions, and many functions in older packages, are written in C. It’s useful to be able to figure out how those functions work, so this chapter will introduce you to R’s C API. You’ll need some basic C knowledge, which you can get from a standard C text (e.g., <a href="http://amzn.com/0131101633?tag=devtools-20"><em>The C Programming Language</em></a> by Kernigan and Ritchie), or from <a href="Rcpp.html#rcpp">Rcpp</a>. You’ll need a little patience, but it is possible to read R’s C source code, and you will learn a lot doing it. </p>
+<p>The contents of this chapter draw heavily from Section 5 (“System and foreign language interfaces”) of <a href="http://cran.r-project.org/doc/manuals/R-exts.html">Writing R extensions</a>, but focus on best practices and modern tools. This means it does not cover the old <code>.C</code> interface, the old API defined in <code>Rdefines.h</code>, or rarely used language features. To see R’s complete C API, look at the header file <code>Rinternals.h</code>. It’s easiest to find and display this file from within R:</p>
+<pre class="sourceCode r"><code class="sourceCode r">rinternals &lt;-<span class="st"> </span><span class="kw">file.path</span>(<span class="kw">R.home</span>(<span class="st">&quot;include&quot;</span>), <span class="st">&quot;Rinternals.h&quot;</span>)
+<span class="kw">file.show</span>(rinternals)</code></pre>
+<p>All functions are defined with either the prefix <code>Rf_</code> or <code>R_</code> but are exported without it (unless <code>#define R_NO_REMAP</code> has been used).</p>
+<p>I do not recommend using C for writing new high-performance code. Instead write C++ with Rcpp. The Rcpp API protects you from many of the historical idiosyncracies of the R API, takes care of memory management for you, and provides many useful helper methods.</p>
+<h5>Outline</h5>
+<ul>
+<li><p><a href="C-interface.html#calling-c">Calling C</a> shows the basics of creating and calling C functions with the inline package.</p></li>
+<li><p><a href="C-interface.html#c-data-structures">C data structures</a> shows how to translate data structure names from R to C.</p></li>
+<li><p><a href="C-interface.html#c-vectors">Creating and modifying vectors</a> teaches you how to create, modify, and coerce vectors in C.</p></li>
+<li><p><a href="C-interface.html#c-pairlists">Pairlists</a> shows you how to work with pairlists. You need to know this because the distinction between pairlists and list is more important in C than R.</p></li>
+<li><p><a href="C-interface.html#c-input-validation">Input validation</a> talks about the importance of input validation so that your C function doesn’t crash R.</p></li>
+<li><p><a href="C-interface.html#c-find-source">Finding the C source for a function</a> concludes the chapter by showing you how to find the C source code for internal and primitive R functions.</p></li>
+</ul>
+<h5>Prerequisites</h5>
+<p>To understand existing C code, it’s useful to generate simple examples of your own that you can experiment with. To that end, all examples in this chapter use the <code>inline</code> package, which makes it extremely easy to compile and link C code to your current R session. Get it by running <code>install.packages(&quot;inline&quot;)</code>. To easily find the C code associated with internal and primitive functions, you’ll need a function from pryr. Get the package with <code>install.packages(&quot;pryr&quot;)</code>.</p>
+<p>You’ll also need a C compiler. Windows users can use <a href="http://cran.r-project.org/bin/windows/Rtools/">Rtools</a>. Mac users will need the <a href="http://developer.apple.com/">Xcode command line tools</a>. Most Linux distributions will come with the necessary compilers.</p>
+<p>In Windows, it’s necessary that the Rtools executables directory (typically <code>C:\Rtools\bin</code>) and the C compiler executables directory (typically <code>C:\Rtools\gcc-4.6.3\bin</code>) are included in the Windows <code>PATH</code> environment variable. You may need to reboot Windows before R can recognise these values.</p>
+<h2 id="calling-c">Calling C functions from R</h2>
+<p>Generally, calling a C function from R requires two pieces: a C function and an R wrapper function that uses <code>.Call()</code>. The simple function below adds two numbers together and illustrates some of the complexities of coding in C:</p>
+<pre class="sourceCode c"><code class="sourceCode c"><span class="co">// In C ----------------------------------------</span>
+<span class="ot">#include &lt;R.h&gt;</span>
+<span class="ot">#include &lt;Rinternals.h&gt;</span>
+
+SEXP add(SEXP a, SEXP b) {
+  SEXP result = PROTECT(allocVector(REALSXP, <span class="dv">1</span>));
+  REAL(result)[<span class="dv">0</span>] = asReal(a) + asReal(b);
+  UNPROTECT(<span class="dv">1</span>);
+
+  <span class="kw">return</span> result;
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># In R ----------------------------------------</span>
+add &lt;-<span class="st"> </span>function(a, b) {
+  <span class="kw">.Call</span>(<span class="st">&quot;add&quot;</span>, a, b)
+}</code></pre>
+<p>(An alternative to using <code>.Call</code> is to use <code>.External</code>. It is used almost identically, except that the C function will receive a single argument containing a <code>LISTSXP</code>, a pairlist from which the arguments can be extracted. This makes it possible to write functions that take a variable number of arguments. However, it’s not commonly used in base R and <code>inline</code> does not currently support <code>.External</code> functions so I don’t discuss it further in this chapter.)  </p>
+<p>In this chapter we’ll produce the two pieces in one step by using the <code>inline</code> package. This allows us to write: </p>
+<pre class="sourceCode r"><code class="sourceCode r">add &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">a =</span> <span class="st">&quot;integer&quot;</span>, <span class="dt">b =</span> <span class="st">&quot;integer&quot;</span>), <span class="st">&quot;</span>
+<span class="st">  SEXP result = PROTECT(allocVector(REALSXP, 1));</span>
+<span class="st">  REAL(result)[0] = asReal(a) + asReal(b);</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return result;</span>
+<span class="st">&quot;</span>)
+<span class="kw">add</span>(<span class="dv">1</span>, <span class="dv">5</span>)
+<span class="co">#&gt; [1] 6</span></code></pre>
+<p>Before we begin reading and writing C code, we need to know a little about the basic data structures.</p>
+<h2 id="c-data-structures">C data structures</h2>
+<p>At the C-level, all R objects are stored in a common datatype, the <code>SEXP</code>, or S-expression. All R objects are S-expressions so every C function that you create must return a <code>SEXP</code> as output and take <code>SEXP</code>s as inputs. (Technically, this is a pointer to a structure with typedef <code>SEXPREC</code>.) A <code>SEXP</code> is a variant type, with subtypes for all R’s data structures. The most important types are: </p>
+<ul>
+<li><code>REALSXP</code>: numeric vector</li>
+<li><code>INTSXP</code>: integer vector</li>
+<li><code>LGLSXP</code>: logical vector</li>
+<li><code>STRSXP</code>: character vector</li>
+<li><code>VECSXP</code>: list</li>
+<li><code>CLOSXP</code>: function (closure)</li>
+<li><code>ENVSXP</code>: environment</li>
+</ul>
+<p><strong>Beware:</strong> In C, lists are called <code>VECSXP</code>s not <code>LISTSXP</code>s. This is because early implementations of lists were Lisp-like linked lists, which are now known as “pairlists”.</p>
+<p>Character vectors are a little more complicated than the other atomic vectors. A <code>STRSXP</code>s contains a vector of <code>CHARSXP</code>s, where each <code>CHARSXP</code> points to C-style string stored in a global pool. This design allows individual <code>CHARSXP</code>’s to be shared between multiple character vectors, reducing memory usage. See <a href="memory.html#object-size">object size</a> for more details.</p>
+<p>There are also <code>SEXP</code>s for less common object types:</p>
+<ul>
+<li><code>CPLXSXP</code>: complex vectors</li>
+<li><code>LISTSXP</code>: “pair” lists. At the R level, you only need to care about the distinction lists and pairlists for function arguments, but internally they are used in many more places</li>
+<li><code>DOTSXP</code>: ‘…’</li>
+<li><code>SYMSXP</code>: names/symbols</li>
+<li><code>NILSXP</code>: <code>NULL</code></li>
+</ul>
+<p>And <code>SEXP</code>s for internal objects, objects that are usually only created and used by C functions, not R functions:</p>
+<ul>
+<li><code>LANGSXP</code>: language constructs</li>
+<li><code>CHARSXP</code>: “scalar” strings</li>
+<li><code>PROMSXP</code>: promises, lazily evaluated function arguments</li>
+<li><code>EXPRSXP</code>: expressions</li>
+</ul>
+<p>There’s no built-in R function to easily access these names, but pryr provides <code>sexp_type()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pryr)
+
+<span class="kw">sexp_type</span>(10L)
+<span class="co">#&gt; [1] &quot;INTSXP&quot;</span>
+<span class="kw">sexp_type</span>(<span class="st">&quot;a&quot;</span>)
+<span class="co">#&gt; [1] &quot;STRSXP&quot;</span>
+<span class="kw">sexp_type</span>(T)
+<span class="co">#&gt; [1] &quot;LGLSXP&quot;</span>
+<span class="kw">sexp_type</span>(<span class="kw">list</span>(<span class="dt">a =</span> <span class="dv">1</span>))
+<span class="co">#&gt; [1] &quot;VECSXP&quot;</span>
+<span class="kw">sexp_type</span>(<span class="kw">pairlist</span>(<span class="dt">a =</span> <span class="dv">1</span>))
+<span class="co">#&gt; [1] &quot;LISTSXP&quot;</span></code></pre>
+<h2 id="c-vectors">Creating and modifying vectors</h2>
+<p>At the heart of every C function are conversions between R data structures and C data structures. Inputs and output will always be R data structures (<code>SEXP</code>s) and you will need to convert them to C data structures in order to do any work. This section focusses on vectors because they’re the type of object you’re most likely to work with.</p>
+<p>An additional complication is the garbage collector: if you don’t protect every R object you create, the garbage collector will think they are unused and delete them.</p>
+<h3>Creating vectors and garbage collection</h3>
+<p>The simplest way to create a new R-level object is to use <code>allocVector()</code>. It takes two arguments, the type of <code>SEXP</code> (or <code>SEXPTYPE</code>) to create, and the length of the vector. The following code creates a three element list containing a logical vector, a numeric vector, and an integer vector, all of length four: </p>
+<pre class="sourceCode r"><code class="sourceCode r">dummy &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="dt">body =</span> <span class="st">&#39;</span>
+<span class="st">  SEXP dbls = PROTECT(allocVector(REALSXP, 4));</span>
+<span class="st">  SEXP lgls = PROTECT(allocVector(LGLSXP, 4));</span>
+<span class="st">  SEXP ints = PROTECT(allocVector(INTSXP, 4));</span>
+
+<span class="st">  SEXP vec = PROTECT(allocVector(VECSXP, 3));</span>
+<span class="st">  SET_VECTOR_ELT(vec, 0, dbls);</span>
+<span class="st">  SET_VECTOR_ELT(vec, 1, lgls);</span>
+<span class="st">  SET_VECTOR_ELT(vec, 2, ints);</span>
+
+<span class="st">  UNPROTECT(4);</span>
+<span class="st">  return vec;</span>
+<span class="st">&#39;</span>)
+<span class="kw">dummy</span>()
+<span class="co">#&gt; [[1]]</span>
+<span class="co">#&gt; [1] 3.45846e-323 6.93728e-310  0.00000e+00 6.93728e-310</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[2]]</span>
+<span class="co">#&gt; [1]  TRUE  TRUE FALSE  TRUE</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[3]]</span>
+<span class="co">#&gt; [1]  7 20  0  1</span></code></pre>
+<p>You might wonder what all the <code>PROTECT()</code> calls do. They tell R that the object is in use and shouldn’t be deleted if the garbage collector is activated. (We don’t need to protect objects that R already knows we’re using, like function arguments.)</p>
+<p>You also need to make sure that every protected object is unprotected. <code>UNPROTECT()</code> takes a single integer argument, <code>n</code>, and unprotects the last n objects that were protected. The number of protects and unprotects must match. If not, R will warn about a “stack imbalance in .Call”. Other specialised forms of protection are needed in some circumstances:</p>
+<ul>
+<li><p><code>UNPROTECT_PTR()</code> unprotects the object pointed to by the <code>SEXP</code>s.</p></li>
+<li><p><code>PROTECT_WITH_INDEX()</code> saves an index of the protection location that can be used to replace the protected value using <code>REPROTECT()</code>.</p></li>
+</ul>
+<p>Consult the R externals section on <a href="http://cran.r-project.org/doc/manuals/R-exts.html#Garbage-Collection">garbage collection</a> for more details.</p>
+<p>Properly protecting the R objects you allocate is extremely important! Improper protection leads to difficulty diagnosing errors, typically segfaults, but other corruption is possible as well. In general, if you allocate a new R object, you must <code>PROTECT</code> it.</p>
+<p>If you run <code>dummy()</code> a few times, you’ll notice the output varies. This is because <code>allocVector()</code> assigns memory to each output, but it doesn’t clean it out first. For real functions, you may want to loop through each element in the vector and set it to a constant. The most efficient way to do that is to use <code>memset()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">zeroes &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">n_ =</span> <span class="st">&quot;integer&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  int n = asInteger(n_);</span>
+
+<span class="st">  SEXP out = PROTECT(allocVector(INTSXP, n));</span>
+<span class="st">  memset(INTEGER(out), 0, n * sizeof(int));</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return out;</span>
+<span class="st">&#39;</span>)
+<span class="kw">zeroes</span>(<span class="dv">10</span>);
+<span class="co">#&gt;  [1] 0 0 0 0 0 0 0 0 0 0</span></code></pre>
+<h3>Missing and non-finite values</h3>
+<p>Each atomic vector has a special constant for getting or setting missing values:</p>
+<ul>
+<li><code>INTSXP</code>: <code>NA_INTEGER</code></li>
+<li><code>LGLSXP</code>: <code>NA_LOGICAL</code></li>
+<li><code>STRSXP</code>: <code>NA_STRING</code></li>
+</ul>
+<p>Missing values are somewhat more complicated for <code>REALSXP</code> because there is an existing protocol for missing values defined by the floating point standard (<a href="http://en.wikipedia.org/wiki/IEEE_floating_point">IEEE 754</a>). In doubles, an <code>NA</code> is <code>NaN</code> with a special bit pattern (the lowest word is 1954, the year Ross Ihaka was born), and there are other special values for positive and negative infinity. Use <code>ISNA()</code>, <code>ISNAN()</code>, and <code>!R_FINITE()</code> macros to check for missing, NaN, or non-finite values. Use the constants <code>NA_REAL</code>, <code>R_NaN</code>, <code>R_PosInf</code>, and <code>R_NegInf</code> to set those values. </p>
+<p>We can use this knowledge to make a simple version of <code>is.NA()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">is_na &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;ANY&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  int n = length(x);</span>
+
+<span class="st">  SEXP out = PROTECT(allocVector(LGLSXP, n));</span>
+
+<span class="st">  for (int i = 0; i &lt; n; i++) {</span>
+<span class="st">    switch(TYPEOF(x)) {</span>
+<span class="st">      case LGLSXP:</span>
+<span class="st">        LOGICAL(out)[i] = (LOGICAL(x)[i] == NA_LOGICAL);</span>
+<span class="st">        break;</span>
+<span class="st">      case INTSXP:</span>
+<span class="st">        LOGICAL(out)[i] = (INTEGER(x)[i] == NA_INTEGER);</span>
+<span class="st">        break;</span>
+<span class="st">      case REALSXP:</span>
+<span class="st">        LOGICAL(out)[i] = ISNA(REAL(x)[i]);</span>
+<span class="st">        break;</span>
+<span class="st">      case STRSXP:</span>
+<span class="st">        LOGICAL(out)[i] = (STRING_ELT(x, i) == NA_STRING);</span>
+<span class="st">        break;</span>
+<span class="st">      default:</span>
+<span class="st">        LOGICAL(out)[i] = NA_LOGICAL;</span>
+<span class="st">    }</span>
+<span class="st">  }</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return out;</span>
+<span class="st">&#39;</span>)
+<span class="kw">is_na</span>(<span class="kw">c</span>(<span class="ot">NA</span>, 1L))
+<span class="co">#&gt; [1]  TRUE FALSE</span>
+<span class="kw">is_na</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="dv">1</span>))
+<span class="co">#&gt; [1]  TRUE FALSE</span>
+<span class="kw">is_na</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="st">&quot;a&quot;</span>))
+<span class="co">#&gt; [1]  TRUE FALSE</span>
+<span class="kw">is_na</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="ot">TRUE</span>))
+<span class="co">#&gt; [1]  TRUE FALSE</span></code></pre>
+<p>Note that <code>base::is.na()</code> returns <code>TRUE</code> for both <code>NA</code> and <code>NaN</code>s in a numeric vector, as opposed to the C <code>ISNA()</code> macro, which returns <code>TRUE</code> only for <code>NA_REAL</code>s.</p>
+<h3>Accessing vector data</h3>
+<p>There is a helper function for each atomic vector that allows you to access the C array which stores the data in a vector. Use <code>REAL()</code>, <code>INTEGER()</code>, <code>LOGICAL()</code>, <code>COMPLEX()</code>, and <code>RAW()</code> to access the C array inside numeric, integer, logical, complex, and raw vectors. The following example shows how to use <code>REAL()</code> to inspect and modify a numeric vector: </p>
+<pre class="sourceCode r"><code class="sourceCode r">add_one &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;numeric&quot;</span>), <span class="st">&quot;</span>
+<span class="st">  int n = length(x);</span>
+<span class="st">  SEXP out = PROTECT(allocVector(REALSXP, n));</span>
+<span class="st">  </span>
+<span class="st">  for (int i = 0; i &lt; n; i++) {</span>
+<span class="st">    REAL(out)[i] = REAL(x)[i] + 1;</span>
+<span class="st">  }</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return out;</span>
+<span class="st">&quot;</span>)
+<span class="kw">add_one</span>(<span class="kw">as.numeric</span>(<span class="dv">1</span>:<span class="dv">10</span>))
+<span class="co">#&gt;  [1]  2  3  4  5  6  7  8  9 10 11</span></code></pre>
+<p>When working with longer vectors, there’s a performance advantage to using the helper function once and saving the result in a pointer:</p>
+<pre class="sourceCode r"><code class="sourceCode r">add_two &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;numeric&quot;</span>), <span class="st">&quot;</span>
+<span class="st">  int n = length(x);</span>
+<span class="st">  double *px, *pout;</span>
+
+<span class="st">  SEXP out = PROTECT(allocVector(REALSXP, n));</span>
+
+<span class="st">  px = REAL(x);</span>
+<span class="st">  pout = REAL(out);</span>
+<span class="st">  for (int i = 0; i &lt; n; i++) {</span>
+<span class="st">    pout[i] = px[i] + 2;</span>
+<span class="st">  }</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return out;</span>
+<span class="st">&quot;</span>)
+<span class="kw">add_two</span>(<span class="kw">as.numeric</span>(<span class="dv">1</span>:<span class="dv">10</span>))
+<span class="co">#&gt;  [1]  3  4  5  6  7  8  9 10 11 12</span>
+
+<span class="kw">library</span>(microbenchmark)
+x &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(<span class="dv">1</span>:<span class="fl">1e6</span>)
+<span class="kw">microbenchmark</span>(
+  <span class="kw">add_one</span>(x),
+  <span class="kw">add_two</span>(x)
+)
+<span class="co">#&gt; Unit: milliseconds</span>
+<span class="co">#&gt;        expr      min       lq      mean    median        uq      max neval</span>
+<span class="co">#&gt;  add_one(x) 8.563342 8.972901 13.536127 11.944249 14.824646 61.31282   100</span>
+<span class="co">#&gt;  add_two(x) 3.874042 4.061106  6.709397  6.950328  9.793135 10.78645   100</span></code></pre>
+<p>On my computer, <code>add_two()</code> is about twice as fast as <code>add_one()</code> for a million element vector. This is a common idiom in base R.</p>
+<h3>Character vectors and lists</h3>
+<p>Strings and lists are more complicated because the individual elements of a vector are <code>SEXP</code>s, not basic C data structures. Each element of a <code>STRSXP</code> is a <code>CHARSXP</code>s, an immutable object that contains a pointer to C string stored in a global pool. Use <code>STRING_ELT(x, i)</code> to extract the <code>CHARSXP</code>, and <code>CHAR(STRING_ELT(x, i))</code> to get the actual <code>const char*</code> string. Set values with <code>SET_STRING_ELT(x, i, value)</code>. Use <code>mkChar()</code> to turn a C string into a <code>CHARSXP</code> and <code>mkString()</code> to turn a C string into a <code>STRSXP</code>. Use <code>mkChar()</code> to create strings to insert in an existing vector, use <code>mkString()</code> to create a new (length 1) vector.</p>
+<p>The following function shows how to make a character vector containing known strings:</p>
+<pre class="sourceCode r"><code class="sourceCode r">abc &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="ot">NULL</span>, <span class="st">&#39;</span>
+<span class="st">  SEXP out = PROTECT(allocVector(STRSXP, 3));</span>
+
+<span class="st">  SET_STRING_ELT(out, 0, mkChar(&quot;a&quot;));</span>
+<span class="st">  SET_STRING_ELT(out, 1, mkChar(&quot;b&quot;));</span>
+<span class="st">  SET_STRING_ELT(out, 2, mkChar(&quot;c&quot;));</span>
+
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return out;</span>
+<span class="st">&#39;</span>)
+<span class="kw">abc</span>()
+<span class="co">#&gt; [1] &quot;a&quot; &quot;b&quot; &quot;c&quot;</span></code></pre>
+<p>Things are a little harder if you want to modify the strings in the vector because you need to know a lot about string manipulation in C (which is hard, and harder to do right). For any problem that involves any kind of string modification, you’re better off using Rcpp.</p>
+<p>The elements of a list can be any other <code>SEXP</code>, which generally makes them hard to work with in C (you’ll need lots of <code>switch</code> statements to deal with the possibilities). The accessor functions for lists are <code>VECTOR_ELT(x, i)</code> and <code>SET_VECTOR_ELT(x, i, value)</code>.</p>
+<h3>Modifying inputs</h3>
+<p>You must be very careful when modifying function inputs. The following function has some rather unexpected behaviour:</p>
+<pre class="sourceCode r"><code class="sourceCode r">add_three &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;numeric&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  REAL(x)[0] = REAL(x)[0] + 3;</span>
+<span class="st">  return x;</span>
+<span class="st">&#39;</span>)
+x &lt;-<span class="st"> </span><span class="dv">1</span>
+y &lt;-<span class="st"> </span>x
+<span class="kw">add_three</span>(x)
+<span class="co">#&gt; [1] 4</span>
+x
+<span class="co">#&gt; [1] 4</span>
+y
+<span class="co">#&gt; [1] 4</span></code></pre>
+<p>Not only has it modified the value of <code>x</code>, it has also modified <code>y</code>! This happens because of R’s lazy copy-on-modify semantics. To avoid problems like this, always <code>duplicate()</code> inputs before modifying them:</p>
+<pre class="sourceCode r"><code class="sourceCode r">add_four &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;numeric&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  SEXP x_copy = PROTECT(duplicate(x));</span>
+<span class="st">  REAL(x_copy)[0] = REAL(x_copy)[0] + 4;</span>
+<span class="st">  UNPROTECT(1);</span>
+<span class="st">  return x_copy;</span>
+<span class="st">&#39;</span>)
+x &lt;-<span class="st"> </span><span class="dv">1</span>
+y &lt;-<span class="st"> </span>x
+<span class="kw">add_four</span>(x)
+<span class="co">#&gt; [1] 5</span>
+x
+<span class="co">#&gt; [1] 1</span>
+y
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>If you’re working with lists, use <code>shallow_duplicate()</code> to make a shallow copy; <code>duplicate()</code> will also copy every element in the list.</p>
+<h3>Coercing scalars</h3>
+<p>There are a few helper functions that turn length one R vectors into C scalars:</p>
+<ul>
+<li><code>asLogical(x): LGLSXP -&gt; int</code></li>
+<li><code>asInteger(x): INTSXP -&gt; int</code></li>
+<li><code>asReal(x): REALSXP -&gt; double</code></li>
+<li><code>CHAR(asChar(x)): STRSXP -&gt; const char*</code></li>
+</ul>
+<p>And helpers to go in the opposite direction:</p>
+<ul>
+<li><code>ScalarLogical(x): int -&gt; LGLSXP</code></li>
+<li><code>ScalarInteger(x): int -&gt; INTSXP</code></li>
+<li><code>ScalarReal(x): double -&gt; REALSXP</code></li>
+<li><code>mkString(x): const char* -&gt; STRSXP</code></li>
+</ul>
+<p>These all create R-level objects, so they need to be <code>PROTECT()</code>ed.</p>
+<h3>Long vectors</h3>
+<p>As of R 3.0.0, R vectors can have length greater than <span class="math">2<sup>31</sup> − 1</span>. This means that vector lengths can no longer be reliably stored in an <code>int</code> and if you want your code to work with long vectors, you can’t write code like <code>int n = length(x)</code>. Instead use the <code>R_xlen_t</code> type and the <code>xlength()</code> function, and write <code>R_xlen_t n = xlength(x)</code>. </p>
+<h2 id="c-pairlists">Pairlists</h2>
+<p>In R code, there are only a few instances when you need to care about the difference between a pairlist and a list (as described in <a href="Expressions.html#pairlists">Pairlists</a>). In C, pairlists play much more important role because they are used for calls, unevaluated arguments, attributes, and in <code>...</code>. In C, lists and pairlists differ primarily in how you access and name elements. </p>
+<p>Unlike lists (<code>VECSXP</code>s), pairlists (<code>LISTSXP</code>s) have no way to index into an arbitrary location. Instead, R provides a set of helper functions that navigate along a linked list. The basic helpers are <code>CAR()</code>, which extracts the first element of the list, and <code>CDR()</code>, which extracts the rest of the list. These can be composed to get <code>CAAR()</code>, <code>CDAR()</code>, <code>CADDR()</code>, <code>CADDDR()</code>, and so on. Corresponding to the getters, R provides setters <code>SETCAR()</code>, <code>SETCDR()</code>, etc.</p>
+<p>The following example shows how <code>CAR()</code> and <code>CDR()</code> can pull out pieces of a quoted function call:</p>
+<pre class="sourceCode r"><code class="sourceCode r">car &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;ANY&quot;</span>), <span class="st">&#39;return CAR(x);&#39;</span>)
+cdr &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;ANY&quot;</span>), <span class="st">&#39;return CDR(x);&#39;</span>)
+cadr &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;ANY&quot;</span>), <span class="st">&#39;return CADR(x);&#39;</span>)
+
+x &lt;-<span class="st"> </span><span class="kw">quote</span>(<span class="kw">f</span>(<span class="dt">a =</span> <span class="dv">1</span>, <span class="dt">b =</span> <span class="dv">2</span>))
+<span class="co"># The first element</span>
+<span class="kw">car</span>(x)
+<span class="co">#&gt; f</span>
+<span class="co"># Second and third elements</span>
+<span class="kw">cdr</span>(x)
+<span class="co">#&gt; $a</span>
+<span class="co">#&gt; [1] 1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $b</span>
+<span class="co">#&gt; [1] 2</span>
+<span class="co"># Second element</span>
+<span class="kw">car</span>(<span class="kw">cdr</span>(x))
+<span class="co">#&gt; [1] 1</span>
+<span class="kw">cadr</span>(x)
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>Pairlists are always terminated with <code>R_NilValue</code>. To loop over all elements of a pairlist, use this template:</p>
+<pre class="sourceCode r"><code class="sourceCode r">count &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">x =</span> <span class="st">&quot;ANY&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  SEXP el, nxt;</span>
+<span class="st">  int i = 0;</span>
+
+<span class="st">  for(nxt = x; nxt != R_NilValue; el = CAR(nxt), nxt = CDR(nxt)) {</span>
+<span class="st">    i++;</span>
+<span class="st">  }</span>
+<span class="st">  return ScalarInteger(i);</span>
+<span class="st">&#39;</span>)
+<span class="kw">count</span>(<span class="kw">quote</span>(<span class="kw">f</span>(a, b, c)))
+<span class="co">#&gt; [1] 4</span>
+<span class="kw">count</span>(<span class="kw">quote</span>(<span class="kw">f</span>()))
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>You can make new pairlists with <code>CONS()</code> and new calls with <code>LCONS()</code>. Remember to set the last value to <code>R_NilValue</code>. Since these are R objects as well, they are eligible for garbage collection and must be <code>PROTECT</code>ed. In fact, it is unsafe to write code like the following:</p>
+<pre class="sourceCode r"><code class="sourceCode r">new_call &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="ot">NULL</span>, <span class="st">&#39;</span>
+<span class="st">  return LCONS(install(&quot;+&quot;), LCONS(</span>
+<span class="st">    ScalarReal(10), LCONS(</span>
+<span class="st">      ScalarReal(5), R_NilValue</span>
+<span class="st">    )</span>
+<span class="st">  ));</span>
+<span class="st">&#39;</span>)
+<span class="kw">gctorture</span>(<span class="ot">TRUE</span>)
+<span class="kw">new_call</span>()
+<span class="co">#&gt; 5 + 5</span>
+<span class="kw">gctorture</span>(<span class="ot">FALSE</span>)</code></pre>
+<p>On my machine, I get the result <code>5 + 5</code> — highly unexpected! In fact, to be safe, we must <code>PROTECT</code> each <code>ScalarReal</code> that is generated, as every R object allocation can trigger the garbage collector.</p>
+<pre class="sourceCode r"><code class="sourceCode r">new_call &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="ot">NULL</span>, <span class="st">&#39;</span>
+<span class="st">  SEXP REALSXP_10 = PROTECT(ScalarReal(10));</span>
+<span class="st">  SEXP REALSXP_5 = PROTECT(ScalarReal(5));</span>
+<span class="st">  SEXP out = PROTECT(LCONS(install(&quot;+&quot;), LCONS(</span>
+<span class="st">    REALSXP_10, LCONS(</span>
+<span class="st">      REALSXP_5, R_NilValue</span>
+<span class="st">    )</span>
+<span class="st">  )));</span>
+<span class="st">  UNPROTECT(3);</span>
+<span class="st">  return out;</span>
+<span class="st">&#39;</span>)
+<span class="kw">gctorture</span>(<span class="ot">TRUE</span>)
+<span class="kw">new_call</span>()
+<span class="co">#&gt; 10 + 5</span>
+<span class="kw">gctorture</span>(<span class="ot">FALSE</span>)</code></pre>
+<p><code>TAG()</code> and <code>SET_TAG()</code> allow you to get and set the tag (aka name) associated with an element of a pairlist. The tag should be a symbol. To create a symbol (the equivalent of <code>as.symbol()</code> in R), use <code>install()</code>.</p>
+<p>Attributes are also pairlists, but come with the helper functions <code>setAttrib()</code> and <code>getAttrib()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">set_attr &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">obj =</span> <span class="st">&quot;SEXP&quot;</span>, <span class="dt">attr =</span> <span class="st">&quot;SEXP&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;SEXP&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  const char* attr_s = CHAR(asChar(attr));</span>
+
+<span class="st">  duplicate(obj);</span>
+<span class="st">  setAttrib(obj, install(attr_s), value);</span>
+<span class="st">  return obj;</span>
+<span class="st">&#39;</span>)
+x &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">10</span>
+<span class="kw">set_attr</span>(x, <span class="st">&quot;a&quot;</span>, <span class="dv">1</span>)
+<span class="co">#&gt;  [1]  1  2  3  4  5  6  7  8  9 10</span>
+<span class="co">#&gt; attr(,&quot;a&quot;)</span>
+<span class="co">#&gt; [1] 1</span></code></pre>
+<p>(Note that <code>setAttrib()</code> and <code>getAttrib()</code> must do a linear search over the attributes pairlist.)</p>
+<p>There are some (confusingly named) shortcuts for common setting operations: <code>classgets()</code>, <code>namesgets()</code>, <code>dimgets()</code>, and <code>dimnamesgets()</code> are the internal versions of the default methods of <code>class&lt;-</code>, <code>names&lt;-</code>, <code>dim&lt;-</code>, and <code>dimnames&lt;-</code>.</p>
+<h2 id="c-input-validation">Input validation</h2>
+<p>If the user provides unexpected input to your function (e.g., a list instead of a numeric vector), it’s very easy to crash R. For this reason, it’s a good idea to write a wrapper function that checks arguments are of the correct type. It’s usually easier to do this at the R level. For example, going back to our first example of C code, we might rename the C function to <code>add_</code> and write a wrapper around it to check that the inputs are ok:</p>
+<pre class="sourceCode r"><code class="sourceCode r">add_ &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">signature</span>(<span class="dt">a =</span> <span class="st">&quot;integer&quot;</span>, <span class="dt">b =</span> <span class="st">&quot;integer&quot;</span>), <span class="st">&quot;</span>
+<span class="st">  SEXP result = PROTECT(allocVector(REALSXP, 1));</span>
+<span class="st">  REAL(result)[0] = asReal(a) + asReal(b);</span>
+<span class="st">  UNPROTECT(1);</span>
+
+<span class="st">  return result;</span>
+<span class="st">&quot;</span>)
+add &lt;-<span class="st"> </span>function(a, b) {
+  <span class="kw">stopifnot</span>(<span class="kw">is.numeric</span>(a), <span class="kw">is.numeric</span>(b))
+  <span class="kw">stopifnot</span>(<span class="kw">length</span>(a) ==<span class="st"> </span><span class="dv">1</span>, <span class="kw">length</span>(b) ==<span class="st"> </span><span class="dv">1</span>)
+  <span class="kw">add_</span>(a, b)
+}</code></pre>
+<p>Alternatively, if we wanted to be more accepting of diverse inputs we could do the following:</p>
+<pre class="sourceCode r"><code class="sourceCode r">add &lt;-<span class="st"> </span>function(a, b) {
+  a &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(a)
+  b &lt;-<span class="st"> </span><span class="kw">as.numeric</span>(b)
+
+  if (<span class="kw">length</span>(a) &gt;<span class="st"> </span><span class="dv">1</span>) <span class="kw">warning</span>(<span class="st">&quot;Only first element of a used&quot;</span>)
+  if (<span class="kw">length</span>(b) &gt;<span class="st"> </span><span class="dv">1</span>) <span class="kw">warning</span>(<span class="st">&quot;Only first element of b used&quot;</span>)
+  
+  <span class="kw">add_</span>(a, b)
+}</code></pre>
+<p>To coerce objects at the C level, use <code>PROTECT(new = coerceVector(old, SEXPTYPE))</code>. This will return an error if the <code>SEXP</code> can not be converted to the desired type.</p>
+<p>To check if an object is of a specified type, you can use <code>TYPEOF</code>, which returns a <code>SEXPTYPE</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">is_numeric &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="st">&quot;x&quot;</span> =<span class="st"> &quot;ANY&quot;</span>), <span class="st">&quot;</span>
+<span class="st">  return ScalarLogical(TYPEOF(x) == REALSXP);</span>
+<span class="st">&quot;</span>)
+<span class="kw">is_numeric</span>(<span class="dv">7</span>)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">is_numeric</span>(<span class="st">&quot;a&quot;</span>)
+<span class="co">#&gt; [1] FALSE</span></code></pre>
+<p>There are also a number of helper functions which return 0 for FALSE and 1 for TRUE:</p>
+<ul>
+<li><p>For atomic vectors: <code>isInteger()</code>, <code>isReal()</code>, <code>isComplex()</code>, <code>isLogical()</code>, <code>isString()</code>.</p></li>
+<li><p>For combinations of atomic vectors: <code>isNumeric()</code> (integer, logical, real), <code>isNumber()</code> (integer, logical, real, complex), <code>isVectorAtomic()</code> (logical, integer, numeric, complex, string, raw).</p></li>
+<li><p>For matrices (<code>isMatrix()</code>) and arrays (<code>isArray()</code>).</p></li>
+<li><p>For more esoteric objects: <code>isEnvironment()</code>, <code>isExpression()</code>, <code>isList()</code> (a pair list), <code>isNewList()</code> (a list), <code>isSymbol()</code>, <code>isNull()</code>, <code>isObject()</code> (S4 objects), <code>isVector()</code> (atomic vectors, lists, expressions).</p></li>
+</ul>
+<p>Note that some of these functions behave differently to similarly named R functions with similar names. For example <code>isVector()</code> is true for atomic vectors, lists, and expressions, where <code>is.vector()</code> returns <code>TRUE</code> only if its input has no attributes apart from names.</p>
+<h2 id="c-find-source">Finding the C source code for a function</h2>
+<p>In the base package, R doesn’t use <code>.Call()</code>. Instead, it uses two special functions: <code>.Internal()</code> and <code>.Primitive()</code>. Finding the source code for these functions is an arduous task: you first need to look for their C function name in <code>src/main/names.c</code> and then search the R source code. <code>pryr::show_c_source()</code> automates this task using GitHub code search:  </p>
+<pre class="sourceCode r"><code class="sourceCode r">tabulate
+<span class="co">#&gt; function (bin, nbins = max(1L, bin, na.rm = TRUE)) </span>
+<span class="co">#&gt; {</span>
+<span class="co">#&gt;     if (!is.numeric(bin) &amp;&amp; !is.factor(bin)) </span>
+<span class="co">#&gt;         stop(&quot;&#39;bin&#39; must be numeric or a factor&quot;)</span>
+<span class="co">#&gt;     if (typeof(bin) != &quot;integer&quot;) </span>
+<span class="co">#&gt;         bin &lt;- as.integer(bin)</span>
+<span class="co">#&gt;     if (nbins &gt; .Machine$integer.max) </span>
+<span class="co">#&gt;         stop(&quot;attempt to make a table with &gt;= 2^31 elements&quot;)</span>
+<span class="co">#&gt;     nbins &lt;- as.integer(nbins)</span>
+<span class="co">#&gt;     if (is.na(nbins)) </span>
+<span class="co">#&gt;         stop(&quot;invalid value of &#39;nbins&#39;&quot;)</span>
+<span class="co">#&gt;     .Internal(tabulate(bin, nbins))</span>
+<span class="co">#&gt; }</span>
+<span class="co">#&gt; &lt;bytecode: 0x3fa01a8&gt;</span>
+<span class="co">#&gt; &lt;environment: namespace:base&gt;</span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">pryr::<span class="kw">show_c_source</span>(<span class="kw">.Internal</span>(<span class="kw">tabulate</span>(bin, nbins)))
+<span class="co">#&gt; tabulate is implemented by do_tabulate with op = 0</span></code></pre>
+<p>This reveals the following C source code (slightly edited for clarity):</p>
+<pre class="sourceCode c"><code class="sourceCode c">SEXP attribute_hidden do_tabulate(SEXP call, SEXP op, SEXP args, 
+                                  SEXP rho) {
+  checkArity(op, args);
+  SEXP in = CAR(args), nbin = CADR(args);
+  <span class="kw">if</span> (TYPEOF(in) != INTSXP)  error(<span class="st">&quot;invalid input&quot;</span>);
+
+  R_xlen_t n = XLENGTH(in);
+  <span class="co">/* FIXME: could in principle be a long vector */</span>
+  <span class="dt">int</span> nb = asInteger(nbin);
+  <span class="kw">if</span> (nb == NA_INTEGER || nb &lt; <span class="dv">0</span>)
+    error(_(<span class="st">&quot;invalid &#39;%s&#39; argument&quot;</span>), <span class="st">&quot;nbin&quot;</span>);
+  
+  SEXP ans = allocVector(INTSXP, nb);
+  <span class="dt">int</span> *x = INTEGER(in), *y = INTEGER(ans);
+  memset(y, <span class="dv">0</span>, nb * <span class="kw">sizeof</span>(<span class="dt">int</span>));
+  <span class="kw">for</span>(R_xlen_t i = <span class="dv">0</span> ; i &lt; n ; i++) {
+    <span class="kw">if</span> (x[i] != NA_INTEGER &amp;&amp; x[i] &gt; <span class="dv">0</span> &amp;&amp; x[i] &lt;= nb) {
+      y[x[i] - <span class="dv">1</span>]++;
+    }
+  }
+     
+  <span class="kw">return</span> ans;
+}</code></pre>
+<p>Internal and primitive functions have a somewhat different interface than <code>.Call()</code> functions. They always have four arguments:</p>
+<ul>
+<li><p><code>SEXP call</code>: the complete call to the function. <code>CAR(call)</code> gives the name of the function (as a symbol); <code>CDR(call)</code> gives the arguments.</p></li>
+<li><p><code>SEXP op</code>: an “offset pointer”. This is used when multiple R functions use the same C function. For example <code>do_logic()</code> implements <code>&amp;</code>, <code>|</code>, and <code>!</code>. <code>show_c_source()</code> prints this out for you.</p></li>
+<li><p><code>SEXP args</code>: a pairlist containing the unevaluated arguments to the function.</p></li>
+<li><p><code>SEXP rho</code>: the environment in which the call was executed.</p></li>
+</ul>
+<p>This gives internal functions an incredible amount of flexibility as to how and when the arguments are evaluated. For example, internal S3 generics call <code>DispatchOrEval()</code> which either calls the appropriate S3 method or evaluates all the arguments in place. This flexibility come at a price, because it makes the code harder to understand. However, evaluating the arguments is usually the first step and the rest of the function is straightforward.</p>
+<p>The following code shows <code>do_tabulate()</code> converted into standard a <code>.Call()</code> interface:</p>
+<pre class="sourceCode r"><code class="sourceCode r">tabulate2 &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">bin =</span> <span class="st">&quot;SEXP&quot;</span>, <span class="dt">nbins =</span> <span class="st">&quot;SEXP&quot;</span>), <span class="st">&#39;</span>
+<span class="st">  if (TYPEOF(bin) != INTSXP)  error(&quot;invalid input&quot;);</span>
+<span class="st">  </span>
+<span class="st">  R_xlen_t n = XLENGTH(bin);</span>
+<span class="st">  /* FIXME: could in principle be a long vector */</span>
+<span class="st">  int nb = asInteger(nbins);</span>
+<span class="st">  if (nb == NA_INTEGER || nb &lt; 0)</span>
+<span class="st">    error(&quot;invalid </span><span class="ch">\&#39;</span><span class="st">%s</span><span class="ch">\&#39;</span><span class="st"> argument&quot;, &quot;nbin&quot;);</span>
+
+<span class="st">  SEXP ans = allocVector(INTSXP, nb);</span>
+<span class="st">  int *x = INTEGER(bin), *y = INTEGER(ans);</span>
+<span class="st">  memset(y, 0, nb * sizeof(int));</span>
+<span class="st">  for(R_xlen_t i = 0 ; i &lt; n ; i++) {</span>
+<span class="st">    if (x[i] != NA_INTEGER &amp;&amp; x[i] &gt; 0 &amp;&amp; x[i] &lt;= nb) {</span>
+<span class="st">      y[x[i] - 1]++;</span>
+<span class="st">    }</span>
+<span class="st">  }</span>
+<span class="st">     </span>
+<span class="st">  return ans;</span>
+<span class="st">&#39;</span>)
+<span class="kw">tabulate2</span>(<span class="kw">c</span>(1L, 1L, 1L, 2L, 2L), <span class="dv">3</span>)
+<span class="co">#&gt; [1] 3 2 0</span></code></pre>
+<p>To get this to compile, I also removed the call to <code>_()</code> which is an internal R function used to translate error messages between different languages.</p>
+<p>The final version below moves more of the coercion logic into an accompanying R function, and does some minor restructuring to make the code a little easier to understand. I also added a <code>PROTECT()</code>; this is probably missing in the original because the author knew that it would be safe.</p>
+<pre class="sourceCode r"><code class="sourceCode r">tabulate_ &lt;-<span class="st"> </span><span class="kw">cfunction</span>(<span class="kw">c</span>(<span class="dt">bin =</span> <span class="st">&quot;SEXP&quot;</span>, <span class="dt">nbins =</span> <span class="st">&quot;SEXP&quot;</span>), <span class="st">&#39;  </span>
+<span class="st">  int nb = asInteger(nbins);</span>
+
+<span class="st">  // Allocate vector for output - assumes that there are </span>
+<span class="st">  // less than 2^32 bins, and that each bin has less than </span>
+<span class="st">  // 2^32 elements in it.</span>
+<span class="st">  SEXP out = PROTECT(allocVector(INTSXP, nb));</span>
+<span class="st">  int *pbin = INTEGER(bin), *pout = INTEGER(out);</span>
+<span class="st">  memset(pout, 0, nb * sizeof(int));</span>
+
+<span class="st">  R_xlen_t n = xlength(bin);</span>
+<span class="st">  for(R_xlen_t i = 0; i &lt; n; i++) {</span>
+<span class="st">    int val = pbin[i];</span>
+<span class="st">    if (val != NA_INTEGER &amp;&amp; val &gt; 0 &amp;&amp; val &lt;= nb) {</span>
+<span class="st">      pout[val - 1]++; // C is zero-indexed</span>
+<span class="st">    }</span>
+<span class="st">  }</span>
+<span class="st">  UNPROTECT(1);   </span>
+<span class="st">  </span>
+<span class="st">  return out;</span>
+<span class="st">&#39;</span>)
+
+tabulate3 &lt;-<span class="st"> </span>function(bin, nbins) {
+  bin &lt;-<span class="st"> </span><span class="kw">as.integer</span>(bin)
+  if (<span class="kw">length</span>(nbins) !=<span class="st"> </span><span class="dv">1</span> ||<span class="st"> </span>nbins &lt;=<span class="st"> </span><span class="dv">0</span> ||<span class="st"> </span><span class="kw">is.na</span>(nbins)) {
+    <span class="kw">stop</span>(<span class="st">&quot;nbins must be a positive integer&quot;</span>, <span class="dt">call. =</span> <span class="ot">FALSE</span>)
+  }
+  <span class="kw">tabulate_</span>(bin, nbins)
+}
+<span class="kw">tabulate3</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>), <span class="dv">3</span>)
+<span class="co">#&gt; [1] 3 2 0</span></code></pre>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+*~
+*.*~
+*.zip
+*.tar.gz
+link2data
+link2doc
+*.mp4
+*.srt
+
+# swirl
+swirl
+
+# manual
+manuals/coursera_intro_to_R.pdf
+
+# R_in_emacs
+
+

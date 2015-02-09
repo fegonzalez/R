@@ -1,0 +1,29 @@
+Basic ESS commands to get started using R/S-Plus under Emacs ( C-c means press
+the Ctrl key down and then enter c. )
+
+    Esc-p Previous Command (at command line)
+
+    Esc-n Next Command (at command line)
+
+    C-c C-v Get help on R/S object (enter name in
+
+    C-c C-d Dump object or function to a Emacs buffer for editing
+
+    C-c C-l Load file from buffer into R
+
+    C-c C-f submit a Function in current buffer to R
+
+    C-c C-j submit the current line in buffer to R
+
+    C-c C-r submit the highlignted or marked region to R
+
+    C-c TAB complete object/file name
+
+    C-h m for help on ESS mode
+
+
+    More help is available under the iESS menu in emacs:
+
+    about (Emacs Info system for on-line help for ESS)
+
+    describe (for Control/Escape sequences and definitions for ESS)

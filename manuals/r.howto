@@ -1,0 +1,794 @@
+# R language
+
+*.R file
+
+
+##############################################
+# Help
+##############################################
+
+# Packages & manuals
+http://cran.r-project.org/
+http://www.bioconductor.org/ #packages for bio. apps.
+
+# Using R in emacs
+http://ess.r-project.org/Manual/readme.html
+
+# Quick code reference
+http://cran.r-project.org/doc/contrib/Short-refcard.pdf
+
+# Advanced R
+http://adv-r.had.co.nz/
+
+##############################################
+# Package managing
+##############################################
+
+# See packages
+>
+> a <- available.packages()
+> head(rownames(a), 3)
+## [1] "A3"       "abc"      "abcdeFBA"
+
+# Is a package already installed?
+find.package("devtools")
+
+# Install packages
+install.packages("slidify")
+install.packages(c("slidify", "ggplot2", "devtools"))
+
+
+Install from an external URL (i.e. bioconductor)
+> source("http://www.bioconductor.org/biocLite.R")
+
+> bioclite(c("GenomicFeatures", "AnnotationDbi"))
+# or  bioclite()  to download all
+
+
+# Loading Packages:
+# this is necessary to make available installed packages
+
+library(ggplot2) # example of loading the "ggplot2" package into R.
+
+
+# Unloading Packages:
+detach("package:ggplot2", unload=TRUE)
+
+
+# Data Sets
+# Loads specified data sets, or list the available data sets.
+data(set_name)
+
+##############################################
+# Help
+##############################################
+
+# Access help file
+?rnorm
+
+# Search help files
+help.search("rnorm")
+
+# Get arguments
+args("rnorm")
+
+
+# To remove all variables from R's memory, type
+> > rm(list=ls())
+# Remove variable x
+> rm(x)
+
+##############################################
+# Objects management
+##############################################
+
+# type of object "integer", ...
+class(x)
+# to see what an object looks like internally
+unclass(x)
+str(unclass(x)) #to have a more compact view
+
+# Test Objects for Exact Equality (if, while, ...)
+identical(object_a, object_b)
+# use identical instead "==" or "!=": see "?identical"
+
+# Object detailed info
+str(object)
+summary(object, ...) # i.e. to see #NA's
+object.size(x)
+
+#WARNING It is possible to assign a value to a property of an object
+names(vect2) <- c("foo", "bar", "norf")
+
+
+
+#-------------------------
+# Factors
+#-------------------------
+
+# What is a factor: integer vector where each integer has a label
+# HINT: equivalent to "enum" in C++
+
+# Example.-
+# > x <- factor(c("yes", "yes", "no", "yes", "no"))
+# > class(x)
+# [1] "factor"
+# > x
+# [1] yes yes no  yes no
+# Levels: no yes
+
+#-------------------------
+# Workspace and Files
+#-------------------------
+
+getwd()  # working directory?
+
+#dir files in work dir
+ls()
+dir()
+ls.str() #type & value of every object in memory
+
+#commands to use
+list.
+dir.
+file.
+unlink() #rm dir
+tempfile()
+
+#-------------------------
+# Download data from the Internet
+#-------------------------
+
+download.file()
+# Important parameters: url, destfile, method
+dateDownloaded <- date()
+
+# Example.-
+url_value <- "https://data.baltimorecity.gov/api/views/dz54-2aru/rows.csv?accessType=DOWNLOAD";
+destfile_value <- "./cameras.csv";
+method_value <- "curl";
+download.file(url = url_value, destfile = destfile_value, method = method_value)
+
+
+
+#-------------------------
+# Sequences of numbers
+#-------------------------
+
+seq()
+rep()
+
+
+#-------------------------
+# Logical operators
+#-------------------------
+
+! x
+x & y
+x && y
+x | y
+x || y
+xor(x, y)
+isTRUE(x)
+
+# vectorized logical operators (&, |) vs non-vectorized operators (&&, ||):
+# vectorized= bit-wise operator, evaluate across a vector
+# non = control-flow operators (if ...)
+# non-vectorized over a vector: only evaluates the first element of the vector
+> a
+[1] 1 2 3
+> c
+[1] 1 0 0
+> a&c
+[1] TRUE FALSE FALSE
+> a&&c
+[1] TRUE
+> a|c
+[1] TRUE TRUE TRUE
+> a||c
+[1] TRUE
+
+
+
+#-------------------------
+# Vectors
+#-------------------------
+
+WARNING: vector first index = 1 # unlike C (0)
+paste()
+
+#
+# subsetting vectors
+#
+x[1:10]
+
+#
+# vector indexing: logical, + int, - int, named, (subset)
+#
+
+# logical
+y <- x[!is.na(x)] # only valid elements of a vector
+y[y>0]      # positive values only
+which(y>7)
+any(y>7)
+all(y>7)
+# positive integer
+x[c(3,5,7)]   # exact positions
+# negative integer
+x[c(-2, -10)] = x[-c(2, 10)] # x EXCEPT for the 2nd and 10
+# 'named' elements.
+vect <- c(foo = 11, bar = 2, norf = NA)
+vect["bar"]
+vect[c("foo", "bar")]
+# subset
+subset(x, subset = x>0) #NA values are removed
+
+
+# Search elements in vectors
+is.element('b', vector)
+'b' %in% vctor
+which()
+match()
+grep()
+
+#-------------------------
+# Dates & Times
+#-------------------------
+
+Sys.Date()
+Sys.time()
+POSIXct
+POSIXlt
+weekdays()
+months()
+quarters()
+strptime() # converts character vectors to POSIXlt
+difftime()
+"lubridate" package #for more deep and detailed features
+cbind()
+rbind()
+
+
+
+
+#-------------------------
+# Matrices and Data Frames
+#-------------------------
+
+# Matrices: can only contain a single class of data.
+# data frames: can consist of many different classes of data.
+
+#
+# a matrix is a vector with dim() attribute
+#
+matrix(1:20)
+# equivalent to
+(one_vector <- 1:20)
+dim(one_vector) <- c(4,5)
+
+#data.frame & data.table
+data.frame() # excel table like
+mydata <- read.csv("data.csv")
+mydata <- read.table("data.csv", sep = ",", header = TRUE)
+fread("data.csv") #Similar to ‘read.table’ but FASTER and more convenient
+
+data.table() #{data.table package}
+# Inherets from data.frame
+# Much, much faster at subsetting, group, and updating
+#
+#see howto examples.-
+#domument "getting_and_cleaning_data.notes.txt"
+# example(data.table)
+
+
+#access to "mydata", column "Ozone"
+mydata$Ozone
+mydata[47, "Ozone"]
+
+table(mydata$Ozone)
+##
+# table example.-
+#
+# > hd1
+#         Date sulfate nitrate ID
+# 1 2003-01-01      NA    3.33  1
+# 2 2003-01-02      NA      NA  1
+# 3 2003-01-03      NA    3.33  1
+# 4 2003-01-04      NA      NA  1
+# 5 2003-01-05      NA      NA  1
+# 6 2003-01-06    21.2    2.20  1
+#
+# > table(hd1$nitrate)
+#  2.2 3.33            # row 1 = range of values (no.na)
+#    1    2            # row 2 = occurrences of values
+##
+
+
+subset(mydata, Ozone > 31 & Temp > 90)
+head()
+tile()
+
+#data info
+str(mydata) #BEST data view # first line type & size,. ...
+summary(mydata)  # mean, median, #NA's, ...
+dim()
+nrow()
+ncol()
+colnames()
+rownames()
+row.names()
+mean(x = mydata200$nitrate[mydata200$sulfate > 4], na.rm = TRUE)
+mean(subset(mydata200, sulfate > 4)$nitrate, na.rm = TRUE)
+
+
+# Selection using the Subset Function
+
+
+# In the next example, we select all men over the age of 25 and we keep
+# variables weight through income (weight, income and all columns between
+# them).
+
+# using subset function (part 2)
+newdata <- subset(mydata, sex=="m" & age > 25, select=weight:income)
+
+
+# The subset( ) function is the easiest way to select variables and
+# observations. In the following example, we select all rows that have a value
+# of age greater than or equal to 20 or age less then 10. We keep the ID and
+# Weight columns.
+newdata <- subset(mydata, age >= 20 | age < 10, select=c(ID, Weight))
+
+# warning VALID USAGE
+#
+# i.e. cols = { 1=ID, 2=Weight , ...}
+#
+# select = c(ID, Weight)          # OK ids
+# select = c("ID", "Weight")      # OK id names
+# select = c(1, 2)                # OK numbers
+# select = c(ID, 2)               # Error mixing ids & numbers
+# select = c(ID, "Weight")        # Error mixing ids & id names
+# select = c("ID", 2)             # Error mixing id names & numbers
+
+
+#-------------------------
+# Handle Missing Values in Objects
+#-------------------------
+
+na.omit()
+na.fail(object, ...)
+na.exclude(object, ...)
+na.pass(object, ...)
+
+complete.cases()
+is.na()
+
+# na.omit example.-
+# > my_raw_data
+#
+#         Date sulfate nitrate ID
+# 1 2003-01-01       1      11  1
+# 2 2003-01-02       2      11  1
+# 3 2003-01-03      NA      NA  1
+# 4 2003-01-04      NA      11  1
+# 5 2003-01-05      NA      NA  1
+# 6 2003-01-06      NA      NA  1
+#
+# > na.omit(my_raw_data)
+#
+#         Date sulfate nitrate ID
+# 1 2003-01-01       1      11  1
+# 2 2003-01-02       2      11  1
+
+
+#--------------------------------------------------
+# loop functions: Split-Apply-Combine methodology
+#--------------------------------------------------
+
+lapply(object, function)   #returns a list
+
+sapply()                   #same as lapply but returns a vector / matrix
+# if the result is a list where every element is of length one, then sapply()
+# returns a vector. If the result is a list where every element is a vector of
+# the same length (> 1), sapply() returns a matrix. If sapply() can't figure
+# things out, then it just returns a list, no different from what lapply()
+# would give you.
+
+vapply() # idem 'sapply' BUT the returned type can be specified EXPLICITLY.
+# * Safer: If the result doesn't match the format you specify, vapply() will
+# throw an error, causing the operation to stop.
+# * Faster: vapply() may perform faster than sapply() for large datasets.
+# i.e. vapply(the_object, unique, numeric(1))
+
+tapply() #Apply a function over subsets of a VECTOR
+#
+# Example.- calculate the mean circumference of different Tree groups:
+# > tapply(Orange$circumference, Orange$TreeType, mean)
+#
+
+apply(X, MARGIN, FUN, ...)
+# Apply a function over the margins of an array
+# It is most often used to apply a function to the rows or columns of a matrix
+# It is not really faster than writing a loop, but it works in one line!
+#
+# MARGIN: E.g., for a matrix: 1=rows, 2=columns, c(1, 2) = rows and columns
+# e.g. apply(x, 1, quantile, probs = c(0.25, 0.75))
+#
+# shortcuts:
+# rowSums = apply(x, 1, sum) ; rowMeans; colSums; colMeans
+#
+# WARNING: The shortcut functions are much faster, but you won’t notice unless
+# you’re using a large matrix.
+
+
+mapply() #Multivariate version of lapply which applies a function in PARALLEL
+	 #over a set of arguments
+# e.g. instead of "list(rep(1, 4), rep(2, 3), rep(3, 2), rep(4, 1))"
+# we can do  "mapply(rep, 1:4, 4:1)"
+
+
+split(x,f)  # divides the data in the vector x into the groups defined by f
+            # common use with lapply.- lapply(split(x, f), mean)
+
+
+#-------------------------
+# 'anonymous functions'
+#-------------------------
+
+functions: has no name and disappears as soon as lapply() is done using it.
+# example.- function(elem) elem[2])
+# lapply(unique_vals, function(elem) elem[2]))
+
+
+#------------------------------
+# probability distribution in R
+#------------------------------
+
+# Each probability distribution in R has an :
+# r*** function (for "random")
+# d*** function (for "density")
+# p*** (for "probability")
+# q*** (for "quantile")
+dbinom()
+pbinom()
+qbinom()
+rbinom()
+
+#------------------------------
+# simulating random numbers (& permutations)
+#------------------------------
+
+set.seed() #Setting the random number seed with set.seed ensures REPRODUCIBILITY
+           #CRITICAL! do always set.seed(SAME_NUMBER) at simulation begin
+
+sample()
+replicate()
+
+# distributions (i.e. dnorm, pnorm, qnorm,rnorm)
+d... : Density
+p... : distribution function
+q... : quantile function
+r... : random generation
+
+# Use examples.-
+
+# simulate from probability distributions (rbinom, rnorm, rpois, ...)
+rbinom(n, size, prob) # Binomial Distribution
+
+# # Example.- number of heads in 100 flips of our unfair coin (prob head = 0.7)
+# rbinom(1, size=100, prob=0.7)
+
+# # Example.- example of 100 observations:
+# sample(c(0,1), 100, replace=TRUE,prob = c(0.3, 0.7))
+# rbinom(n = 100, size=1, prob=0.7)
+
+#------------------------------
+# Base Graphics
+#------------------------------
+
+# data(object)   #before pot, load the object to plot
+plot()
+?par
+?points
+boxplot()
+# boxplot(formula = mpg ~ cyl, data = mtcars) # OX = cyl; OY = mpg
+hist()
+
+# http://www.ling.upenn.edu/~joseff/rstudy/week4.html
+
+
+
+#------------------------------
+# I/O
+#------------------------------
+
+# outputs (cout like): standard output, file, ...
+print()
+cat()
+
+
+# file
+file()
+sink()
+close()
+writeLines()
+
+
+#------------------------------
+# Debugging
+#------------------------------
+
+
+stopifnot()  #assert like
+stop()       #rise an error (like C++ throw()) -> use catch(error)
+warning()    #rise an error (like C++ throw()) -> use catch(warning)
+
+# Indications that something’s not right:
+message()
+warning()
+error()
+condition()
+
+options(warn = 2) # Convert warnings to errors
+options(warn = 0) # default value
+
+# Debugging Tools in R:
+#
+# https://support.rstudio.com/hc/en-us/articles/200713843-Debugging-with-RStudio
+#
+
+traceback() # prints out the function call stack after an error occurs; does
+            # nothing if there’s no error.
+
+debug()     # flags a function for “debug” mode which allows you to step through
+debugonce() # execution of a function one line at a time.
+
+browser()   # suspends the execution of a function wherever it is called and
+	    # puts the function in debug mode.
+
+recover()   # allows you to modify the error behavior
+
+
+trace()     # allows you to insert debugging code into a function at specific
+	    # places.
+findLineNum()
+setBreakpoint()  # functions in the utils package work with line number
+		 # references to compute locations for calls to trace().
+
+# How to use:
+
+* inside a function code:
+
+function(x)
+{
+    ...
+
+    browser(); #inserting a breakpoint
+
+    if (x == 0) browser(); # Inserting conditional breakpoints in the code
+
+    ...
+}
+
+* from the console:
+
+  1) debug(function_name), trace(function_name)
+  2) function_name() #debug beginning
+
+* Commands debug/browse mode:
+
+  n: next instruction
+  s: step
+  c: cont
+  f: finish execution of the current loop or function
+  Q: quit debug mode
+
+  HINT: options(browserNLdisabled = TRUE) #disable ENTER key in debug mode
+
+
+# Error modes
+  options(error = browser) # session in debug mode (debug mode upon an error)
+  options(error = recover) # recover mode upon an error
+  options(error = stop)    # stop debug mode upon an error
+
+
+
+# Recommended debugging routine.
+
+1)traceback()
+
+2) options(error=recover): this immediately switches into browser mode WHERE
+   the error occurs,
+
+3) debug(): step through the script line by line.
+
+4) findLineNum() and setBreakpoint() functions.
+
+
+# Optimization
+system.time()
+
+
+
+#######################################################
+# Environments & assign operators
+#######################################################
+
+
+# `<-` operator
+# assign a value to a local variable (local to the current environment)
+
+# `<<-` operator
+#
+# assign a value to an object declared in an extern (more global) environment
+# than the current environment.
+
+
+# Examples.-
+
+  makeVector <- function(x = numeric())
+
+  { # ENVIRONMENT  "makeVector" begin
+
+      set <- function(y)
+      {
+	  # x is defined in an extern environment -> not a local variable
+	  #
+          # curent environment: set() method
+	  # x environment:  makeVector  "class"
+
+	  x <<- y   # let's call x1 to makeVector.x
+      }
+
+      get <- function()
+      {
+        return(x);  # Here x is x1
+      }
+
+    set_bis <- function(y)
+      {
+          # Here 'x' is a local parameter (set_bis.x)
+          x <- y * 2;
+
+          # # Here x is x1 (makeVector.x)
+	  x <<- y;
+      }
+
+
+      list(set = set, get = get); #warning: R class = a list of methods
+
+  } # ENVIRONMENT  "makeVector" end
+
+
+
+
+#######################################################
+# Profiling (performance analysis) R Code
+#######################################################
+
+system.time(expression)
+proc.time()
+  #  user  system elapsed
+  # 2.502   0.005   2.524
+
+# Improvement
+#
+# - Multi-threaded BLAS libraries (vecLib/Accelerate, ATLAS, ACML, MKL)
+#
+# - Parallel processing via the parallel package
+
+
+#
+# The R Profiler:  Rprof()
+#
+
+ !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
+ !!
+ !! DO NOT use system.time() and Rprof() together or you will be sad !!
+ !!
+ !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
+
+Rprof()
+summaryRprof()
+
+Examples.
+
+Rprof(tmp <- tempfile())
+example(glm)
+Rprof()
+summaryRprof(tmp)
+unlink(tmp)
+
+
+
+# See Also:
+# The chapter on “Tidying and profiling R code” in “Writing R Extensions” (see
+# the ‘doc/manual’ subdirectory of the R source tree).
+
+# More detailed analysis of the output can be achieved by the tools in the CRAN
+# packages proftools and profr: in particular these allow call graphs to be
+# studied.
+
+
+
+#######################################################
+# Classes in R = functions on list of public methods
+#######################################################
+
+## class = function = list of public methods
+## (See "list" definition inside)
+
+MyTestClass<- function(x = integer())
+{
+
+  # public methods: set, get
+  # MUST be included in the "list" at the end.
+  # MUST be defined before the "list".
+
+  set <- function(new_value)
+  {
+    x <<- doble(new_value);
+    y <<- new_value;
+    cat("x = ", x, " ; y = ", y, "\n");
+  }
+
+  get <- function()
+  {
+    return (x);
+  }
+
+
+  # private method:
+  # MUST NOT be included in "list"
+  # MUST be defined before the "list".
+  doble  <- function(x)
+  {2*x;}
+
+
+  # class = list of public methods
+  list(set = set,
+      get = get);
+
+
+} # end of the "class" MyTestClass
+
+
+
+
+##############################################
+# Data INPUT / OUTPUT (more details in Getting_Cleaning_Data course notes.txt)
+##############################################
+
+# Download data from the Internet
+download.file() # Important parameters: url, destfile, method
+
+# Reading local (flat) files
+read.table()  # read.table("data.csv", sep = ",", header = TRUE)
+read.csv()    # read.csv("data.csv")
+write.table(DT, file_name, row.names=F, col.names=TRUE, sep="\t", quote=FALSE)
+
+# Reading & Writing (local) excel files
+read.xlsx()  {xlsx package}
+read.xlsx2() {xlsx package} # faster but can be unstable for reading for
+			    # reading subsets of rows
+write.xlsx() {xlsx package}
+
+# Reading & Parsing XML file
+xmlTreeParse()  {XML package} # generates an XML tree
+xmlRoot
+xmlSApply() # Applies a function to each of the children of an XMLNode (wrapper
+	    # of lapply)
+xpathSApply()
+
+# Reading JSON (Javascript Object Notation)
+fromJSON()  {jsonlite package} # R <- JSON string, URL or file
+toJSON()  {jsonlite package} # JSON <- R
+
+
+
+##############################################
+# Memory management
+##############################################
+
+tracemem() # Trace Copying of Objects
+address()  # data.table,
+

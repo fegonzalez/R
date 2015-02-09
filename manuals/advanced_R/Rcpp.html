@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rcpp &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/Rcpp.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="rcpp">High performance functions with Rcpp</h1>
+<p>Sometimes R code just isn’t fast enough. You’ve used profiling to figure out where your bottlenecks are, and you’ve done everything you can in R, but your code still isn’t fast enough. In this chapter you’ll learn how to improve performance by rewriting key functions in C++. This magic comes by way of the <a href="http://www.rcpp.org/">Rcpp</a> package, a fantastic tool written by Dirk Eddelbuettel and Romain Francois (with key contributions by Doug Bates, John Chambers, and JJ Allaire). Rcpp makes it very simple to connect C++ to R. While it is <em>possible</em> to write C or Fortran code for use in R, it will be painful by comparison. Rcpp provides a clean, approachable API that lets you write high-performance code, insulated from R’s arcane C API.  </p>
+<p>Typical bottlenecks that C++ can address include:</p>
+<ul>
+<li><p>Loops that can’t be easily vectorised because subsequent iterations depend on previous ones.</p></li>
+<li><p>Recursive functions, or problems which involve calling functions millions of times. The overhead of calling a function in C++ is much lower than that in R.</p></li>
+<li><p>Problems that require advanced data structures and algorithms that R doesn’t provide. Through the standard template library (STL), C++ has efficient implementations of many important data structures, from ordered maps to double-ended queues.</p></li>
+</ul>
+<p>The aim of this chapter is to discuss only those aspects of C++ and Rcpp that are absolutely necessary to help you eliminate bottlenecks in your code. We won’t spend much time on advanced features like object oriented programming or templates because the focus is on writing small, self-contained functions, not big programs. A working knowledge of C++ is helpful, but not essential. Many good tutorials and references are freely available, including <a href="http://www.learncpp.com/">http://www.learncpp.com/</a> and <a href="http://www.cplusplus.com/">http://www.cplusplus.com/</a>. For more advanced topics, the <em>Effective C++</em> series by Scott Meyers is popular choice. You may also enjoy Dirk Eddelbuettel’s <a href="http://www.springer.com/statistics/computational+statistics/book/978-1-4614-6867-7"><em>Seamless R and C++ integration with Rcpp</em></a>, which goes into much greater detail into all aspects of Rcpp.</p>
+<h5>Outline</h5>
+<ul>
+<li><p><a href="Rcpp.html#rcpp-intro">Getting started with C++</a> teaches you how to write C++ by converting simple R functions to their C++ equivalents. You’ll learn how C++ differs from R, and what the key scalar, vector, and matrix classes are called.</p></li>
+<li><p><a href="Rcpp.html#sourceCpp">Using sourceCpp</a> shows you how to use <code>sourceCpp()</code> to load a C++ file from disk in the same way you use <code>source()</code> to load a file of R code.</p></li>
+<li><p><a href="Rcpp.html#rcpp-classes">Attributes &amp; other classes</a> discusses how to modify attributes from Rcpp, and mentions some of the other important classes.</p></li>
+<li><p><a href="Rcpp.html#rcpp-na">Missing values</a> teaches you how to work with R’s missing values in C++.</p></li>
+<li><p><a href="Rcpp.html#rcpp-sugar">Rcpp sugar</a> discusses Rcpp “sugar”, which allows you to avoid loops in C++ and write code that looks very similar to vectorised R code.</p></li>
+<li><p><a href="Rcpp.html#stl">The STL</a> shows you how to use some of the most important data structures and algorithms from the standard template library, or STL, built-in to C++.</p></li>
+<li><p><a href="Rcpp.html#rcpp-case-studies">Case studies</a> shows two real case studies where Rcpp was used to get considerable performance improvements.</p></li>
+<li><p><a href="Rcpp.html#rcpp-package">Putting Rcpp in a package</a> teaches you how to add C++ code to a package.</p></li>
+<li><p><a href="Rcpp.html#rcpp-more">Learning more</a> concludes the chapter with pointers to more resources to help you learn Rcpp and C++.</p></li>
+</ul>
+<h5>Prerequistes</h5>
+<p>All examples in this chapter need version 0.10.1 or above of the <code>Rcpp</code> package. This version includes <code>cppFunction()</code> and <code>sourceCpp()</code>, which makes it very easy to connect C++ to R. Install the latest version of Rcpp from CRAN with <code>install.packages(&quot;Rcpp&quot;)</code>.</p>
+<p>You’ll also need a working C++ compiler. To get it:</p>
+<ul>
+<li>On Windows, install <a href="http://cran.r-project.org/bin/windows/Rtools/">Rtools</a>.</li>
+<li>On Mac, install Xcode from the app store.</li>
+<li>On Linux, <code>sudo apt-get install r-base-dev</code> or similar.</li>
+</ul>
+<h2 id="rcpp-intro">Getting started with C++</h2>
+<p><code>cppFunction()</code> allows you to write C++ functions in R: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(Rcpp)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: &#39;Rcpp&#39;</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; The following object is masked from &#39;package:inline&#39;:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     registerPlugin</span>
+<span class="kw">cppFunction</span>(<span class="st">&#39;int add(int x, int y, int z) {</span>
+<span class="st">  int sum = x + y + z;</span>
+<span class="st">  return sum;</span>
+<span class="st">}&#39;</span>)
+<span class="co"># add works like a regular R function</span>
+add
+<span class="co">#&gt; function (x, y, z) </span>
+<span class="co">#&gt; .Primitive(&quot;.Call&quot;)(&lt;pointer: 0x7f9d999537c0&gt;, x, y, z)</span>
+<span class="kw">add</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)
+<span class="co">#&gt; [1] 6</span></code></pre>
+<p>When you run this code, Rcpp will compile the C++ code and construct an R function that connects to the compiled C++ function. We’re going to use this simple interface to learn how to write C++. C++ is a large language, and there’s no way to cover it all in just one chapter. Instead, you’ll get the basics so that you can start writing useful functions to address bottlenecks in your R code.</p>
+<p>The following sections will teach you the basics by translating simple R functions to their C++ equivalents. We’ll start simple with a function that has no inputs and a scalar output, and then get progressively more complicated:</p>
+<ul>
+<li>Scalar input and scalar output</li>
+<li>Vector input and scalar output</li>
+<li>Vector input and vector output</li>
+<li>Matrix input and vector output</li>
+</ul>
+<h3>No inputs, scalar output</h3>
+<p>Let’s start with a very simple function. It has no arguments and always returns the integer 1:</p>
+<pre class="sourceCode r"><code class="sourceCode r">one &lt;-<span class="st"> </span>function() 1L</code></pre>
+<p>The equivalent C++ function is:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">int</span> one() {
+  <span class="kw">return</span> <span class="dv">1</span>;
+}</code></pre>
+<p>We can compile and use this from R with <code>cppFunction</code></p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">&#39;int one() {</span>
+<span class="st">  return 1;</span>
+<span class="st">}&#39;</span>)</code></pre>
+<p>This small function illustrates a number of important differences between R and C++:</p>
+<ul>
+<li><p>The syntax to create a function looks like the syntax to call a function; you don’t use assignment to create functions as you do in R.</p></li>
+<li><p>You must declare the type of output the function returns. This function returns an <code>int</code> (a scalar integer). The classes for the most common types of R vectors are: <code>NumericVector</code>, <code>IntegerVector</code>, <code>CharacterVector</code>, and <code>LogicalVector</code>.</p></li>
+<li><p>Scalars and vectors are different. The scalar equivalents of numeric, integer, character, and logical vectors are: <code>double</code>, <code>int</code>, <code>String</code>, and <code>bool</code>.</p></li>
+<li><p>You must use an explicit <code>return</code> statement to return a value from a function.</p></li>
+<li><p>Every statement is terminated by a <code>;</code>.</p></li>
+</ul>
+<h3>Scalar input, scalar output</h3>
+<p>The next example function implements a scalar version of the <code>sign()</code> function which returns 1 if the input is positive, and -1 if it’s negative:</p>
+<pre class="sourceCode r"><code class="sourceCode r">signR &lt;-<span class="st"> </span>function(x) {
+  if (x &gt;<span class="st"> </span><span class="dv">0</span>) {
+    <span class="dv">1</span>
+  } else if (x ==<span class="st"> </span><span class="dv">0</span>) {
+    <span class="dv">0</span>
+  } else {
+    -<span class="dv">1</span>
+  }
+}
+
+<span class="kw">cppFunction</span>(<span class="st">&#39;int signC(int x) {</span>
+<span class="st">  if (x &gt; 0) {</span>
+<span class="st">    return 1;</span>
+<span class="st">  } else if (x == 0) {</span>
+<span class="st">    return 0;</span>
+<span class="st">  } else {</span>
+<span class="st">    return -1;</span>
+<span class="st">  }</span>
+<span class="st">}&#39;</span>)</code></pre>
+<p>In the C++ version:</p>
+<ul>
+<li><p>We declare the type of each input in the same way we declare the type of the output. While this makes the code a little more verbose, it also makes it very obvious what type of input the function needs.</p></li>
+<li><p>The <code>if</code> syntax is identical — while there are some big differences between R and C++, there are also lots of similarities! C++ also has a <code>while</code> statement that works the same way as R’s. As in R you can use <code>break</code> to exit the loop, but to skip one iteration you need to use <code>continue</code> instead of <code>next</code>.</p></li>
+</ul>
+<h3>Vector input, scalar output</h3>
+<p>One big difference between R and C++ is that the cost of loops is much lower in C++. For example, we could implement the <code>sum</code> function in R using a loop. If you’ve been programming in R a while, you’ll probably have a visceral reaction to this function!</p>
+<pre class="sourceCode r"><code class="sourceCode r">sumR &lt;-<span class="st"> </span>function(x) {
+  total &lt;-<span class="st"> </span><span class="dv">0</span>
+  for (i in <span class="kw">seq_along</span>(x)) {
+    total &lt;-<span class="st"> </span>total +<span class="st"> </span>x[i]
+  }
+  total
+}</code></pre>
+<p>In C++, loops have very little overhead, so it’s fine to use them. In <a href="Rcpp.html#stl">STL</a>, you’ll see alternatives to <code>for</code> loops that more clearly express your intent; they’re not faster, but they can make your code easier to understand.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">&#39;double sumC(NumericVector x) {</span>
+<span class="st">  int n = x.size();</span>
+<span class="st">  double total = 0;</span>
+<span class="st">  for(int i = 0; i &lt; n; ++i) {</span>
+<span class="st">    total += x[i];</span>
+<span class="st">  }</span>
+<span class="st">  return total;</span>
+<span class="st">}&#39;</span>)</code></pre>
+<p>The C++ version is similar, but:</p>
+<ul>
+<li><p>To find the length of the vector, we use the <code>.size()</code> method, which returns an integer. C++ methods are called with <code>.</code> (i.e., a full stop).</p></li>
+<li><p>The <code>for</code> statement has a different syntax: <code>for(init; check; increment)</code>. This loop is initialised by creating a new variable called <code>i</code> with value 0. Before each iteration we check that <code>i &lt; n</code>, and terminate the loop if it’s not. After each iteration, we increment the value of <code>i</code> by one, using the special prefix operator <code>++</code> which increases the value of <code>i</code> by 1.</p></li>
+<li><p>In C++, vector indices start at 0. I’ll say this again because it’s so important: <strong>IN C++, VECTOR INDICES START AT 0</strong>! This is a very common source of bugs when converting R functions to C++.</p></li>
+<li><p>Use <code>=</code> for assignment, not <code>&lt;-</code>.</p></li>
+<li><p>C++ provides operators that modify in-place: <code>total += x[i]</code> is equivalent to <code>total = total + x[i]</code>. Similar in-place operators are <code>-=</code>, <code>*=</code>, and <code>/=</code>.</p></li>
+</ul>
+<p>This is a good example of where C++ is much more efficient than R. As shown by the following microbenchmark, <code>sumC()</code> is competitive with the built-in (and highly optimised) <code>sum()</code>, while <code>sumR()</code> is several orders of magnitude slower.</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="fl">1e3</span>)
+<span class="kw">microbenchmark</span>(
+  <span class="kw">sum</span>(x),
+  <span class="kw">sumC</span>(x),
+  <span class="kw">sumR</span>(x)
+)
+<span class="co">#&gt; Unit: microseconds</span>
+<span class="co">#&gt;     expr    min     lq   mean median       uq     max neval</span>
+<span class="co">#&gt;   sum(x)   2.46   2.91   3.67   3.25     3.72    23.4   100</span>
+<span class="co">#&gt;  sumC(x)   5.30   6.39   8.25   7.35     8.46    48.7   100</span>
+<span class="co">#&gt;  sumR(x) 566.00 746.00 941.58 921.00 1,070.00 2,430.0   100</span></code></pre>
+<h3>Vector input, vector output</h3>
+<!-- FIXME: come up with better example. Also fix in two other places it occurs -->
+
+<p>Next we’ll create a function that computes the Euclidean distance between a value and a vector of values:</p>
+<pre class="sourceCode r"><code class="sourceCode r">pdistR &lt;-<span class="st"> </span>function(x, ys) {
+  <span class="kw">sqrt</span>((x -<span class="st"> </span>ys) ^<span class="st"> </span><span class="dv">2</span>)
+}</code></pre>
+<p>It’s not obvious that we want <code>x</code> to be a scalar from the function definition. We’d need to make that clear in the documentation. That’s not a problem in the C++ version because we have to be explicit about types:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">&#39;NumericVector pdistC(double x, NumericVector ys) {</span>
+<span class="st">  int n = ys.size();</span>
+<span class="st">  NumericVector out(n);</span>
+
+<span class="st">  for(int i = 0; i &lt; n; ++i) {</span>
+<span class="st">    out[i] = sqrt(pow(ys[i] - x, 2.0));</span>
+<span class="st">  }</span>
+<span class="st">  return out;</span>
+<span class="st">}&#39;</span>)</code></pre>
+<p>This function introduces only a few new concepts:</p>
+<ul>
+<li><p>We create a new numeric vector of length <code>n</code> with a constructor: <code>NumericVector out(n)</code>. Another useful way of making a vector is to copy an existing one: <code>NumericVector zs = clone(ys)</code>.</p></li>
+<li><p>C++ uses <code>pow()</code>, not <code>^</code>, for exponentiation.</p></li>
+</ul>
+<p>Note that because the R version is fully vectorised, it’s already going to be fast. On my computer, it takes around 8 ms with a 1 million element <code>y</code> vector. The C++ function is twice as fast, ~4 ms, but assuming it took you 10 minutes to write the C++ function, you’d need to run it ~150,000 times to make rewriting worthwhile. The reason why the C++ function is faster is subtle, and relates to memory management. The R version needs to create an intermediate vector the same length as y (<code>x - ys</code>), and allocating memory is an expensive operation. The C++ function avoids this overhead because it uses an intermediate scalar.</p>
+<p>In the sugar section, you’ll see how to rewrite this function to take advantage of Rcpp’s vectorised operations so that the C++ code is almost as concise as R code.</p>
+<h3>Matrix input, vector output</h3>
+<p>Each vector type has a matrix equivalent: <code>NumericMatrix</code>, <code>IntegerMatrix</code>, <code>CharacterMatrix</code>, and <code>LogicalMatrix</code>. Using them is straightforward. For example, we could create a function that reproduces <code>rowSums()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cppFunction</span>(<span class="st">&#39;NumericVector rowSumsC(NumericMatrix x) {</span>
+<span class="st">  int nrow = x.nrow(), ncol = x.ncol();</span>
+<span class="st">  NumericVector out(nrow);</span>
+
+<span class="st">  for (int i = 0; i &lt; nrow; i++) {</span>
+<span class="st">    double total = 0;</span>
+<span class="st">    for (int j = 0; j &lt; ncol; j++) {</span>
+<span class="st">      total += x(i, j);</span>
+<span class="st">    }</span>
+<span class="st">    out[i] = total;</span>
+<span class="st">  }</span>
+<span class="st">  return out;</span>
+<span class="st">}&#39;</span>)
+<span class="kw">set.seed</span>(<span class="dv">1014</span>)
+x &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">sample</span>(<span class="dv">100</span>), <span class="dv">10</span>)
+<span class="kw">rowSums</span>(x)
+<span class="co">#&gt;  [1] 458 558 488 458 536 537 488 491 508 528</span>
+<span class="kw">rowSumsC</span>(x)
+<span class="co">#&gt;  [1] 458 558 488 458 536 537 488 491 508 528</span></code></pre>
+<p>The main differences:</p>
+<ul>
+<li><p>In C++, you subset a matrix with <code>()</code>, not <code>[]</code>.</p></li>
+<li><p>Use <code>.nrow()</code> and <code>.ncol()</code> <em>methods</em> to get the dimensions of a matrix.</p></li>
+</ul>
+<h3 id="sourceCpp">Using sourceCpp</h3>
+<p>So far, we’ve used inline C++ with <code>cppFunction()</code>. This makes presentation simpler, but for real problems, it’s usually easier to use stand-alone C++ files and then source them into R using <code>sourceCpp()</code>. This lets you take advantage of text editor support for C++ files (e.g., syntax highlighting) as well as making it easier to identify the line numbers in compilation errors. </p>
+<p>Your stand-alone C++ file should have extension <code>.cpp</code>, and needs to start with:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;</code></pre>
+<p>And for each function that you want available within R, you need to prefix it with:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// [[Rcpp::export]]</span></code></pre>
+<p>Note that the space is mandatory.</p>
+<p>If you’re familiar with roxygen2, you might wonder how this relates to <code>@export</code>. <code>Rcpp::export</code> controls whether a function is exported from C++ to R; <code>@export</code> controls whether a function is exported from a package and made available to the user.</p>
+<p>You can embed R code in special C++ comment blocks. This is really convenient if you want to run some test code:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">/*** R</span>
+<span class="co"># This is R code</span>
+<span class="co">*/</span></code></pre>
+<p>The R code is run with <code>source(echo = TRUE)</code> so you don’t need to explicitly print output.</p>
+<p>To compile the C++ code, use <code>sourceCpp(&quot;path/to/file.cpp&quot;)</code>. This will create the matching R functions and add them to your current session. Note that these functions can not be saved in a <code>.Rdata</code> file and reloaded in a later session; they must be recreated each time you restart R. For example, running <code>sourceCpp()</code> on the following file implements mean in C++ and then compares it to the built-in <code>mean()</code>:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+<span class="dt">double</span> meanC(NumericVector x) {
+  <span class="dt">int</span> n = x.size();
+  <span class="dt">double</span> total = <span class="dv">0</span>;
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    total += x[i];
+  }
+  <span class="kw">return</span> total / n;
+}
+
+<span class="co">/*** R</span>
+<span class="co">library(microbenchmark)</span>
+<span class="co">x &lt;- runif(1e5)</span>
+<span class="co">microbenchmark(</span>
+<span class="co">  mean(x),</span>
+<span class="co">  meanC(x)</span>
+<span class="co">)</span>
+<span class="co">*/</span></code></pre>
+<p>NB: if you run this code yourself, you’ll notice that <code>meanC()</code> is much faster than the built-in <code>mean()</code>. This is because it trades numerical accuracy for speed.</p>
+<p>For the remainder of this chapter C++ code will be presented stand-alone rather than wrapped in a call to <code>cppFunction</code>. If you want to try compiling and/or modifying the examples you should paste them into a C++ source file that includes the elements described above.</p>
+<h3>Exercises</h3>
+<p>With the basics of C++ in hand, it’s now a great time to practice by reading and writing some simple C++ functions. For each of the following functions, read the code and figure out what the corresponding base R function is. You might not understand every part of the code yet, but you should be able to figure out the basics of what the function does.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="dt">double</span> f1(NumericVector x) {
+  <span class="dt">int</span> n = x.size();
+  <span class="dt">double</span> y = <span class="dv">0</span>;
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    y += x[i] / n;
+  }
+  <span class="kw">return</span> y;
+}
+
+NumericVector f2(NumericVector x) {
+  <span class="dt">int</span> n = x.size();
+  NumericVector out(n);
+
+  out[<span class="dv">0</span>] = x[<span class="dv">0</span>];
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">1</span>; i &lt; n; ++i) {
+    out[i] = out[i - <span class="dv">1</span>] + x[i];
+  }
+  <span class="kw">return</span> out;
+}
+
+<span class="dt">bool</span> f3(LogicalVector x) {
+  <span class="dt">int</span> n = x.size();
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    <span class="kw">if</span> (x[i]) <span class="kw">return</span> <span class="kw">true</span>;
+  }
+  <span class="kw">return</span> <span class="kw">false</span>;
+}
+
+<span class="dt">int</span> f4(Function pred, List x) {
+  <span class="dt">int</span> n = x.size();
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    LogicalVector res = pred(x[i]);
+    <span class="kw">if</span> (res[<span class="dv">0</span>]) <span class="kw">return</span> i + <span class="dv">1</span>;
+  }
+  <span class="kw">return</span> <span class="dv">0</span>;
+}
+
+NumericVector f5(NumericVector x, NumericVector y) {
+  <span class="dt">int</span> n = std::max(x.size(), y.size());
+  NumericVector x1 = rep_len(x, n);
+  NumericVector y1 = rep_len(y, n);
+
+  NumericVector out(n);
+
+  <span class="kw">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    out[i] = std::min(x1[i], y1[i]);
+  }
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>To practice your function writing skills, convert the following functions into C++. For now, assume the inputs have no missing values.</p>
+<ol style="list-style-type: decimal">
+<li><p><code>all()</code></p></li>
+<li><p><code>cumprod()</code>, <code>cummin()</code>, <code>cummax()</code>.</p></li>
+<li><p><code>diff()</code>. Start by assuming lag 1, and then generalise for lag <code>n</code>.</p></li>
+<li><p><code>range</code>.</p></li>
+<li><p><code>var</code>. Read about the approaches you can take on <a href="http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance">wikipedia</a>. Whenever implementing a numerical algorithm, it’s always good to check what is already known about the problem.</p></li>
+</ol>
+<h2 id="rcpp-classes">Attributes and other classes</h2>
+<p>You’ve already seen the basic vector classes (<code>IntegerVector</code>, <code>NumericVector</code>, <code>LogicalVector</code>, <code>CharacterVector</code>) and their scalar (<code>int</code>, <code>double</code>, <code>bool</code>, <code>String</code>) and matrix (<code>IntegerMatrix</code>, <code>NumericMatrix</code>, <code>LogicalMatrix</code>, <code>CharacterMatrix</code>) equivalents.</p>
+<p>All R objects have attributes, which can be queried and modified with <code>.attr()</code>. Rcpp also provides <code>.names()</code> as an alias for the name attribute. The following code snippet illustrates these methods. Note the use of <code>::create()</code>, a <em>class</em> method. This allows you to create an R vector from C++ scalar values:  </p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+NumericVector attribs() {
+  NumericVector out = NumericVector::create(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>);
+
+  out.names() = CharacterVector::create(<span class="st">&quot;a&quot;</span>, <span class="st">&quot;b&quot;</span>, <span class="st">&quot;c&quot;</span>);
+  out.attr(<span class="st">&quot;my-attr&quot;</span>) = <span class="st">&quot;my-value&quot;</span>;
+  out.attr(<span class="st">&quot;class&quot;</span>) = <span class="st">&quot;my-class&quot;</span>;
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>For S4 objects, <code>.slot()</code> plays a similar role to <code>.attr()</code>.</p>
+<h3>Lists and data frames</h3>
+<p>Rcpp also provides classes <code>List</code> and <code>DataFrame</code>, but they are more useful for output than input. This is because lists and data frames can contain arbitrary classes but C++ needs to know their classes in advance. If the list has known structure (e.g., it’s an S3 object), you can extract the components and manually convert them to their C++ equivalents with <code>as()</code>. For example, the object created by <code>lm()</code>, the function that fits a linear model, is a list whose components are always of the same type. The following code illustrates how you might extract the mean percentage error (<code>mpe()</code>) of a linear model. This isn’t a good example of when to use C++, because it’s so easily implemented in R, but it shows how to work with an important S3 class. Note the use of <code>.inherits()</code> and the <code>stop()</code> to check that the object really is a linear model.  </p>
+<!-- FIXME: needs better motivation -->
+
+
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+<span class="dt">double</span> mpe(List mod) {
+  <span class="kw">if</span> (!mod.inherits(<span class="st">&quot;lm&quot;</span>)) stop(<span class="st">&quot;Input must be a linear model&quot;</span>);
+
+  NumericVector resid = as&lt;NumericVector&gt;(mod[<span class="st">&quot;residuals&quot;</span>]);
+  NumericVector fitted = as&lt;NumericVector&gt;(mod[<span class="st">&quot;fitted.values&quot;</span>]);
+
+  <span class="dt">int</span> n = resid.size();
+  <span class="dt">double</span> err = <span class="dv">0</span>;
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    err += resid[i] / (fitted[i] + resid[i]);
+  }
+  <span class="kw">return</span> err / n;
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">mod &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>wt, <span class="dt">data =</span> mtcars)
+<span class="kw">mpe</span>(mod)
+<span class="co">#&gt; [1] -0.0154</span></code></pre>
+<h3 id="functions-rcpp">Functions</h3>
+<p>You can put R functions in an object of type <code>Function</code>. This makes calling an R function from C++ straightforward. We first define our C++ function: </p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+RObject callWithOne(Function f) {
+  <span class="kw">return</span> f(<span class="dv">1</span>);
+}</code></pre>
+<p>Then call it from R:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">callWithOne</span>(function(x) x +<span class="st"> </span><span class="dv">1</span>)
+<span class="co">#&gt; [1] 2</span>
+<span class="kw">callWithOne</span>(paste)
+<span class="co">#&gt; [1] &quot;1&quot;</span></code></pre>
+<p>What type of object does an R function return? We don’t know, so we use the catchall type <code>RObject</code>. An alternative is to return a <code>List</code>. For example, the following code is a basic implementation of <code>lapply</code> in C++:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+List lapply1(List input, Function f) {
+  <span class="dt">int</span> n = input.size();
+  List out(n);
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {
+    out[i] = f(input[i]);
+  }
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>Calling R functions with positional arguments is obvious:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp">f(<span class="st">&quot;y&quot;</span>, <span class="dv">1</span>);</code></pre>
+<p>But to use named arguments, you need a special syntax:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp">f(_[<span class="st">&quot;x&quot;</span>] = <span class="st">&quot;y&quot;</span>, _[<span class="st">&quot;value&quot;</span>] = <span class="dv">1</span>);</code></pre>
+<h3>Other types</h3>
+<p>There are also classes for many more specialised language objects: <code>Environment</code>, <code>ComplexVector</code>, <code>RawVector</code>, <code>DottedPair</code>, <code>Language</code>, <code>Promise</code>, <code>Symbol</code>, <code>WeakReference</code>, and so on. These are beyond the scope of this chapter and won’t be discussed further.</p>
+<h2 id="rcpp-na">Missing values</h2>
+<p>If you’re working with missing values, you need to know two things: </p>
+<ul>
+<li>how R’s missing values behave in C++’s scalars (e.g., <code>double</code>).</li>
+<li>how to get and set missing values in vectors (e.g., <code>NumericVector</code>).</li>
+</ul>
+<h3>Scalars</h3>
+<p>The following code explores what happens when you take one of R’s missing values, coerce it into a scalar, and then coerce back to an R vector. Note that this kind of experimentation is a useful way to figure out what any operation does.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+List scalar_missings() {
+  <span class="dt">int</span> int_s = NA_INTEGER;
+  String chr_s = NA_STRING;
+  <span class="dt">bool</span> lgl_s = NA_LOGICAL;
+  <span class="dt">double</span> num_s = NA_REAL;
+
+  <span class="kw">return</span> List::create(int_s, chr_s, lgl_s, num_s);
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(<span class="kw">scalar_missings</span>())
+<span class="co">#&gt; List of 4</span>
+<span class="co">#&gt;  $ : int NA</span>
+<span class="co">#&gt;  $ : chr NA</span>
+<span class="co">#&gt;  $ : logi TRUE</span>
+<span class="co">#&gt;  $ : num NA</span></code></pre>
+<p>With the exception of <code>bool</code>, things look pretty good here: all of the missing values have been preserved. However, as we’ll see in the following sections, things are not quite as straightforward as they seem.</p>
+<h4>Integers</h4>
+<p>With integers, missing values are stored as the smallest integer. If you don’t do anything to them, they’ll be preserved. But, since C++ doesn’t know that the smallest integer has this special behaviour, if you do anything to it you’re likely to get an incorrect value: for example, <code>evalCpp('NA_INTEGER + 1')</code> gives -2147483647.</p>
+<p>So if you want to work with missing values in integers, either use a length one <code>IntegerVector</code> or be very careful with your code.</p>
+<h4>Doubles</h4>
+<p>With doubles, you may be able to get away with ignoring missing values and working with NaNs (not a number). This is because R’s NA is a special type of IEEE 754 floating point number NaN. So any logical expression that involves a NaN (or in C++, NAN) always evaluates as FALSE:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">evalCpp</span>(<span class="st">&quot;NAN == 1&quot;</span>)
+<span class="co">#&gt; [1] FALSE</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN &lt; 1&quot;</span>)
+<span class="co">#&gt; [1] FALSE</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN &gt; 1&quot;</span>)
+<span class="co">#&gt; [1] FALSE</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN == NAN&quot;</span>)
+<span class="co">#&gt; [1] FALSE</span></code></pre>
+<p>But be careful when combining then with boolean values:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">evalCpp</span>(<span class="st">&quot;NAN &amp;&amp; TRUE&quot;</span>)
+<span class="co">#&gt; [1] TRUE</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN || FALSE&quot;</span>)
+<span class="co">#&gt; [1] TRUE</span></code></pre>
+<p>However, in numeric contexts NaNs will propagate NAs:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">evalCpp</span>(<span class="st">&quot;NAN + 1&quot;</span>)
+<span class="co">#&gt; [1] NaN</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN - 1&quot;</span>)
+<span class="co">#&gt; [1] NaN</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN / 1&quot;</span>)
+<span class="co">#&gt; [1] NaN</span>
+<span class="kw">evalCpp</span>(<span class="st">&quot;NAN * 1&quot;</span>)
+<span class="co">#&gt; [1] NaN</span></code></pre>
+<h3>Strings</h3>
+<p><code>String</code> is a scalar string class introduced by Rcpp, so it knows how to deal with missing values.</p>
+<h3>Boolean</h3>
+<p>While C++’s <code>bool</code> has two possible values (<code>true</code> or <code>false</code>), a logical vector in R has three (<code>TRUE</code>, <code>FALSE</code>, and <code>NA</code>). If you coerce a length 1 logical vector, make sure it doesn’t contain any missing values otherwise they will be converted to TRUE.</p>
+<h3 id="vectors-rcpp">Vectors</h3>
+<p>With vectors, you need to use a missing value specific to the type of vector, <code>NA_REAL</code>, <code>NA_INTEGER</code>, <code>NA_LOGICAL</code>, <code>NA_STRING</code>:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+List missing_sampler() {
+  <span class="kw">return</span> List::create(
+    NumericVector::create(NA_REAL),
+    IntegerVector::create(NA_INTEGER),
+    LogicalVector::create(NA_LOGICAL),
+    CharacterVector::create(NA_STRING));
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(<span class="kw">missing_sampler</span>())
+<span class="co">#&gt; List of 4</span>
+<span class="co">#&gt;  $ : num NA</span>
+<span class="co">#&gt;  $ : int NA</span>
+<span class="co">#&gt;  $ : logi NA</span>
+<span class="co">#&gt;  $ : chr NA</span></code></pre>
+<p>To check if a value in a vector is missing, use the class method <code>::is_na()</code>:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+LogicalVector is_naC(NumericVector x) {
+  <span class="dt">int</span> n = x.size();
+  LogicalVector out(n);
+
+  <span class="kw">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    out[i] = NumericVector::is_na(x[i]);
+  }
+  <span class="kw">return</span> out;
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">is_naC</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="fl">5.4</span>, <span class="fl">3.2</span>, <span class="ot">NA</span>))
+<span class="co">#&gt; [1]  TRUE FALSE FALSE  TRUE</span></code></pre>
+<p>Another alternative is the sugar function <code>is_na()</code>, which takes a vector and returns a logical vector.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+LogicalVector is_naC2(NumericVector x) {
+  <span class="kw">return</span> is_na(x);
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">is_naC2</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="fl">5.4</span>, <span class="fl">3.2</span>, <span class="ot">NA</span>))
+<span class="co">#&gt; [1]  TRUE FALSE FALSE  TRUE</span></code></pre>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Rewrite any of the functions from the first exercise to deal with missing values. If <code>na.rm</code> is true, ignore the missing values. If <code>na.rm</code> is false, return a missing value if the input contains any missing values. Some good functions to practice with are <code>min()</code>, <code>max()</code>, <code>range()</code>, <code>mean()</code>, and <code>var()</code>.</p></li>
+<li><p>Rewrite <code>cumsum()</code> and <code>diff()</code> so they can handle missing values. Note that these functions have slightly more complicated behaviour.</p></li>
+</ol>
+<h2 id="rcpp-sugar">Rcpp sugar</h2>
+<p>Rcpp provides a lot of syntactic “sugar” to ensure that C++ functions work very similarly to their R equivalents. In fact, Rcpp sugar makes it possible to write efficient C++ code that looks almost identical to its R equivalent. If there’s a sugar version of the function you’re interested in, you should use it: it’ll be both expressive and well tested. Sugar functions aren’t always faster than a handwritten equivalent, but they will get faster in the future as more time is spent on optimising Rcpp.</p>
+<p>Sugar functions can be roughly broken down into</p>
+<ul>
+<li>arithmetic and logical operators</li>
+<li>logical summary functions</li>
+<li>vector views</li>
+<li>other useful functions</li>
+</ul>
+<h3>Arithmetic and logical operators</h3>
+<p>All the basic arithmetic and logical operators are vectorised: <code>+</code> <code>*</code>, <code>-</code>, <code>/</code>, <code>pow</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>==</code>, <code>!=</code>, <code>!</code>. For example, we could use sugar to considerably simplify the implementation of <code>pdistC()</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">pdistR &lt;-<span class="st"> </span>function(x, ys) {
+  <span class="kw">sqrt</span>((x -<span class="st"> </span>ys) ^<span class="st"> </span><span class="dv">2</span>)
+}</code></pre>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+NumericVector pdistC2(<span class="dt">double</span> x, NumericVector ys) {
+  <span class="kw">return</span> sqrt(pow((x - ys), <span class="dv">2</span>));
+}</code></pre>
+<h3>Logical summary functions</h3>
+<p>The sugar function <code>any()</code> and <code>all()</code> are fully lazy so that <code>any(x == 0)</code>, for example, might only need to evaluate one element of a vector, and return a special type that can be converted into a <code>bool</code> using <code>.is_true()</code>, <code>.is_false()</code>, or <code>.is_na()</code>. We could also use this sugar to write an efficient function to determine whether or not a numeric vector contains any missing values. To do this in R, we could use <code>any(is.na(x))</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">any_naR &lt;-<span class="st"> </span>function(x) <span class="kw">any</span>(<span class="kw">is.na</span>(x))</code></pre>
+<p>However, this will do the same amount of work regardless of the location of the missing value. Here’s the C++ implementation:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+<span class="dt">bool</span> any_naC(NumericVector x) {
+  <span class="kw">return</span> is_true(any(is_na(x)));
+}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">x0 &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="fl">1e5</span>)
+x1 &lt;-<span class="st"> </span><span class="kw">c</span>(x0, <span class="ot">NA</span>)
+x2 &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="ot">NA</span>, x0)
+
+<span class="kw">microbenchmark</span>(
+  <span class="kw">any_naR</span>(x0), <span class="kw">any_naC</span>(x0),
+  <span class="kw">any_naR</span>(x1), <span class="kw">any_naC</span>(x1),
+  <span class="kw">any_naR</span>(x2), <span class="kw">any_naC</span>(x2)
+)
+<span class="co">#&gt; Unit: microseconds</span>
+<span class="co">#&gt;         expr    min    lq   mean median     uq    max neval</span>
+<span class="co">#&gt;  any_naR(x0) 685.00 828.0  960.6 867.00 905.00  2,370   100</span>
+<span class="co">#&gt;  any_naC(x0) 820.00 894.0  939.5 913.00 936.00  2,310   100</span>
+<span class="co">#&gt;  any_naR(x1) 686.00 841.0  998.6 870.00 913.00  2,330   100</span>
+<span class="co">#&gt;  any_naC(x1) 836.00 895.0  914.0 916.00 931.00  1,080   100</span>
+<span class="co">#&gt;  any_naR(x2) 405.00 479.0 1330.4 499.00 542.00 69,900   100</span>
+<span class="co">#&gt;  any_naC(x2)   3.94   5.7   21.4   7.29   9.45  1,320   100</span></code></pre>
+<h3>Vector views</h3>
+<p>A number of helpful functions provide a “view” of a vector: <code>head()</code>, <code>tail()</code>, <code>rep_each()</code>, <code>rep_len()</code>, <code>rev()</code>, <code>seq_along()</code>, and <code>seq_len()</code>. In R these would all produce copies of the vector, but in Rcpp they simply point to the existing vector and override the subsetting operator (<code>[</code>) to implement special behaviour. This makes them very efficient: for instance, <code>rep_len(x, 1e6)</code> does not have to make a million copies of x.</p>
+<h3>Other useful functions</h3>
+<p>Finally, there’s a grab bag of sugar functions that mimic frequently used R functions:</p>
+<ul>
+<li><p>Math functions: <code>abs()</code>, <code>acos()</code>, <code>asin()</code>, <code>atan()</code>, <code>beta()</code>, <code>ceil()</code>, <code>ceiling()</code>, <code>choose()</code>, <code>cos()</code>, <code>cosh()</code>, <code>digamma()</code>, <code>exp()</code>, <code>expm1()</code>, <code>factorial()</code>, <code>floor()</code>, <code>gamma()</code>, <code>lbeta()</code>, <code>lchoose()</code>, <code>lfactorial()</code>, <code>lgamma()</code>, <code>log()</code>, <code>log10()</code>, <code>log1p()</code>, <code>pentagamma()</code>, <code>psigamma()</code>, <code>round()</code>, <code>signif()</code>, <code>sin()</code>, <code>sinh()</code>, <code>sqrt()</code>, <code>tan()</code>, <code>tanh()</code>, <code>tetragamma()</code>, <code>trigamma()</code>, <code>trunc()</code>.</p></li>
+<li><p>Scalar summaries: <code>mean()</code>, <code>min()</code>, <code>max()</code>, <code>sum()</code>, <code>sd()</code>, and (for vectors) <code>var()</code>.</p></li>
+<li><p>Vector summaries: <code>cumsum()</code>, <code>diff()</code>, <code>pmin()</code>, and <code>pmax()</code>.</p></li>
+<li><p>Finding values: <code>match()</code>, <code>self_match()</code>, <code>which_max()</code>, <code>which_min()</code>.</p></li>
+<li><p>Dealing with duplicates: <code>duplicated()</code>, <code>unique()</code>.</p></li>
+<li><p><code>d/q/p/r</code> for all standard distributions.</p></li>
+</ul>
+<p>Finally, <code>noNA(x)</code> asserts that the vector <code>x</code> does not contain any missing values, and allows optimisation of some mathematical operations.</p>
+<h2 id="stl">The STL</h2>
+<p>The real strength of C++ shows itself when you need to implement more complex algorithms. The standard template library (STL) provides a set of extremely useful data structures and algorithms. This section will explain some of the most important algorithms and data structures and point you in the right direction to learn more. I can’t teach you everything you need to know about the STL, but hopefully the examples will show you the power of the STL, and persuade you that it’s useful to learn more. </p>
+<p>If you need an algorithm or data structure that isn’t implemented in STL, a good place to look is <a href="http://www.boost.org/doc/">boost</a>. Installing boost on your computer is beyond the scope of this chapter, but once you have it installed, you can use boost data structures and algorithms by including the appropriate header file with (e.g.) <code>#include &lt;boost/array.hpp&gt;</code>.</p>
+<h3>Using iterators</h3>
+<p>Iterators are used extensively in the STL: many functions either accept or return iterators. They are the next step up from basic loops, abstracting away the details of the underlying data structure. Iterators have three main operators: </p>
+<ol style="list-style-type: decimal">
+<li>Advance with <code>++</code>.</li>
+<li>Get the value they refer to, or <strong>dereference</strong>, with <code>*</code>.</li>
+<li>Compare with <code>==</code>.</li>
+</ol>
+<p>For example we could re-write our sum function using iterators:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+<span class="dt">double</span> sum3(NumericVector x) {
+  <span class="dt">double</span> total = <span class="dv">0</span>;
+  
+  NumericVector::iterator it;
+  <span class="kw">for</span>(it = x.begin(); it != x.end(); ++it) {
+    total += *it;
+  }
+  <span class="kw">return</span> total;
+}</code></pre>
+<p>The main changes are in the for loop:</p>
+<ul>
+<li><p>We start at <code>x.begin()</code> and loop until we get to <code>x.end()</code>. A small optimization is to store the value of the end iterator so we don’t need to look it up each time. This only saves about 2 ns per iteration, so it’s only important when the calculations in the loop are very simple.</p></li>
+<li><p>Instead of indexing into x, we use the dereference operator to get its current value: <code>*it</code>.</p></li>
+<li><p>Notice the type of the iterator: <code>NumericVector::iterator</code>. Each vector type has its own iterator type: <code>LogicalVector::iterator</code>, <code>CharacterVector::iterator</code>, etc.</p></li>
+</ul>
+<p>Iterators also allow us to use the C++ equivalents of the apply family of functions. For example, we could again rewrite <code>sum()</code> to use the <code>accumulate()</code> function, which takes a starting and an ending iterator, and adds up all the values in the vector. The third argument to accumulate gives the initial value: it’s particularly important because this also determines the data type that accumulate uses (so we use <code>0.0</code> and not <code>0</code> so that accumulate uses a <code>double</code>, not an <code>int</code>.). To use <code>accumulate()</code> we need to include the <code>&lt;numeric&gt;</code> header.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;numeric&gt;</span>
+<span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+<span class="dt">double</span> sum4(NumericVector x) {
+  <span class="kw">return</span> std::accumulate(x.begin(), x.end(), <span class="fl">0.0</span>);
+}</code></pre>
+<p><code>accumulate()</code> (along with the other functions in <code>&lt;numeric&gt;</code>, like <code>adjacent_difference()</code>, <code>inner_product()</code>, and <code>partial_sum()</code>) is not that important in Rcpp because Rcpp sugar provides equivalents.</p>
+<h3>Algorithms</h3>
+<p>The <code>&lt;algorithm&gt;</code> header provides a large number of algorithms that work with iterators. A good reference is available at <a href="http://www.cplusplus.com/reference/algorithm/">http://www.cplusplus.com/reference/algorithm/</a>. For example, we could write a basic Rcpp version of <code>findInterval()</code> that takes two arguments a vector of values and a vector of breaks, and locates the bin that each x falls into. This shows off a few more advanced iterator features. Read the code below and see if you can figure out how it works. </p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;algorithm&gt;</span>
+<span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+IntegerVector findInterval2(NumericVector x, NumericVector breaks) {
+  IntegerVector out(x.size());
+
+  NumericVector::iterator it, pos;
+  IntegerVector::iterator out_it;
+
+  <span class="kw">for</span>(it = x.begin(), out_it = out.begin(); it != x.end(); 
+      ++it, ++out_it) {
+    pos = std::upper_bound(breaks.begin(), breaks.end(), *it);
+    *out_it = std::distance(breaks.begin(), pos);
+  }
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>The key points are:</p>
+<ul>
+<li><p>We step through two iterators (input and output) simultaneously.</p></li>
+<li><p>We can assign into an dereferenced iterator (<code>out_it</code>) to change the values in <code>out</code>.</p></li>
+<li><p><code>upper_bound()</code> returns an iterator. If we wanted the value of the <code>upper_bound()</code> we could dereference it; to figure out its location, we use the <code>distance()</code> function.</p></li>
+<li><p>Small note: if we want this function to be as fast as <code>findInterval()</code> in R (which uses handwritten C code), we need to compute the calls to <code>.begin()</code> and <code>.end()</code> once and save the results. This is easy, but it distracts from this example so it has been omitted. Making this change yields a function that’s slightly faster than R’s <code>findInterval()</code> function, but is about 1/10 of the code.</p></li>
+</ul>
+<p>It’s generally better to use algorithms from the STL than hand rolled loops. In <em>Effective STL</em>, Scott Meyers gives three reasons: efficiency, correctness, and maintainability. Algorithms from the STL are written by C++ experts to be extremely efficient, and they have been around for a long time so they are well tested. Using standard algorithms also makes the intent of your code more clear, helping to make it more readable and more maintainable.</p>
+<h3 id="data-structures-rcpp">Data structures</h3>
+<p>The STL provides a large set of data structures: <code>array</code>, <code>bitset</code>, <code>list</code>, <code>forward_list</code>, <code>map</code>, <code>multimap</code>, <code>multiset</code>, <code>priority_queue</code>, <code>queue</code>, <code>dequeue</code>, <code>set</code>, <code>stack</code>, <code>unordered_map</code>, <code>unordered_set</code>, <code>unordered_multimap</code>, <code>unordered_multiset</code>, and <code>vector</code>. The most important of these data structures are the <code>vector</code>, the <code>unordered_set</code>, and the <code>unordered_map</code>. We’ll focus on these three in this section, but using the others is similar: they just have different performance trade-offs. For example, the <code>deque</code> (pronounced “deck”) has a very similar interface to vectors but a different underlying implementation that has different performance trade-offs. You may want to try them for your problem. A good reference for STL data structures is <a href="http://www.cplusplus.com/reference/stl/">http://www.cplusplus.com/reference/stl/</a> — I recommend you keep it open while working with the STL.</p>
+<p>Rcpp knows how to convert from many STL data structures to their R equivalents, so you can return them from your functions without explicitly converting to R data structures.</p>
+<h3 id="vectors-stl">Vectors</h3>
+<p>An STL vector is very similar to an R vector, except that it grows efficiently. This makes vectors appropriate to use when you don’t know in advance how big the output will be. Vectors are templated, which means that you need to specify the type of object the vector will contain when you create it: <code>vector&lt;int&gt;</code>, <code>vector&lt;bool&gt;</code>, <code>vector&lt;double&gt;</code>, <code>vector&lt;String&gt;</code>. You can access individual elements of a vector using the standard <code>[]</code> notation, and you can add a new element to the end of the vector using <code>.push_back()</code>. If you have some idea in advance how big the vector will be, you can use <code>.reserve()</code> to allocate sufficient storage. </p>
+<p>The following code implements run length encoding (<code>rle()</code>). It produces two vectors of output: a vector of values, and a vector <code>lengths</code> giving how many times each element is repeated. It works by looping through the input vector <code>x</code> comparing each value to the previous: if it’s the same, then it increments the last value in <code>lengths</code>; if it’s different, it adds the value to the end of <code>values</code>, and sets the corresponding length to 1.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+List rleC(NumericVector x) {
+  std::vector&lt;<span class="dt">int</span>&gt; lengths;
+  std::vector&lt;<span class="dt">double</span>&gt; values;
+
+  <span class="co">// Initialise first value</span>
+  <span class="dt">int</span> i = <span class="dv">0</span>;
+  <span class="dt">double</span> prev = x[<span class="dv">0</span>];
+  values.push_back(prev);
+  lengths.push_back(<span class="dv">1</span>);
+
+  NumericVector::iterator it;
+  <span class="kw">for</span>(it = x.begin() + <span class="dv">1</span>; it != x.end(); ++it) {
+    <span class="kw">if</span> (prev == *it) {
+      lengths[i]++;
+    } <span class="kw">else</span> {
+      values.push_back(*it);
+      lengths.push_back(<span class="dv">1</span>);
+
+      i++;
+      prev = *it;
+    }
+  }
+
+  <span class="kw">return</span> List::create(
+    _[<span class="st">&quot;lengths&quot;</span>] = lengths, 
+    _[<span class="st">&quot;values&quot;</span>] = values
+  );
+}</code></pre>
+<p>(An alternative implementation would be to replace <code>i</code> with the iterator <code>lengths.rbegin()</code> which always points to the last element of the vector. You might want to try implementing that yourself.)</p>
+<p>Other methods of a vector are described at <a href="http://www.cplusplus.com/reference/vector/vector/">http://www.cplusplus.com/reference/vector/vector/</a>.</p>
+<h3>Sets</h3>
+<p>Sets maintain a unique set of values, and can efficiently tell if you’ve seen a value before. They are useful for problems that involve duplicates or unique values (like <code>unique</code>, <code>duplicated</code>, or <code>in</code>). C++ provides both ordered (<code>std::set</code>) and unordered sets (<code>std::unordered_set</code>), depending on whether or not order matters for you. Unordered sets tend to be much faster (because they use a hash table internally rather than a tree), so even if you need an ordered set, you should consider using an unordered set and then sorting the output. Like vectors, sets are templated, so you need to request the appropriate type of set for your purpose: <code>unordered_set&lt;int&gt;</code>, <code>unordered_set&lt;bool&gt;</code>, etc. More details are available at <a href="http://www.cplusplus.com/reference/set/set/">http://www.cplusplus.com/reference/set/set/</a> and <a href="http://www.cplusplus.com/reference/unordered_set/unordered_set/">http://www.cplusplus.com/reference/unordered_set/unordered_set/</a>. </p>
+<p>The following function uses an unordered set to implement an equivalent to <code>duplicated()</code> for integer vectors. Note the use of <code>seen.insert(x[i]).second</code>. <code>insert()</code> returns a pair, the <code>.first</code> value is an iterator that points to element and the <code>.second</code> value is a boolean that’s true if the value was a new addition to the set.</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="co">// [[Rcpp::plugins(cpp11)]]</span>
+<span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="ot">#include &lt;unordered_set&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+LogicalVector duplicatedC(IntegerVector x) {
+  std::unordered_set&lt;<span class="dt">int</span>&gt; seen;
+  <span class="dt">int</span> n = x.size();
+  LogicalVector out(n);
+
+  <span class="kw">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    out[i] = !seen.insert(x[i]).second;
+  }
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>Note that unordered sets are only available in C++ 11, which means we need to use the <code>cpp11</code> plugin, <code>[[Rcpp::plugins(cpp11)]]</code>.</p>
+<h3>Map</h3>
+<p>A map is similar to a set, but instead of storing presence or absence, it can store additional data. It’s useful for functions like <code>table()</code> or <code>match()</code> that need to look up a value. As with sets, there are ordered (<code>std::map</code>) and unordered (<code>std::unordered_map</code>) versions. Since maps have a value and a key, you need to specify both types when initialising a map: <code>map&lt;double, int&gt;</code>, <code>unordered_map&lt;int, double&gt;</code>, and so on. The following example shows how you could use a <code>map</code> to implement <code>table()</code> for numeric vectors: </p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+std::map&lt;<span class="dt">double</span>, <span class="dt">int</span>&gt; tableC(NumericVector x) {
+  std::map&lt;<span class="dt">double</span>, <span class="dt">int</span>&gt; counts;
+
+  <span class="dt">int</span> n = x.size();
+  <span class="kw">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; i++) {
+    counts[x[i]]++;
+  }
+
+  <span class="kw">return</span> counts;
+}</code></pre>
+<p>Note that unordered maps are only available in C++ 11, so to use them, you’ll again need <code>[[Rcpp::plugins(cpp11)]]</code>.</p>
+<h3>Exercises</h3>
+<p>To practice using the STL algorithms and data structures, implement the following using R functions in C++, using the hints provided:</p>
+<ol style="list-style-type: decimal">
+<li><p><code>median.default()</code> using <code>partial_sort</code>.</p></li>
+<li><p><code>%in%</code> using <code>unordered_set</code> and the <code>find()</code> or <code>count()</code> methods.</p></li>
+<li><p><code>unique()</code> using an <code>unordered_set</code> (challenge: do it in one line!).</p></li>
+<li><p><code>min()</code> using <code>std::min()</code>, or <code>max()</code> using <code>std::max()</code>.</p></li>
+<li><p><code>which.min()</code> using <code>min_element</code>, or <code>which.max()</code> using <code>max_element</code>.</p></li>
+<li><p><code>setdiff()</code>, <code>union()</code>, and <code>intersect()</code> for integers using sorted ranges and <code>set_union</code>, <code>set_intersection</code> and <code>set_difference</code>.</p></li>
+</ol>
+<h2 id="rcpp-case-studies">Case studies</h2>
+<p>The following case studies illustrate some real life uses of C++ to replace slow R code.</p>
+<h3>Gibbs sampler</h3>
+<!-- FIXME: needs more context? -->
+
+<p>The following case study updates an example <a href="http://dirk.eddelbuettel.com/blog/2011/07/14/">blogged about</a> by Dirk Eddelbuettel, illustrating the conversion of a Gibbs sampler in R to C++. The R and C++ code shown below is very similar (it only took a few minutes to convert the R version to the C++ version), but runs about 20 times faster on my computer. Dirk’s blog post also shows another way to make it even faster: using the faster random number generator functions in GSL (easily accessible from R through the RcppGSL package) can make it another 2–3x faster. </p>
+<p>The R code is as follows:</p>
+<pre class="sourceCode r"><code class="sourceCode r">gibbs_r &lt;-<span class="st"> </span>function(N, thin) {
+  mat &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow =</span> N, <span class="dt">ncol =</span> <span class="dv">2</span>)
+  x &lt;-<span class="st"> </span>y &lt;-<span class="st"> </span><span class="dv">0</span>
+
+  for (i in <span class="dv">1</span>:N) {
+    for (j in <span class="dv">1</span>:thin) {
+      x &lt;-<span class="st"> </span><span class="kw">rgamma</span>(<span class="dv">1</span>, <span class="dv">3</span>, y *<span class="st"> </span>y +<span class="st"> </span><span class="dv">4</span>)
+      y &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1</span>, <span class="dv">1</span> /<span class="st"> </span>(x +<span class="st"> </span><span class="dv">1</span>), <span class="dv">1</span> /<span class="st"> </span><span class="kw">sqrt</span>(<span class="dv">2</span> *<span class="st"> </span>(x +<span class="st"> </span><span class="dv">1</span>)))
+    }
+    mat[i, ] &lt;-<span class="st"> </span><span class="kw">c</span>(x, y)
+  }
+  mat
+}</code></pre>
+<p>This is straightforward to convert to C++. We:</p>
+<ul>
+<li><p>add type declarations to all variables</p></li>
+<li><p>use <code>(</code> instead of <code>[</code> to index into the matrix</p></li>
+<li><p>subscript the results of <code>rgamma</code> and <code>rnorm</code> to convert from a vector into a scalar</p></li>
+</ul>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="co">// [[Rcpp::export]]</span>
+NumericMatrix gibbs_cpp(<span class="dt">int</span> N, <span class="dt">int</span> thin) {
+  NumericMatrix mat(N, <span class="dv">2</span>);
+  <span class="dt">double</span> x = <span class="dv">0</span>, y = <span class="dv">0</span>;
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; N; i++) {
+    <span class="kw">for</span>(<span class="dt">int</span> j = <span class="dv">0</span>; j &lt; thin; j++) {
+      x = rgamma(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">1</span> / (y * y + <span class="dv">4</span>))[<span class="dv">0</span>];
+      y = rnorm(<span class="dv">1</span>, <span class="dv">1</span> / (x + <span class="dv">1</span>), <span class="dv">1</span> / sqrt(<span class="dv">2</span> * (x + <span class="dv">1</span>)))[<span class="dv">0</span>];
+    }
+    mat(i, <span class="dv">0</span>) = x;
+    mat(i, <span class="dv">1</span>) = y;
+  }
+
+  <span class="kw">return</span>(mat);
+}</code></pre>
+<p>Benchmarking the two implementations yields:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">microbenchmark</span>(
+  <span class="kw">gibbs_r</span>(<span class="dv">100</span>, <span class="dv">10</span>),
+  <span class="kw">gibbs_cpp</span>(<span class="dv">100</span>, <span class="dv">10</span>)
+)
+<span class="co">#&gt; Unit: microseconds</span>
+<span class="co">#&gt;                expr    min     lq  mean median     uq    max neval</span>
+<span class="co">#&gt;    gibbs_r(100, 10) 13,800 16,600 16725 16,900 17,100 18,000   100</span>
+<span class="co">#&gt;  gibbs_cpp(100, 10)    582    624   644    646    659    779   100</span></code></pre>
+<h3>R vectorisation vs. C++ vectorisation</h3>
+<!-- FIXME: needs more context? -->
+
+<p>This example is adapted from <a href="http://www.babelgraph.org/wp/?p=358">“Rcpp is smoking fast for agent-based models in data frames”</a>. The challenge is to predict a model response from three inputs. The basic R version of the predictor looks like:</p>
+<pre class="sourceCode r"><code class="sourceCode r">vacc1a &lt;-<span class="st"> </span>function(age, female, ily) {
+  p &lt;-<span class="st"> </span><span class="fl">0.25</span> +<span class="st"> </span><span class="fl">0.3</span> *<span class="st"> </span><span class="dv">1</span> /<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span><span class="kw">exp</span>(<span class="fl">0.04</span> *<span class="st"> </span>age)) +<span class="st"> </span><span class="fl">0.1</span> *<span class="st"> </span>ily
+  p &lt;-<span class="st"> </span>p *<span class="st"> </span>if (female) <span class="fl">1.25</span> else <span class="fl">0.75</span>
+  p &lt;-<span class="st"> </span><span class="kw">max</span>(<span class="dv">0</span>, p)
+  p &lt;-<span class="st"> </span><span class="kw">min</span>(<span class="dv">1</span>, p)
+  p
+}</code></pre>
+<p>We want to be able to apply this function to many inputs, so we might write a vector-input version using a for loop.</p>
+<pre class="sourceCode r"><code class="sourceCode r">vacc1 &lt;-<span class="st"> </span>function(age, female, ily) {
+  n &lt;-<span class="st"> </span><span class="kw">length</span>(age)
+  out &lt;-<span class="st"> </span><span class="kw">numeric</span>(n)
+  for (i in <span class="kw">seq_len</span>(n)) {
+    out[i] &lt;-<span class="st"> </span><span class="kw">vacc1a</span>(age[i], female[i], ily[i])
+  }
+  out
+}</code></pre>
+<p>If you’re familiar with R, you’ll have a gut feeling that this will be slow, and indeed it is. There are two ways we could attack this problem. If you have a good R vocabulary, you might immediately see how to vectorise the function (using <code>ifelse()</code>, <code>pmin()</code>, and <code>pmax()</code>). Alternatively, we could rewrite <code>vacc1a()</code> and <code>vacc1()</code> in C++, using our knowledge that loops and function calls have much lower overhead in C++.</p>
+<p>Either approach is fairly straightforward. In R:</p>
+<pre class="sourceCode r"><code class="sourceCode r">vacc2 &lt;-<span class="st"> </span>function(age, female, ily) {
+  p &lt;-<span class="st"> </span><span class="fl">0.25</span> +<span class="st"> </span><span class="fl">0.3</span> *<span class="st"> </span><span class="dv">1</span> /<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span><span class="kw">exp</span>(<span class="fl">0.04</span> *<span class="st"> </span>age)) +<span class="st"> </span><span class="fl">0.1</span> *<span class="st"> </span>ily
+  p &lt;-<span class="st"> </span>p *<span class="st"> </span><span class="kw">ifelse</span>(female, <span class="fl">1.25</span>, <span class="fl">0.75</span>)
+  p &lt;-<span class="st"> </span><span class="kw">pmax</span>(<span class="dv">0</span>, p)
+  p &lt;-<span class="st"> </span><span class="kw">pmin</span>(<span class="dv">1</span>, p)
+  p
+}</code></pre>
+<p>(If you’ve worked R a lot you might recognise some potential bottlenecks in this code: <code>ifelse</code>, <code>pmin</code>, and <code>pmax</code> are known to be slow, and could be replaced with <code>p + 0.75 + 0.5 * female</code>, <code>p[p &lt; 0] &lt;- 0</code>, <code>p[p &gt; 1] &lt;- 1</code>. You might want to try timing those variations yourself.)</p>
+<p>Or in C++:</p>
+<pre class="sourceCode cpp"><code class="sourceCode cpp"><span class="ot">#include &lt;Rcpp.h&gt;</span>
+<span class="kw">using</span> <span class="kw">namespace</span> Rcpp;
+
+<span class="dt">double</span> vacc3a(<span class="dt">double</span> age, <span class="dt">bool</span> female, <span class="dt">bool</span> ily){
+  <span class="dt">double</span> p = <span class="fl">0.25</span> + <span class="fl">0.3</span> * <span class="dv">1</span> / (<span class="dv">1</span> - exp(<span class="fl">0.04</span> * age)) + <span class="fl">0.1</span> * ily;
+  p = p * (female ? <span class="fl">1.25</span> : <span class="fl">0.75</span>);
+  p = std::max(p, <span class="fl">0.0</span>);
+  p = std::min(p, <span class="fl">1.0</span>);
+  <span class="kw">return</span> p;
+}
+
+<span class="co">// [[Rcpp::export]]</span>
+NumericVector vacc3(NumericVector age, LogicalVector female, 
+                    LogicalVector ily) {
+  <span class="dt">int</span> n = age.size();
+  NumericVector out(n);
+
+  <span class="kw">for</span>(<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; n; ++i) {
+    out[i] = vacc3a(age[i], female[i], ily[i]);
+  }
+
+  <span class="kw">return</span> out;
+}</code></pre>
+<p>We next generate some sample data, and check that all three versions return the same values:</p>
+<pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">1000</span>
+age &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n, <span class="dt">mean =</span> <span class="dv">50</span>, <span class="dt">sd =</span> <span class="dv">10</span>)
+female &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">c</span>(T, F), n, <span class="dt">rep =</span> <span class="ot">TRUE</span>)
+ily &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">c</span>(T, F), n, <span class="dt">prob =</span> <span class="kw">c</span>(<span class="fl">0.8</span>, <span class="fl">0.2</span>), <span class="dt">rep =</span> <span class="ot">TRUE</span>)
+
+<span class="kw">stopifnot</span>(
+  <span class="kw">all.equal</span>(<span class="kw">vacc1</span>(age, female, ily), <span class="kw">vacc2</span>(age, female, ily)),
+  <span class="kw">all.equal</span>(<span class="kw">vacc1</span>(age, female, ily), <span class="kw">vacc3</span>(age, female, ily))
+)</code></pre>
+<p>The original blog post forgot to do this, and introduced a bug in the C++ version: it used <code>0.004</code> instead of <code>0.04</code>. Finally, we can benchmark our three approaches:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">microbenchmark</span>(
+  <span class="dt">vacc1 =</span> <span class="kw">vacc1</span>(age, female, ily),
+  <span class="dt">vacc2 =</span> <span class="kw">vacc2</span>(age, female, ily),
+  <span class="dt">vacc3 =</span> <span class="kw">vacc3</span>(age, female, ily)
+)
+<span class="co">#&gt; Unit: microseconds</span>
+<span class="co">#&gt;   expr     min      lq mean  median    uq    max neval</span>
+<span class="co">#&gt;  vacc1 6,700.0 7,030.0 7936 7,210.0 7,480 58,400   100</span>
+<span class="co">#&gt;  vacc2   287.0   356.0  407   380.0   412  1,630   100</span>
+<span class="co">#&gt;  vacc3    44.5    55.7   62    58.4    66    101   100</span></code></pre>
+<p>Not surprisingly, our original approach with loops is very slow. Vectorising in R gives a huge speedup, and we can eke out even more performance (~10x) with the C++ loop. I was a little surprised that the C++ was so much faster, but it is because the R version has to create 11 vectors to store intermediate results, where the C++ code only needs to create 1.</p>
+<h2 id="rcpp-package">Using Rcpp in a package</h2>
+<p>The same C++ code that is used with <code>sourceCpp()</code> can also be bundled into a package. There are several benefits of moving code from a stand-alone C++ source file to a package: </p>
+<ol style="list-style-type: decimal">
+<li><p>Your code can be made available to users without C++ development tools.</p></li>
+<li><p>Multiple source files and their dependencies are handled automatically by the R package build system.</p></li>
+<li><p>Packages provide additional infrastructure for testing, documentation, and consistency.</p></li>
+</ol>
+<p>To add <code>Rcpp</code> to an existing package, you put your C++ files in the <code>src/</code> directory and modify/create the following configuration files:</p>
+<ul>
+<li><p>In <code>DESCRIPTION</code> add</p>
+<pre><code>LinkingTo: Rcpp
+Imports: Rcpp</code></pre></li>
+<li><p>Make sure your <code>NAMESPACE</code> includes:</p>
+<pre><code>useDynLib(mypackage)
+importFrom(Rcpp, sourceCpp)</code></pre>
+<p>We need to import something (anything) from Rcpp so that internal Rcpp code is properly loaded. This is a bug in R and hopefully will be fixed in the future.</p></li>
+</ul>
+<p>To generate a new Rcpp package that includes a simple “hello world” function you can use <code>Rcpp.package.skeleton()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Rcpp.package.skeleton</span>(<span class="st">&quot;NewPackage&quot;</span>, <span class="dt">attributes =</span> <span class="ot">TRUE</span>)</code></pre>
+<p>To generate a package based on C++ files that you’ve been using with <code>sourceCpp()</code>, use the <code>cpp_files</code> parameter:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Rcpp.package.skeleton</span>(<span class="st">&quot;NewPackage&quot;</span>, <span class="dt">example_code =</span> <span class="ot">FALSE</span>,
+                      <span class="dt">cpp_files =</span> <span class="kw">c</span>(<span class="st">&quot;convolve.cpp&quot;</span>))</code></pre>
+<p>Before building the packge, you’ll need to run <code>Rcpp::compileAttributes()</code>. This function scans the C++ files for <code>Rcpp::export</code> attributes and generates the code required to make the functions available in R. Re-run <code>compileAttributes()</code> whenever functions are added, removed, or have their signatures changed. This is done automatically by the devtools package and by Rstudio.</p>
+<p>For more details see the Rcpp package vignette, <code>vignette(&quot;Rcpp-package&quot;)</code>.</p>
+<h2 id="rcpp-more">Learning more</h2>
+<p>This chapter has only touched on a small part of Rcpp, giving you the basic tools to rewrite poorly performing R code in C++. The <a href="http://www.rcpp.org/book">Rcpp book</a> is the best reference to learn more about Rcpp. As noted, Rcpp has many other capabilities that make it easy to interface R to existing C++ code, including:</p>
+<ul>
+<li><p>Additional features of attributes including specifying default arguments, linking in external C++ dependencies, and exporting C++ interfaces from packages. These features and more are covered in the Rcpp attributes vignette, <code>vignette(&quot;Rcpp-attributes&quot;)</code>.</p></li>
+<li><p>Automatically creating wrappers between C++ data structures and R data structures, including mapping C++ classes to reference classes. A good introduction to this topic is Rcpp modules vignette, <code>vignette(&quot;Rcpp-modules&quot;)</code></p></li>
+<li><p>The Rcpp quick reference guide, <code>vignette(&quot;Rcpp-quickref&quot;)</code>, contains a useful summary of Rcpp classes and common programming idioms.</p></li>
+</ul>
+<p>I strongly recommend keeping an eye on the <a href="http://www.rcpp.org">Rcpp homepage</a> and <a href="http://dirk.eddelbuettel.com/code/rcpp.html">Dirk’s Rcpp page</a> as well as signing up for the <a href="http://lists.r-forge.r-project.org/cgi-bin/mailman/listinfo/rcpp-devel">Rcpp mailing list</a>. Rcpp is still under active development, and is getting better with every release.</p>
+<p>Other resources I’ve found helpful in learning C++ are:</p>
+<ul>
+<li><p><a href="http://amzn.com/0321334876?tag=devtools-20"><em>Effective C++</em></a> and <a href="http://amzn.com/0201749629?tag=devtools-20"><em>Effective STL</em></a> by Scott Meyers.</p></li>
+<li><p><a href="http://www.icce.rug.nl/documents/cplusplus/cplusplus.html"><em>C++ Annotations</em></a>, aimed at “knowledgeable users of C (or any other language using a C-like grammar, like Perl or Java) who would like to know more about, or make the transition to, C++”.</p></li>
+<li><p><a href="http://www.cs.helsinki.fi/u/tpkarkka/alglib/k06/"><em>Algorithm Libraries</em></a>, which provides a more technical, but still concise, description of important STL concepts. (Follow the links under notes).</p></li>
+</ul>
+<p>Writing performant code may also require you to rethink your basic approach: a solid understanding of basic data structures and algorithms is very helpful here. That’s beyond the scope of this book, but I’d suggest the <a href="http://amzn.com/0387948600?tag=devtools-20"><em>Algorithm Design Manual</em></a>, MIT’s <a href="http://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-046j-introduction-to-algorithms-sma-5503-fall-2005/"><em>Introduction to Algorithms</em></a>, <em>Algorithms</em> by Robert Sedgewick and Kevin Wayne which has a free <a href="http://algs4.cs.princeton.edu/home/">online textbook</a> and a matching <a href="https://www.coursera.org/course/algs4partI">coursera course</a>.</p>
+<h2>Acknowledgments</h2>
+<p>I’d like to thank the Rcpp-mailing list for many helpful conversations, particularly Romain Francois and Dirk Eddelbuettel who have not only provided detailed answers to many of my questions, but have been incredibly responsive at improving Rcpp. This chapter would not have been possible without JJ Allaire; he encouraged me to learn C++ and then answered many of my dumb questions along the way.</p>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

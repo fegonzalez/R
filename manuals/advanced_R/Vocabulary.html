@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vocab &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/Vocabulary.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="vocabulary">Vocabulary</h1>
+<p>An important part of being fluent in R is having a good working vocabulary. Below, I have listed the functions that I believe constitute such a vocabulary. You don’t need to be intimately familiar with the details of every function, but you should at least be aware that they all exist. If there are functions in this list that you’ve never heard of, I strongly recommend that you read their documentation. </p>
+<p>I came up with this list by looking through all the functions in the base, stats, and utils packages, and extracting those that I think are most useful. The list also includes a few pointers to particularly important functions in other packages, and some of the more important <code>options()</code>.</p>
+<h2>The basics</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The first functions to learn</span>
+?
+str
+
+<span class="co"># Important operators and assignment</span>
+%in%, match
+=, &lt;-, &lt;&lt;-
+<span class="er">$</span>, [, [[, head, tail, subset
+with
+assign, get
+
+<span class="co"># Comparison </span>
+all.equal, identical
+!=, ==, &gt;, &gt;=, &lt;, &lt;=
+is.na, complete.cases
+is.finite
+
+<span class="co"># Basic math</span>
+*, +, -, /, ^, %%, %/%
+abs, sign
+acos, asin, atan, atan2
+sin, cos, tan
+ceiling, floor, round, trunc, signif
+exp, log, log10, log2, sqrt
+
+max, min, prod, sum
+cummax, cummin, cumprod, cumsum, diff
+pmax, pmin
+range
+mean, median, cor, sd, var
+rle
+
+<span class="co"># Functions to do with functions</span>
+function
+missing
+on.exit
+return, invisible
+
+<span class="co"># Logical &amp; sets </span>
+&amp;, |, !, xor
+all, any
+intersect, union, setdiff, setequal
+which
+
+<span class="co"># Vectors and matrices</span>
+c, matrix
+<span class="co"># automatic coercion rules character &gt; numeric &gt; logical</span>
+length, dim, ncol, nrow
+cbind, rbind
+names, colnames, rownames
+t
+diag
+sweep
+as.matrix, data.matrix
+
+<span class="co"># Making vectors </span>
+c
+rep, rep_len
+seq, seq_len, seq_along
+rev
+sample
+choose, factorial, combn
+(is/as).(character/numeric/logical/...)
+
+<span class="co"># Lists &amp; data.frames </span>
+list, unlist
+data.frame, as.data.frame
+split
+expand.grid
+
+<span class="co"># Control flow </span>
+if, &amp;&amp;, ||<span class="st"> </span>(short circuiting)
+for, while
+next, break
+switch
+ifelse
+
+<span class="co"># Apply &amp; friends</span>
+lapply, sapply, vapply
+apply
+tapply
+replicate</code></pre>
+<h2>Common data structures</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Date time</span>
+ISOdate, ISOdatetime, strftime, strptime, date
+difftime
+julian, months, quarters, weekdays
+<span class="kw">library</span>(lubridate)
+
+<span class="co"># Character manipulation </span>
+grep, agrep
+gsub
+strsplit
+chartr
+nchar
+tolower, toupper
+substr
+paste
+<span class="kw">library</span>(stringr)
+
+<span class="co"># Factors </span>
+factor, levels, nlevels
+reorder, relevel
+cut, findInterval
+interaction
+<span class="kw">options</span>(<span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>)
+
+<span class="co"># Array manipulation</span>
+array
+dim
+dimnames
+aperm
+<span class="kw">library</span>(abind)</code></pre>
+<h2>Statistics</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Ordering and tabulating </span>
+duplicated, unique
+merge
+order, rank, quantile
+sort
+table, ftable
+
+<span class="co"># Linear models </span>
+fitted, predict, resid, rstandard
+lm, glm
+hat, influence.measures
+logLik, df, deviance
+formula, ~, I
+anova, coef, confint, vcov
+contrasts
+
+<span class="co"># Miscellaneous tests</span>
+<span class="kw">apropos</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">.test$&quot;</span>)
+
+<span class="co"># Random variables </span>
+(q, p, d, r) *<span class="st"> </span>(beta, binom, cauchy, chisq, exp, f, gamma, geom, 
+  hyper, lnorm, logis, multinom, nbinom, norm, pois, signrank, t, 
+  unif, weibull, wilcox, birthday, tukey)
+
+<span class="co"># Matrix algebra </span>
+crossprod, tcrossprod
+eigen, qr, svd
+%*%, %o%, outer
+rcond
+solve</code></pre>
+<h2>Working with R</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Workspace </span>
+ls, exists, rm
+getwd, setwd
+q
+source
+install.packages, library, require
+
+<span class="co"># Help</span>
+help, ?
+help.search
+apropos
+RSiteSearch
+citation
+demo
+example
+vignette
+
+<span class="co"># Debugging</span>
+traceback
+browser
+recover
+<span class="kw">options</span>(<span class="dt">error =</span> )
+stop, warning, message
+tryCatch, try</code></pre>
+<h2>I/O</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Output</span>
+print, cat
+message, warning
+dput
+format
+sink, capture.output
+
+<span class="co"># Reading and writing data</span>
+data
+count.fields
+read.csv, write.csv
+read.delim, write.delim
+read.fwf
+readLines, writeLines
+readRDS, saveRDS
+load, save
+<span class="kw">library</span>(foreign)
+
+<span class="co"># Files and directories </span>
+dir
+basename, dirname, tools::file_ext
+file.path
+path.expand, normalizePath
+file.choose
+file.copy, file.create, file.remove, file.rename, dir.create
+file.exists, file.info
+tempdir, tempfile
+download.file, <span class="kw">library</span>(downloader)</code></pre>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>

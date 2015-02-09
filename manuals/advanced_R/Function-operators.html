@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Function operators &middot; Advanced R.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="www/bootstrap.min.css" rel="stylesheet">
+    <link href="www/highlight.css" rel="stylesheet">
+
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700'
+      rel='stylesheet' type='text/css'>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Table of contents<b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu pull-right" role="menu">
+              <li><a href="Introduction.html">Introduction</a></li>
+<li class="dropdown-header">Foundations</li>
+<li><a href="Data-structures.html">Data structures</a></li>
+<li><a href="Subsetting.html">Subsetting</a></li>
+<li><a href="Vocabulary.html">Vocabulary</a></li>
+<li><a href="Style.html">Style</a></li>
+<li><a href="Functions.html">Functions</a></li>
+<li><a href="OO-essentials.html">OO field guide</a></li>
+<li><a href="Environments.html">Environments</a></li>
+<li><a href="Exceptions-Debugging.html">Exceptions and debugging</a></li>
+
+<li class="dropdown-header">Functional programming</li>
+<li><a href="Functional-programming.html">Functional programming</a></li>
+<li><a href="Functionals.html">Functionals</a></li>
+<li><a href="Function-operators.html">Function operators</a></li>
+
+<li class="dropdown-header">Metaprogramming</li>
+<li><a href="Computing-on-the-language.html">Non-standard evaluation</a></li>
+<li><a href="Expressions.html">Expressions</a></li>
+<li><a href="dsl.html">Domain specific languages</a></li>
+
+<li class="dropdown-header">Performant code</li>
+<li><a href="Performance.html">Performance</a></li>
+<li><a href="Profiling.html">Profiling</a></li>
+<li><a href="memory.html">Memory</a></li>
+<li><a href="Rcpp.html">Rcpp</a></li>
+<li><a href="C-interface.html">R's C interface</a></li>
+
+            </ul>
+          </li>
+        </ul>
+
+        <h3 class="muted"><a href="/">Advanced R</a> <small>by Hadley Wickham</small></h3>
+        <hr>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-sm-3" id="nav">
+        <div class="well">
+          Want to learn from me in person? I'm next teaching in <a href="https://rstudio-chicago.eventbrite.com">Chicago, May 27-28</a>.
+        </div>
+
+        <div class="well">
+          Want a physical copy of this material? <a href="http://amzn.com/1466586966?tag=devtools-20">Buy a book from amazon!</a>.
+        </div>
+
+        <h4>Contents</h4>
+          <ul class="list-unstyled" id="toc"></ul>
+
+          <hr>
+          <p><a href="/contribute.html">How to contribute</a></p>
+
+          <p><a class="btn btn-primary" href="https://github.com/hadley/adv-r/edit/master/Function-operators.rmd">Edit this page</a></p>
+        </div>
+
+        <div id="content" class="col-xs-12 col-sm-8 pull-right">
+          <h1 id="function-operators">Function operators</h1>
+<p>In this chapter, you’ll learn about function operators (FOs). A function operator is a function that takes one (or more) functions as input and returns a function as output. In some ways, function operators are similar to functionals: there’s nothing you can’t do without them, but they can make your code more readable and expressive, and they can help you write code faster. The main difference is that functionals extract common patterns of loop use, where function operators extract common patterns of anonymous function use. </p>
+<p>The following code shows a simple function operator, <code>chatty()</code>. It wraps a function, making a new function that prints out its first argument. It’s useful because it gives you a window to see how functionals, like <code>vapply()</code>, work.</p>
+<pre class="sourceCode r"><code class="sourceCode r">chatty &lt;-<span class="st"> </span>function(f) {
+  function(x, ...) {
+    res &lt;-<span class="st"> </span><span class="kw">f</span>(x, ...)
+    <span class="kw">cat</span>(<span class="st">&quot;Processing &quot;</span>, x, <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, <span class="dt">sep =</span> <span class="st">&quot;&quot;</span>)
+    res
+  }
+}
+f &lt;-<span class="st"> </span>function(x) x ^<span class="st"> </span><span class="dv">2</span>
+s &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>)
+<span class="kw">chatty</span>(f)(<span class="dv">1</span>)
+<span class="co">#&gt; Processing 1</span>
+<span class="co">#&gt; [1] 1</span>
+
+<span class="kw">vapply</span>(s, <span class="kw">chatty</span>(f), <span class="kw">numeric</span>(<span class="dv">1</span>))
+<span class="co">#&gt; Processing 3</span>
+<span class="co">#&gt; Processing 2</span>
+<span class="co">#&gt; Processing 1</span>
+<span class="co">#&gt; [1] 9 4 1</span></code></pre>
+<p>In the last chapter, we saw that many built-in functionals, like <code>Reduce()</code>, <code>Filter()</code>, and <code>Map()</code>, have very few arguments, so we had to use anonymous functions to modify how they worked. In this chapter, we’ll build specialised substitutes for common anonymous functions that allow us to communicate our intent more clearly. For example, in <a href="Functionals.html#map">multiple inputs</a> we used an anonymous function with <code>Map()</code> to supply fixed arguments:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Map</span>(function(x, y) <span class="kw">f</span>(x, y, zs), xs, ys)</code></pre>
+<p>Later in this chapter, we’ll learn about partial application using the <code>partial()</code> function. Partial application encapsulates the use of an anonymous function to supply default arguments, and allows us to write succinct code:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Map</span>(<span class="kw">partial</span>(f, <span class="dt">zs =</span> zs), xs, yz)</code></pre>
+<p>This is an important use of FOs: by transforming the input function, you eliminate parameters from a functional. In fact, as long as the inputs and outputs of the function remain the same, this approach allows your functionals to be more extensible, often in ways you haven’t thought of.</p>
+<p>The chapter covers four important types of FO: behaviour, input, output, and combining. For each type, I’ll show you some useful FOs, and how you can use as another to decompose problems: as combinations of multiple functions instead of combinations of arguments. The goal is not to exhaustively list every possible FO, but to show a selection that demonstrate how they work together with other FP techniques. For your own work, you’ll need to think about and experiment with how function operators can help you solve recurring problems.</p>
+<h5>Outline</h5>
+<ul>
+<li><p><a href="Function-operators.html#behavioural-fos">Behavioural FOs</a> introduces you to FOs that change the behaviour of a function like automatically logging usage to disk or ensuring that a function is run only once.</p></li>
+<li><p><a href="Function-operators.html#output-fos">Output FOs</a> shows you how to write FOs that manipulate the output of a function. These can do simple things like capturing errors, or fundamentally change what the function does.</p></li>
+<li><p><a href="Function-operators.html#input-fos">Input FOs</a> describes how to modify the inputs to a function using a FO like <code>Vectorize()</code> or <code>partial()</code>.</p></li>
+<li><p><a href="Function-operators.html#combining-fos">Combining FOs</a> shows the power of FOs that combine multiple functions with function composition and logical operations.</p></li>
+</ul>
+<h5>Prerequisites</h5>
+<p>As well as writing FOs from scratch, this chapter uses function operators from the memoise, plyr, and pryr packages. Install them by running <code>install.packages(c(&quot;memoise&quot;, &quot;plyr&quot;, &quot;pryr&quot;))</code>.</p>
+<!--
+### In other languages
+
+Function operators are used extensively in FP languages like Haskell, and commonly in Lisp, Scheme and Clojure. They are also an important part of modern JavaScript programming, like in the [underscore.js](http://underscorejs.org/) library. They are particularly common in CoffeeScript because its syntax for anonymous functions is so concise. In stack-based languages like Forth and Factor, function operators are used almost exclusively because it's rare to refer to variables by name. Python's decorators are just function operators by a [different name](http://stackoverflow.com/questions/739654/). In Java, they are very rare because it's difficult to manipulate functions (although possible if you wrap them up in strategy-type objects). They are also rare in C++ because, while it's possible to create objects that work like functions ("functors") by overloading the `()` operator, modifying these objects with other functions is not a common programming technique. That said, C++ 11 includes partial application (`std::bind`) as part of the standard library.
+-->
+
+<h2 id="behavioural-fos">Behavioural FOs</h2>
+<p>Behavioural FOs leave the inputs and outputs of a function unchanged, but add some extra behaviour. In this section, we’ll look at functions which implement three useful behaviours:</p>
+<ul>
+<li>Add a delay to avoid swamping a server with requests.</li>
+<li>Print to console every n invocations to check on a long running process.</li>
+<li>Cache previous computations to improve performance.</li>
+</ul>
+<p>To motivate these behaviours, imagine we want to download a long vector of URLs. That’s pretty simple with <code>lapply()</code> and <code>download_file()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">download_file &lt;-<span class="st"> </span>function(url, ...) {
+  <span class="kw">download.file</span>(url, <span class="kw">basename</span>(url), ...)
+}
+<span class="kw">lapply</span>(urls, download_file)</code></pre>
+<p>(<code>download_file()</code> is a simple wrapper around <code>utils::download.file()</code> which provides a reasonable default for the file name.)</p>
+<p>There are a number of useful behaviours we might want to add to this function. If the list was long, we might want to print a <code>.</code> every ten URLs so we know that the function’s still working. If we’re downloading files over the internet, we might want to add a small delay between each request to avoid hammering the server. Implementing these behaviours in a for loop is rather complicated. We can no longer use <code>lapply()</code> because we need an external counter:</p>
+<pre class="sourceCode r"><code class="sourceCode r">i &lt;-<span class="st"> </span><span class="dv">1</span>
+for(url in urls) {
+  i &lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+  if (i %%<span class="st"> </span><span class="dv">10</span> ==<span class="st"> </span><span class="dv">0</span>) <span class="kw">cat</span>(<span class="st">&quot;.&quot;</span>)
+  <span class="kw">Sys.delay</span>(<span class="dv">1</span>)
+  <span class="kw">download_file</span>(url)
+}</code></pre>
+<p>Understanding this code is hard because different concerns (iteration, printing, and downloading) are interleaved. In the remainder of this section we’ll create FOs that encapsulate each behaviour and allow us to write code like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lapply</span>(urls, <span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">delay_by</span>(<span class="dv">1</span>, download_file)))</code></pre>
+<p>Implementing <code>delay_by()</code> is straightforward, and follows the same basic template that we’ll see for the majority of FOs in this chapter: </p>
+<pre class="sourceCode r"><code class="sourceCode r">delay_by &lt;-<span class="st"> </span>function(delay, f) {
+  function(...) {
+    <span class="kw">Sys.sleep</span>(delay)
+    <span class="kw">f</span>(...)
+  }
+}
+<span class="kw">system.time</span>(<span class="kw">runif</span>(<span class="dv">100</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;       0       0       0</span>
+<span class="kw">system.time</span>(<span class="kw">delay_by</span>(<span class="fl">0.1</span>, runif)(<span class="dv">100</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.001   0.000   0.100</span></code></pre>
+<p><code>dot_every()</code> is a little bit more complicated because it needs to manage a counter. Fortunately, we saw how to do that in <a href="Functional-programming.html#mutable-state">mutable state</a>. </p>
+<pre class="sourceCode r"><code class="sourceCode r">dot_every &lt;-<span class="st"> </span>function(n, f) {
+  i &lt;-<span class="st"> </span><span class="dv">1</span>
+  function(...) {
+    if (i %%<span class="st"> </span>n ==<span class="st"> </span><span class="dv">0</span>) <span class="kw">cat</span>(<span class="st">&quot;.&quot;</span>)
+    i &lt;&lt;-<span class="st"> </span>i +<span class="st"> </span><span class="dv">1</span>
+    <span class="kw">f</span>(...)
+  }
+}
+x &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">100</span>, runif)
+x &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">100</span>, <span class="kw">dot_every</span>(<span class="dv">10</span>, runif))
+<span class="co">#&gt; ..........</span></code></pre>
+<p>Notice that I’ve made the function the last argument in each FO. This makes it easier to read when we compose multiple function operators. If the function were the first argument, then instead of:</p>
+<pre class="sourceCode r"><code class="sourceCode r">download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">delay_by</span>(<span class="dv">1</span>, download_file))</code></pre>
+<p>we’d have</p>
+<pre class="sourceCode r"><code class="sourceCode r">download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="kw">delay_by</span>(download_file, <span class="dv">1</span>), <span class="dv">10</span>)</code></pre>
+<p>That’s harder to follow because (e.g.) the argument of <code>dot_every()</code> is far away from its call. This is sometimes called the <a href="http://en.wikipedia.org/wiki/Dagwood_sandwich">Dagwood sandwich</a> problem: you have too much filling (too many long arguments) between your slices of bread (parentheses). </p>
+<p>I’ve also tried to give the FOs descriptive names: delay by 1 (second), (print a) dot every 10 (invocations). The more clearly the function names used in your code express your intent, the easier it will be for others (including future you) to read and understand the code.</p>
+<h3>Memoisation</h3>
+<p>Another thing you might worry about when downloading multiple files is accidentally downloading the same file multiple times. You could avoid this by calling <code>unique()</code> on the list of input URLs, or manually managing a data structure that mapped the URL to the result. An alternative approach is to use memoisation: modify a function to automatically cache its results. </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(memoise)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">slow_function &lt;-<span class="st"> </span>function(x) {
+  <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)
+  <span class="dv">10</span>
+}
+<span class="kw">system.time</span>(<span class="kw">slow_function</span>())
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.001   0.000   1.001</span>
+<span class="kw">system.time</span>(<span class="kw">slow_function</span>())
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.000   0.000   1.001</span>
+fast_function &lt;-<span class="st"> </span><span class="kw">memoise</span>(slow_function)
+<span class="kw">system.time</span>(<span class="kw">fast_function</span>())
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.001   0.000   1.001</span>
+<span class="kw">system.time</span>(<span class="kw">fast_function</span>())
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;       0       0       0</span></code></pre>
+<p>Memoisation is an example of the classic computer science tradeoff of memory versus speed. A memoised function can run much faster because it stores all of the previous inputs and outputs, using more memory.</p>
+<p>A realistic use of memoisation is computing the Fibonacci series. The Fibonacci series is defined recursively: the first two values are 1 and 1, then f(n) = f(n - 1) + f(n - 2). A naive version implemented in R would be very slow because, for example, <code>fib(10)</code> computes <code>fib(9)</code> and <code>fib(8)</code>, and <code>fib(9)</code> computes <code>fib(8)</code> and <code>fib(7)</code>, and so on. As a result, the value for each value in the series gets computed many, many times. Memoising <code>fib()</code> makes the implementation much faster because each value is computed only once. </p>
+<pre class="sourceCode r"><code class="sourceCode r">fib &lt;-<span class="st"> </span>function(n) {
+  if (n &lt;<span class="st"> </span><span class="dv">2</span>) <span class="kw">return</span>(<span class="dv">1</span>)
+  <span class="kw">fib</span>(n -<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span><span class="kw">fib</span>(n -<span class="st"> </span><span class="dv">1</span>)
+}
+<span class="kw">system.time</span>(<span class="kw">fib</span>(<span class="dv">23</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.120   0.003   0.125</span>
+<span class="kw">system.time</span>(<span class="kw">fib</span>(<span class="dv">24</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.180   0.001   0.183</span>
+
+fib2 &lt;-<span class="st"> </span><span class="kw">memoise</span>(function(n) {
+  if (n &lt;<span class="st"> </span><span class="dv">2</span>) <span class="kw">return</span>(<span class="dv">1</span>)
+  <span class="kw">fib2</span>(n -<span class="st"> </span><span class="dv">2</span>) +<span class="st"> </span><span class="kw">fib2</span>(n -<span class="st"> </span><span class="dv">1</span>)
+})
+<span class="kw">system.time</span>(<span class="kw">fib2</span>(<span class="dv">23</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.003   0.001   0.004</span>
+<span class="kw">system.time</span>(<span class="kw">fib2</span>(<span class="dv">24</span>))
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;       0       0       0</span></code></pre>
+<p>It doesn’t make sense to memoise all functions. For example, a memoised random number generator is no longer random:</p>
+<pre class="sourceCode r"><code class="sourceCode r">runifm &lt;-<span class="st"> </span><span class="kw">memoise</span>(runif)
+<span class="kw">runifm</span>(<span class="dv">5</span>)
+<span class="co">#&gt; [1] 0.02456588 0.92663087 0.26794819 0.97268772 0.62376106</span>
+<span class="kw">runifm</span>(<span class="dv">5</span>)
+<span class="co">#&gt; [1] 0.02456588 0.92663087 0.26794819 0.97268772 0.62376106</span></code></pre>
+<p>Once we understand <code>memoise()</code>, it’s straightforward to apply to our problem:</p>
+<pre class="sourceCode r"><code class="sourceCode r">download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">memoise</span>(<span class="kw">delay_by</span>(<span class="dv">1</span>, download_file)))</code></pre>
+<p>This gives a function that we can easily use with <code>lapply()</code>. However, if something goes wrong with the loop inside <code>lapply()</code>, it can be difficult to tell what’s going on. The next section will show how we can use FOs to pull back the curtain and look inside.</p>
+<h3 id="tee">Capturing function invocations</h3>
+<p>One challenge with functionals is that it can be hard to see what’s going on inside of them. It’s not easy to pry open their internals like it is with a for loop. Fortunately we can use FOs to peer behind the curtain with <code>tee()</code>. </p>
+<p><code>tee()</code>, defined below, has three arguments, all functions: <code>f</code>, the function to modify; <code>on_input</code>, a function that’s called with the inputs to <code>f</code>; and <code>on_output</code>, a function that’s called with the output from <code>f</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r">ignore &lt;-<span class="st"> </span>function(...) <span class="ot">NULL</span>
+tee &lt;-<span class="st"> </span>function(f, <span class="dt">on_input =</span> ignore, <span class="dt">on_output =</span> ignore) {
+  function(...) {
+    <span class="kw">on_input</span>(...)
+    output &lt;-<span class="st"> </span><span class="kw">f</span>(...)
+    <span class="kw">on_output</span>(output)
+    output
+  }
+}</code></pre>
+<p>(The function is inspired by the unix shell command <code>tee</code>, which is used to split up streams of file operations so that you can both display what’s happening and save intermediate results to a file.)</p>
+<p>We can use <code>tee()</code> to look inside the <code>uniroot()</code> functional, and see how it iterates its way to a solution. The following example finds where <code>x</code> and <code>cos(x)</code> intersect: </p>
+<pre class="sourceCode r"><code class="sourceCode r">g &lt;-<span class="st"> </span>function(x) <span class="kw">cos</span>(x) -<span class="st"> </span>x
+zero &lt;-<span class="st"> </span><span class="kw">uniroot</span>(g, <span class="kw">c</span>(-<span class="dv">5</span>, <span class="dv">5</span>))
+show_x &lt;-<span class="st"> </span>function(x, ...) <span class="kw">cat</span>(<span class="kw">sprintf</span>(<span class="st">&quot;%+.08f&quot;</span>, x), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>)
+
+<span class="co"># The location where the function is evaluated:</span>
+zero &lt;-<span class="st"> </span><span class="kw">uniroot</span>(<span class="kw">tee</span>(g, <span class="dt">on_input =</span> show_x), <span class="kw">c</span>(-<span class="dv">5</span>, <span class="dv">5</span>))
+<span class="co">#&gt; -5.00000000 </span>
+<span class="co">#&gt; +5.00000000 </span>
+<span class="co">#&gt; +0.28366219 </span>
+<span class="co">#&gt; +0.87520341 </span>
+<span class="co">#&gt; +0.72298040 </span>
+<span class="co">#&gt; +0.73863091 </span>
+<span class="co">#&gt; +0.73908529 </span>
+<span class="co">#&gt; +0.73902425 </span>
+<span class="co">#&gt; +0.73908529</span>
+<span class="co"># The value of the function:</span>
+zero &lt;-<span class="st"> </span><span class="kw">uniroot</span>(<span class="kw">tee</span>(g, <span class="dt">on_output =</span> show_x), <span class="kw">c</span>(-<span class="dv">5</span>, <span class="dv">5</span>))
+<span class="co">#&gt; +5.28366219 </span>
+<span class="co">#&gt; -4.71633781 </span>
+<span class="co">#&gt; +0.67637474 </span>
+<span class="co">#&gt; -0.23436269 </span>
+<span class="co">#&gt; +0.02685676 </span>
+<span class="co">#&gt; +0.00076012 </span>
+<span class="co">#&gt; -0.00000026 </span>
+<span class="co">#&gt; +0.00010189 </span>
+<span class="co">#&gt; -0.00000026</span></code></pre>
+<p><code>cat()</code> allows us to see what’s happening as the function runs, but it doesn’t give us a way to work with the values after the function as completed. To do that, we could capture the sequence of calls by creating a function, <code>remember()</code>, that records every argument called and retrieves them when coerced into a list. The small amount of S3 code needed is explained in <a href="OO-essentials.html#s3">S3</a>. </p>
+<pre class="sourceCode r"><code class="sourceCode r">remember &lt;-<span class="st"> </span>function() {
+  memory &lt;-<span class="st"> </span><span class="kw">list</span>()
+  f &lt;-<span class="st"> </span>function(...) {
+    <span class="co"># This is inefficient!</span>
+    memory &lt;&lt;-<span class="st"> </span><span class="kw">append</span>(memory, <span class="kw">list</span>(...))
+    <span class="kw">invisible</span>()
+  }
+
+  <span class="kw">structure</span>(f, <span class="dt">class =</span> <span class="st">&quot;remember&quot;</span>)
+}
+as.list.remember &lt;-<span class="st"> </span>function(x, ...) {
+  <span class="kw">environment</span>(x)$memory
+}
+print.remember &lt;-<span class="st"> </span>function(x, ...) {
+  <span class="kw">cat</span>(<span class="st">&quot;Remembering...</span><span class="ch">\n</span><span class="st">&quot;</span>)
+  <span class="kw">str</span>(<span class="kw">as.list</span>(x))
+}</code></pre>
+<p>Now we can draw a picture showing how uniroot zeroes in on the final answer:</p>
+<pre class="sourceCode r"><code class="sourceCode r">locs &lt;-<span class="st"> </span><span class="kw">remember</span>()
+vals &lt;-<span class="st"> </span><span class="kw">remember</span>()
+zero &lt;-<span class="st"> </span><span class="kw">uniroot</span>(<span class="kw">tee</span>(g, locs, vals), <span class="kw">c</span>(-<span class="dv">5</span>, <span class="dv">5</span>))
+x &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">as.list</span>(locs))
+error &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">as.list</span>(vals))
+<span class="kw">plot</span>(x, <span class="dt">type =</span> <span class="st">&quot;b&quot;</span>); <span class="kw">abline</span>(<span class="dt">h =</span> <span class="fl">0.739</span>, <span class="dt">col =</span> <span class="st">&quot;grey50&quot;</span>)</code></pre>
+<p><img src="figures/uniroot-explore-1.png" title="" alt="" width="288" /></p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(error, <span class="dt">type =</span> <span class="st">&quot;b&quot;</span>); <span class="kw">abline</span>(<span class="dt">h =</span> <span class="dv">0</span>, <span class="dt">col =</span> <span class="st">&quot;grey50&quot;</span>)</code></pre>
+<p><img src="figures/uniroot-explore-2.png" title="" alt="" width="288" /></p>
+<h3>Laziness</h3>
+<p>The function operators we’ve seen so far follow a common pattern:</p>
+<pre class="sourceCode r"><code class="sourceCode r">funop &lt;-<span class="st"> </span>function(f, otherargs) {
+  function(...) {
+    <span class="co"># maybe do something</span>
+    res &lt;-<span class="st"> </span><span class="kw">f</span>(...)
+    <span class="co"># maybe do something else</span>
+    res
+  }
+}</code></pre>
+<p>Unfortunately there’s a problem with this implementation because function arguments are lazily evaluated: <code>f()</code> may have changed between applying the FO and evaluating the function. This is a particular problem if you’re using a for loop or <code>lapply()</code> to apply multiple function operators. In the following example, we take a list of functions and delay each one. But when we try to evaluate the mean, we get the sum instead. </p>
+<pre class="sourceCode r"><code class="sourceCode r">funs &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">mean =</span> mean, <span class="dt">sum =</span> sum)
+funs_m &lt;-<span class="st"> </span><span class="kw">lapply</span>(funs, delay_by, <span class="dt">delay =</span> <span class="fl">0.1</span>)
+
+funs_m$<span class="kw">mean</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt; [1] 55</span></code></pre>
+<p>We can avoid that problem by explicitly forcing the evaluation of <code>f()</code>:</p>
+<pre class="sourceCode r"><code class="sourceCode r">delay_by &lt;-<span class="st"> </span>function(delay, f) {
+  <span class="kw">force</span>(f)
+  function(...) {
+    <span class="kw">Sys.sleep</span>(delay)
+    <span class="kw">f</span>(...)
+  }
+}
+
+funs_m &lt;-<span class="st"> </span><span class="kw">lapply</span>(funs, delay_by, <span class="dt">delay =</span> <span class="fl">0.1</span>)
+funs_m$<span class="kw">mean</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt; [1] 5.5</span></code></pre>
+<p>It’s good practice to do that whenever you create a new FO.</p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Write a FO that logs a time stamp and message to a file every time a function is run.</p></li>
+<li><p>What does the following function do? What would be a good name for it?</p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(g) {
+  <span class="kw">force</span>(g)
+  result &lt;-<span class="st"> </span><span class="ot">NULL</span>
+  function(...) {
+    if (<span class="kw">is.null</span>(result)) {
+      result &lt;&lt;-<span class="st"> </span><span class="kw">g</span>(...)
+    }
+    result
+  }
+}
+runif2 &lt;-<span class="st"> </span><span class="kw">f</span>(runif)
+<span class="kw">runif2</span>(<span class="dv">5</span>)
+<span class="co">#&gt; [1] 0.9134312 0.3984839 0.8849056 0.6958965 0.4592552</span>
+<span class="kw">runif2</span>(<span class="dv">10</span>)
+<span class="co">#&gt; [1] 0.9134312 0.3984839 0.8849056 0.6958965 0.4592552</span></code></pre></li>
+<li><p>Modify <code>delay_by()</code> so that instead of delaying by a fixed amount of time, it ensures that a certain amount of time has elapsed since the function was last called. That is, if you called <code>g &lt;- delay_by(1, f); g(); Sys.sleep(2); g()</code> there shouldn’t be an extra delay.</p></li>
+<li><p>Write <code>wait_until()</code> which delays execution until a specific time.</p></li>
+<li><p>There are three places we could have added a memoise call: why did we choose the one we did?</p>
+<pre class="sourceCode r"><code class="sourceCode r">download &lt;-<span class="st"> </span><span class="kw">memoise</span>(<span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">delay_by</span>(<span class="dv">1</span>, download_file)))
+download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">memoise</span>(<span class="kw">delay_by</span>(<span class="dv">1</span>, download_file)))
+download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">delay_by</span>(<span class="dv">1</span>, <span class="kw">memoise</span>(download_file)))</code></pre></li>
+<li><p>Why is the <code>remember()</code> function inefficient? How could you implement it in more efficient way?</p></li>
+<li><p>Why does the following code, from <a href="http://stackoverflow.com/questions/8440675">stackoverflow</a>, not do what you expect?</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># return a linear function with slope a and intercept b.</span>
+f &lt;-<span class="st"> </span>function(a, b) function(x) a *<span class="st"> </span>x +<span class="st"> </span>b
+
+<span class="co"># create a list of functions with different parameters.</span>
+fs &lt;-<span class="st"> </span><span class="kw">Map</span>(f, <span class="dt">a =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="dt">b =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))
+
+fs[[<span class="dv">1</span>]](<span class="dv">3</span>)
+<span class="co">#&gt; [1] 4</span>
+<span class="co"># should return 0 * 3 + 0 = 0</span></code></pre>
+<p>How can you modify <code>f</code> so that it works correctly?</p></li>
+</ol>
+<h2 id="output-fos">Output FOs</h2>
+<p>The next step up in complexity is to modify the output of a function. This could be quite simple, or it could fundamentally change the operation of the function by returning something completely different to its usual output. In this section you’ll learn about two simple modifications, <code>Negate()</code> and <code>failwith()</code>, and two fundamental modifications, <code>capture_it()</code> and <code>time_it()</code>.</p>
+<h3>Minor modifications</h3>
+<p><code>base::Negate()</code> and <code>plyr::failwith()</code> offer two minor, but useful, modifications of a function that are particularly handy in conjunction with functionals.  </p>
+<p><code>Negate()</code> takes a function that returns a logical vector (a predicate function), and returns the negation of that function. This can be a useful shortcut when a function returns the opposite of what you need. The essence of <code>Negate()</code> is very simple:</p>
+<pre class="sourceCode r"><code class="sourceCode r">Negate &lt;-<span class="st"> </span>function(f) {
+  <span class="kw">force</span>(f)
+  function(...) !<span class="kw">f</span>(...)
+}
+(<span class="kw">Negate</span>(is.null))(<span class="ot">NULL</span>)
+<span class="co">#&gt; [1] FALSE</span></code></pre>
+<p>I often use this idea to make a function, <code>compact()</code>, that removes all null elements from a list: </p>
+<pre class="sourceCode r"><code class="sourceCode r">compact &lt;-<span class="st"> </span>function(x) <span class="kw">Filter</span>(<span class="kw">Negate</span>(is.null), x)</code></pre>
+<p><code>plyr::failwith()</code> turns a function that throws an error into a function that returns a default value when there’s an error. Again, the essence of <code>failwith()</code> is simple; it’s just a wrapper around <code>try()</code>, the function that captures errors and allows execution to continue. </p>
+<pre class="sourceCode r"><code class="sourceCode r">failwith &lt;-<span class="st"> </span>function(<span class="dt">default =</span> <span class="ot">NULL</span>, f, <span class="dt">quiet =</span> <span class="ot">FALSE</span>) {
+  <span class="kw">force</span>(f)
+  function(...) {
+    out &lt;-<span class="st"> </span>default
+    <span class="kw">try</span>(out &lt;-<span class="st"> </span><span class="kw">f</span>(...), <span class="dt">silent =</span> quiet)
+    out
+  }
+}
+<span class="kw">log</span>(<span class="st">&quot;a&quot;</span>)
+<span class="co">#&gt; Error in log(&quot;a&quot;): non-numeric argument to mathematical function</span>
+<span class="kw">failwith</span>(<span class="ot">NA</span>, log)(<span class="st">&quot;a&quot;</span>)
+<span class="co">#&gt; [1] NA</span>
+<span class="kw">failwith</span>(<span class="ot">NA</span>, log, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)(<span class="st">&quot;a&quot;</span>)
+<span class="co">#&gt; [1] NA</span></code></pre>
+<p>(If you haven’t seen <code>try()</code> before, it’s discussed in more detail in <a href="Exceptions-Debugging.html#try">exceptions and debugging</a>.)</p>
+<p><code>failwith()</code> is very useful in conjunction with functionals: instead of the failure propagating and terminating the higher-level loop, you can complete the iteration and then find out what went wrong. For example, imagine you’re fitting a set of generalised linear models (GLMs) to a list of data frames. While GLMs can sometimes fail because of optimisation problems, you’d still want to be able to try to fit all the models, and later look back at those that failed: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># If any model fails, all models fail to fit:</span>
+models &lt;-<span class="st"> </span><span class="kw">lapply</span>(datasets, glm, <span class="dt">formula =</span> y ~<span class="st"> </span>x1 +<span class="st"> </span>x2 *<span class="st"> </span>x3)
+<span class="co"># If a model fails, it will get a NULL value</span>
+models &lt;-<span class="st"> </span><span class="kw">lapply</span>(datasets, <span class="kw">failwith</span>(<span class="ot">NULL</span>, glm),
+  <span class="dt">formula =</span> y ~<span class="st"> </span>x1 +<span class="st"> </span>x2 *<span class="st"> </span>x3)
+
+<span class="co"># remove failed models (NULLs) with compact</span>
+ok_models &lt;-<span class="st"> </span><span class="kw">compact</span>(models)
+<span class="co"># extract the datasets corresponding to failed models</span>
+failed_data &lt;-<span class="st"> </span>datasets[<span class="kw">vapply</span>(models, is.null, <span class="kw">logical</span>(<span class="dv">1</span>))]</code></pre>
+<p>I think this is a great example of the power of combining functionals and function operators: it lets you succinctly express what you need to solve a common data analysis problem.</p>
+<h3>Changing what a function does</h3>
+<p>Other output function operators can have a more profound effect on the operation of the function. Instead of returning the original return value, we can return some other effect of the function evaluation. Here are two examples:</p>
+<ul>
+<li><p>Return text that the function <code>print()</code>ed: </p>
+<pre class="sourceCode r"><code class="sourceCode r">capture_it &lt;-<span class="st"> </span>function(f) {
+  <span class="kw">force</span>(f)
+  function(...) {
+    <span class="kw">capture.output</span>(<span class="kw">f</span>(...))
+  }
+}
+str_out &lt;-<span class="st"> </span><span class="kw">capture_it</span>(str)
+<span class="kw">str</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt;  int [1:10] 1 2 3 4 5 6 7 8 9 10</span>
+<span class="kw">str_out</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt; [1] &quot; int [1:10] 1 2 3 4 5 6 7 8 9 10&quot;</span></code></pre></li>
+<li><p>Return how long a function took to run: </p>
+<pre class="sourceCode r"><code class="sourceCode r">time_it &lt;-<span class="st"> </span>function(f) {
+  <span class="kw">force</span>(f)
+  function(...) {
+    <span class="kw">system.time</span>(<span class="kw">f</span>(...))
+  }
+}</code></pre></li>
+</ul>
+<p><code>time_it()</code> allows us to rewrite some of the code from the functionals chapter:</p>
+<pre class="sourceCode r"><code class="sourceCode r">compute_mean &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">base =</span> function(x) <span class="kw">mean</span>(x),
+  <span class="dt">sum =</span> function(x) <span class="kw">sum</span>(x) /<span class="st"> </span><span class="kw">length</span>(x)
+)
+x &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="fl">1e6</span>)
+
+<span class="co"># Previously we used an anonymous function to time execution:</span>
+<span class="co"># lapply(compute_mean, function(f) system.time(f(x)))</span>
+
+<span class="co"># Now we can compose function operators:</span>
+call_fun &lt;-<span class="st"> </span>function(f, ...) <span class="kw">f</span>(...)
+<span class="kw">lapply</span>(compute_mean, <span class="kw">time_it</span>(call_fun), x)
+<span class="co">#&gt; $base</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.005   0.000   0.005 </span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; $sum</span>
+<span class="co">#&gt;    user  system elapsed </span>
+<span class="co">#&gt;   0.003   0.000   0.003</span></code></pre>
+<p>In this example, there’s not a huge benefit to using function operators, because the composition is simple and we’re applying the same operator to each function. Generally, using function operators is most effective when you are using multiple operators or if the gap between creating them and using them is large.</p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Create a <code>negative()</code> FO that flips the sign of the output of the function to which it is applied.</p></li>
+<li><p>The <code>evaluate</code> package makes it easy to capture all the outputs (results, text, messages, warnings, errors, and plots) from an expression. Create a function like <code>capture_it()</code> that also captures the warnings and errors generated by a function.</p></li>
+<li><p>Create a FO that tracks files created or deleted in the working directory (Hint: use <code>dir()</code> and <code>setdiff()</code>.) What other global effects of functions might you want to track?</p></li>
+</ol>
+<h2 id="input-fos">Input FOs</h2>
+<p>The next step up in complexity is to modify the inputs of a function. Again, you can modify how a function works in a minor way (e.g., setting default argument values), or in a major way (e.g., converting inputs from scalars to vectors, or vectors to matrices).</p>
+<h3>Prefilling function arguments: partial function application</h3>
+<p>A common use of anonymous functions is to make a variant of a function that has certain arguments “filled in” already. This is called “partial function application”, and is implemented by <code>pryr::partial()</code>. Once you have read <a href="Expressions.html#metaprogramming">metaprogramming</a>, I encourage you to read the source code for <code>partial()</code> and figure out how it works — it’s only 5 lines of code!   </p>
+<p><code>partial()</code> allows us to replace code like</p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span>function(a) <span class="kw">g</span>(a, <span class="dt">b =</span> <span class="dv">1</span>)
+compact &lt;-<span class="st"> </span>function(x) <span class="kw">Filter</span>(<span class="kw">Negate</span>(is.null), x)
+<span class="kw">Map</span>(function(x, y) <span class="kw">f</span>(x, y, zs), xs, ys)</code></pre>
+<p>with</p>
+<pre class="sourceCode r"><code class="sourceCode r">f &lt;-<span class="st"> </span><span class="kw">partial</span>(g, <span class="dt">b =</span> <span class="dv">1</span>)
+compact &lt;-<span class="st"> </span><span class="kw">partial</span>(Filter, <span class="kw">Negate</span>(is.null))
+<span class="kw">Map</span>(<span class="kw">partial</span>(f, <span class="dt">zs =</span> zs), xs, ys)</code></pre>
+<p>We can use this idea to simplify the code used when working with lists of functions. Instead of:</p>
+<pre class="sourceCode r"><code class="sourceCode r">funs2 &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">sum =</span> function(...) <span class="kw">sum</span>(..., <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+  <span class="dt">mean =</span> function(...) <span class="kw">mean</span>(..., <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+  <span class="dt">median =</span> function(...) <span class="kw">median</span>(..., <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+)</code></pre>
+<p>we can write:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pryr)
+funs2 &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="dt">sum =</span> <span class="kw">partial</span>(sum, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+  <span class="dt">mean =</span> <span class="kw">partial</span>(mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+  <span class="dt">median =</span> <span class="kw">partial</span>(median, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+)</code></pre>
+<p>Using partial function application is a straightforward task in many functional programming languages, but it’s not entirely clear how it should interact with R’s lazy evaluation rules. The approach <code>plyr::partial()</code> takes is to create a function that is as similar as possible to the anonymous function that you’d create by hand. Peter Meilstrup takes a different approach in his <a href="https://github.com/crowding/ptools/">ptools package</a>. If you’re interested in the topic, you might want to read about the binary operators he created: <code>%()%</code>, <code>%&gt;&gt;%</code>, and <code>%&lt;&lt;%</code>.</p>
+<h3>Changing input types</h3>
+<p>It’s also possible to make a major change to a function’s input, making a function work with fundamentally different types of data. There are a few existing functions that work along these lines:</p>
+<ul>
+<li><p><code>base::Vectorize()</code> converts a scalar function to a vector function. It takes a non-vectorised function and vectorises it with respect to the arguments specified in the <code>vectorize.args</code> argument. This doesn’t give you any magical performance improvements, but it’s useful if you want a quick and dirty way of making a vectorised function. </p>
+<p>A mildly useful extension to <code>sample()</code> would be to vectorize it with respect to size. Doing so would allow you to generate multiple samples in one call. </p>
+<pre class="sourceCode r"><code class="sourceCode r">sample2 &lt;-<span class="st"> </span><span class="kw">Vectorize</span>(sample, <span class="st">&quot;size&quot;</span>, <span class="dt">SIMPLIFY =</span> <span class="ot">FALSE</span>)
+<span class="kw">str</span>(<span class="kw">sample2</span>(<span class="dv">1</span>:<span class="dv">5</span>, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">3</span>)))
+<span class="co">#&gt; List of 3</span>
+<span class="co">#&gt;  $ : int 2</span>
+<span class="co">#&gt;  $ : int 5</span>
+<span class="co">#&gt;  $ : int [1:3] 5 3 2</span>
+<span class="kw">str</span>(<span class="kw">sample2</span>(<span class="dv">1</span>:<span class="dv">5</span>, <span class="dv">5</span>:<span class="dv">3</span>))
+<span class="co">#&gt; List of 3</span>
+<span class="co">#&gt;  $ : int [1:5] 1 3 4 5 2</span>
+<span class="co">#&gt;  $ : int [1:4] 4 5 1 3</span>
+<span class="co">#&gt;  $ : int [1:3] 3 5 1</span></code></pre>
+<p>In this example we have used <code>SIMPLIFY = FALSE</code> to ensure that our newly vectorised function always returns a list. This is usually what you want.</p></li>
+<li><p><code>splat()</code> converts a function that takes multiple arguments to a function that takes a single list of arguments.  </p>
+<pre class="sourceCode r"><code class="sourceCode r">splat &lt;-<span class="st"> </span>function (f) {
+  <span class="kw">force</span>(f)
+  function(args) {
+    <span class="kw">do.call</span>(f, args)
+  }
+}</code></pre>
+<p>This is useful if you want to invoke a function with varying arguments:</p>
+<pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="ot">NA</span>, <span class="kw">runif</span>(<span class="dv">100</span>), <span class="dv">1000</span>)
+args &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="kw">list</span>(x),
+  <span class="kw">list</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+  <span class="kw">list</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>, <span class="dt">trim =</span> <span class="fl">0.1</span>)
+)
+<span class="kw">lapply</span>(args, <span class="kw">splat</span>(mean))
+<span class="co">#&gt; [[1]]</span>
+<span class="co">#&gt; [1] NA</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[2]]</span>
+<span class="co">#&gt; [1] 10.36643</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; [[3]]</span>
+<span class="co">#&gt; [1] 0.4704079</span></code></pre></li>
+<li><p><code>plyr::colwise()</code> converts a vector function to one that works with data frames: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">median</span>(mtcars)
+<span class="co">#&gt; Error in median.default(mtcars): need numeric data</span>
+<span class="kw">median</span>(mtcars$mpg)
+<span class="co">#&gt; [1] 19.2</span>
+plyr::<span class="kw">colwise</span>(median)(mtcars)
+<span class="co">#&gt;    mpg cyl  disp  hp  drat    wt  qsec vs am gear carb</span>
+<span class="co">#&gt; 1 19.2   6 196.3 123 3.695 3.325 17.71  0  0    4    2</span></code></pre></li>
+</ul>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Our previous <code>download()</code> function only downloads a single file. How can you use <code>partial()</code> and <code>lapply()</code> to create a function that downloads multiple files at once? What are the pros and cons of using <code>partial()</code> vs. writing a function by hand?</p></li>
+<li><p>Read the source code for <code>plyr::colwise()</code>. How does the code work? What are <code>colwise()</code>’s three main tasks? How could you make <code>colwise()</code> simpler by implementing each task as a function operator? (Hint: think about <code>partial()</code>.)</p></li>
+<li><p>Write FOs that convert a function to return a matrix instead of a data frame, or a data frame instead of a matrix. If you understand S3, call them <code>as.data.frame.function()</code> and <code>as.matrix.function()</code>.</p></li>
+<li><p>You’ve seen five functions that modify a function to change its output from one form to another. What are they? Draw a table of the various combinations of types of outputs: what should go in the rows and what should go in the columns? What function operators might you want to write to fill in the missing cells? Come up with example use cases.</p></li>
+<li><p>Look at all the examples of using an anonymous function to partially apply a function in this and the previous chapter. Replace the anonymous function with <code>partial()</code>. What do you think of the result? Is it easier or harder to read?</p></li>
+</ol>
+<h2 id="combining-fos">Combining FOs</h2>
+<p>Besides just operating on single functions, function operators can take multiple functions as input. One simple example of this is <code>plyr::each()</code>. It takes a list of vectorised functions and combines them into a single function. </p>
+<pre class="sourceCode r"><code class="sourceCode r">summaries &lt;-<span class="st"> </span>plyr::<span class="kw">each</span>(mean, sd, median)
+<span class="kw">summaries</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt;    mean      sd  median </span>
+<span class="co">#&gt; 5.50000 3.02765 5.50000</span></code></pre>
+<p>Two more complicated examples are combining functions through composition, or through boolean algebra. These capabilities are the glue that allow us to join multiple functions together.</p>
+<h3>Function composition</h3>
+<p>An important way of combining functions is through composition: <code>f(g(x))</code>. Composition takes a list of functions and applies them sequentially to the input. It’s a replacement for the common pattern of anonymous function that chains multiple functions together to get the result you want:   </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sapply</span>(mtcars, function(x) <span class="kw">length</span>(<span class="kw">unique</span>(x)))
+<span class="co">#&gt;  mpg  cyl disp   hp drat   wt qsec   vs   am gear carb </span>
+<span class="co">#&gt;   25    3   27   22   22   29   30    2    2    3    6</span></code></pre>
+<p>A simple version of compose looks like this:</p>
+<pre class="sourceCode r"><code class="sourceCode r">compose &lt;-<span class="st"> </span>function(f, g) {
+  function(...) <span class="kw">f</span>(<span class="kw">g</span>(...))
+}</code></pre>
+<p>(<code>pryr::compose()</code> provides a more full-featured alternative that can accept multiple functions and is used for the rest of the examples.)</p>
+<p>This allows us to write:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sapply</span>(mtcars, <span class="kw">compose</span>(length, unique))
+<span class="co">#&gt;  mpg  cyl disp   hp drat   wt qsec   vs   am gear carb </span>
+<span class="co">#&gt;   25    3   27   22   22   29   30    2    2    3    6</span></code></pre>
+<p>Mathematically, function composition is often denoted with the infix operator, o, <code>(f o g)(x)</code>. Haskell, a popular functional programming language, uses <code>.</code> to the same end. In R, we can create our own infix composition function: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="st">&quot;%o%&quot;</span> &lt;-<span class="st"> </span>compose
+<span class="kw">sapply</span>(mtcars, length %o%<span class="st"> </span>unique)
+<span class="co">#&gt;  mpg  cyl disp   hp drat   wt qsec   vs   am gear carb </span>
+<span class="co">#&gt;   25    3   27   22   22   29   30    2    2    3    6</span>
+
+<span class="kw">sqrt</span>(<span class="dv">1</span> +<span class="st"> </span><span class="dv">8</span>)
+<span class="co">#&gt; [1] 3</span>
+<span class="kw">compose</span>(sqrt, <span class="st">`</span><span class="dt">+</span><span class="st">`</span>)(<span class="dv">1</span>, <span class="dv">8</span>)
+<span class="co">#&gt; [1] 3</span>
+(sqrt %o%<span class="st"> `</span><span class="dt">+</span><span class="st">`</span>)(<span class="dv">1</span>, <span class="dv">8</span>)
+<span class="co">#&gt; [1] 3</span></code></pre>
+<p>Compose also allows for a very succinct implementation of <code>Negate</code>, which is just a partially evaluated version of <code>compose()</code>. </p>
+<pre class="sourceCode r"><code class="sourceCode r">Negate &lt;-<span class="st"> </span><span class="kw">partial</span>(compose, <span class="st">`</span><span class="dt">!</span><span class="st">`</span>)</code></pre>
+<p>We could implement the population standard deviation with function composition:</p>
+<pre class="sourceCode r"><code class="sourceCode r">square &lt;-<span class="st"> </span>function(x) x^<span class="dv">2</span>
+deviation &lt;-<span class="st"> </span>function(x) x -<span class="st"> </span><span class="kw">mean</span>(x)
+
+sd2 &lt;-<span class="st"> </span>sqrt %o%<span class="st"> </span>mean %o%<span class="st"> </span>square %o%<span class="st"> </span>deviation
+<span class="kw">sd2</span>(<span class="dv">1</span>:<span class="dv">10</span>)
+<span class="co">#&gt; [1] 2.872281</span></code></pre>
+<p>This type of programming is called tacit or point-free programming. (The term point-free comes from the use of “point” to refer to values in topology; this style is also derogatorily known as pointless). In this style of programming, you don’t explicitly refer to variables. Instead, you focus on the high-level composition of functions rather than the low-level flow of data. The focus is on what’s being done, not on objects it’s being done to. Since we’re using only functions and not parameters, we use verbs and not nouns. This style is common in Haskell, and is the typical style in stack based programming languages like Forth and Factor. It’s not a terribly natural or elegant style in R, but it is fun to play with.  </p>
+<p><code>compose()</code> is particularly useful in conjunction with <code>partial()</code>, because <code>partial()</code> allows you to supply additional arguments to the functions being composed. One nice side effect of this style of programming is that it keeps a function’s arguments near its name. This is important because as the size of the chunk of code you have to hold in your head grows code becomes harder to understand.</p>
+<p>Below I take the example from the first section of the chapter and modify it to use the two styles of function composition described above. Both results are longer than the original code, but they may be easier to understand because the function and its arguments are closer together. Note that we still have to read them from right to left (bottom to top): the first function called is the last one written. We could define <code>compose()</code> to work in the opposite direction, but in the long run, this is likely to lead to confusion since we’d create a small part of the langugage that reads differently from every other part.</p>
+<pre class="sourceCode r"><code class="sourceCode r">download &lt;-<span class="st"> </span><span class="kw">dot_every</span>(<span class="dv">10</span>, <span class="kw">memoise</span>(<span class="kw">delay_by</span>(<span class="dv">1</span>, download_file)))
+
+download &lt;-<span class="st"> </span>pryr::<span class="kw">compose</span>(
+  <span class="kw">partial</span>(dot_every, <span class="dv">10</span>),
+  memoise,
+  <span class="kw">partial</span>(delay_by, <span class="dv">1</span>),
+  download_file
+)
+
+download &lt;-<span class="st"> </span><span class="kw">partial</span>(dot_every, <span class="dv">10</span>) %o%
+<span class="st">  </span>memoise %o%
+<span class="st">  </span><span class="kw">partial</span>(delay_by, <span class="dv">1</span>) %o%
+<span class="st">  </span>download_file</code></pre>
+<h3>Logical predicates and boolean algebra</h3>
+<p>When I use <code>Filter()</code> and other functionals that work with logical predicates, I often find myself using anonymous functions to combine multiple conditions: </p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Filter</span>(function(x) <span class="kw">is.character</span>(x) ||<span class="st"> </span><span class="kw">is.factor</span>(x), iris)</code></pre>
+<p>As an alternative, we could define function operators that combine logical predicates:</p>
+<pre class="sourceCode r"><code class="sourceCode r">and &lt;-<span class="st"> </span>function(f1, f2) {
+  <span class="kw">force</span>(f1); <span class="kw">force</span>(f2)
+  function(...) {
+    <span class="kw">f1</span>(...) &amp;&amp;<span class="st"> </span><span class="kw">f2</span>(...)
+  }
+}
+
+or &lt;-<span class="st"> </span>function(f1, f2) {
+  <span class="kw">force</span>(f1); <span class="kw">force</span>(f2)
+  function(...) {
+    <span class="kw">f1</span>(...) ||<span class="st"> </span><span class="kw">f2</span>(...)
+  }
+}
+
+not &lt;-<span class="st"> </span>function(f) {
+  <span class="kw">force</span>(f)
+  function(...) {
+    !<span class="kw">f</span>(...)
+  }
+}</code></pre>
+<p>This would allow us to write:</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">Filter</span>(<span class="kw">or</span>(is.character, is.factor), iris)
+<span class="kw">Filter</span>(<span class="kw">not</span>(is.numeric), iris)</code></pre>
+<p>And we now have a boolean algebra on functions, not on the results of functions. </p>
+<h3>Exercises</h3>
+<ol style="list-style-type: decimal">
+<li><p>Implement your own version of <code>compose()</code> using <code>Reduce</code> and <code>%o%</code>. For bonus points, do it without calling <code>function</code>.</p></li>
+<li><p>Extend <code>and()</code> and <code>or()</code> to deal with any number of input functions. Can you do it with <code>Reduce()</code>? Can you keep them lazy (e.g., for <code>and()</code>, the function returns once it sees the first <code>FALSE</code>)?</p></li>
+<li><p>Implement the <code>xor()</code> binary operator. Implement it using the existing <code>xor()</code> function. Implement it as a combination of <code>and()</code> and <code>or()</code>. What are the advantages and disadvantages of each approach? Also think about what you’ll call the resulting function to avoid a clash with the existing <code>xor()</code> function, and how you might change the names of <code>and()</code>, <code>not()</code>, and <code>or()</code> to keep them consistent.</p></li>
+<li><p>Above, we implemented boolean algebra for functions that return a logical function. Implement elementary algebra (<code>plus()</code>, <code>minus()</code>, <code>multiply()</code>, <code>divide()</code>, <code>exponentiate()</code>, <code>log()</code>) for functions that return numeric vectors.</p></li>
+</ol>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <hr>
+        <p>&copy; Hadley Wickham. Powered by <a href="http://jekyllrb.com/">jekyll</a>,
+          <a href="http://yihui.name/knitr/">knitr</a>, and
+          <a href="http://johnmacfarlane.net/pandoc/">pandoc</a>. Source
+          available on <a href="https://github.com/hadley/adv-r/">github</a>.
+        </p>
+      </div>
+
+    </div> <!-- /container -->
+
+  <script src="//code.jquery.com/jquery.js"></script>
+  <script src="www/bootstrap.min.js"></script>
+  <script src="www/toc.js"></script>
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-67989-16', 'had.co.nz');
+    ga('send', 'pageview');
+
+  </script>
+  </body>
+</html>
