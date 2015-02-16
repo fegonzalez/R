@@ -224,7 +224,7 @@ vect[c("foo", "bar")]
 subset(x, subset = x>0) #NA values are removed
 
 
-# Search elements in vectors
+# Search elements in vector / list
 is.element('b', vector)
 'b' %in% vctor
 which()
@@ -517,6 +517,9 @@ writeLines()
 # Debugging
 #------------------------------
 
+assertCondition ## package ‘tools’ is related and useful for testing.
+## returns true on any condition (ERROR, WARNING, ...)
+## false otherwise
 
 stopifnot()  #assert like
 stop()       #rise an error (like C++ throw()) -> use catch(error)
@@ -772,6 +775,9 @@ read.xlsx2() {xlsx package} # faster but can be unstable for reading for
 			    # reading subsets of rows
 write.xlsx() {xlsx package}
 
+# Read Fixed Width Format Files
+read.fwf()   {utils package}
+
 # Reading & Parsing XML file
 xmlTreeParse()  {XML package} # generates an XML tree
 xmlRoot
@@ -782,6 +788,46 @@ xpathSApply()
 # Reading JSON (Javascript Object Notation)
 fromJSON()  {jsonlite package} # R <- JSON string, URL or file
 toJSON()  {jsonlite package} # JSON <- R
+
+## Connecting and listing databases RMySQL
+
+{RMySQL package}
+dbConnect()     # class MySQLConnection
+dbDisconnect()
+dbListTables()  # tables of a DB
+dbListFields()  # fields of a table
+dbReadTable()   # database table -> data frame
+dbWriteTable()  # data frame -> database table
+dbGetQuery()    # Send query, retrieve results and then clear result set
+                # (data.frame)
+
+{sqldf package}
+dbSendQuery()
+sqldf("select * from acs")
+
+## Select a specific subset
+dbSendQuery()   # only submits and synchronously executes the SQL statement to
+dbFetch()       # the database engine.  It does _not_ extracts any records -
+dbClearResult() # for that you need to use the function ‘dbFetch’, and then you
+                # must call ‘dbClearResult’ when you finish fetching the
+                # records you need.
+
+## HDF5 (hierarchical data format)
+h5createFile()
+h5createGroup() ## Create groups
+h5write()       ## Write a data set / write data to group / Modify data
+h5read()        ## Reading data
+h5ls(()         ## Observers
+
+## Reading data from the web
+readLines()
+
+## library(httr);
+GET() # See Example.- quizz2.R::q1()
+stop_for_status()
+content()
+htmlParse()
+handle()
 
 
 
