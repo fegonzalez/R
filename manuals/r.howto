@@ -93,9 +93,17 @@ identical(object_a, object_b)
 # use identical instead "==" or "!=": see "?identical"
 
 # Object detailed info
-str(object)
-summary(object, ...) # i.e. to see #NA's
 object.size(x)
+typeof(x)
+
+## Summarizing Data
+# See data content (data-value info)
+head(), tail(), summary(), quantile()
+# See data structure (data-type info)
+str()
+# Handle data
+table()
+
 
 #WARNING It is possible to assign a value to a property of an object
 names(vect2) <- c("foo", "bar", "norf")
@@ -198,9 +206,33 @@ WARNING: vector first index = 1 # unlike C (0)
 paste()
 
 #
-# subsetting vectors
+# subsetting
 #
-x[1:10]
+set.seed(13435)
+X <- data.frame("var1"=sample(1:5),"var2"=sample(6:10),"var3"=sample(11:15))
+X <- X[sample(1:5),];
+#   var1 var2 var3
+# 1    2   NA   15
+# 4    1   10   11
+# 2    3   NA   12
+# 3    5    6   14
+# 5    4    9   13
+X[, 1]                            # by number
+X[, "var1"]                       # by name
+X[(X$var1 <= 3 & X$var3 > 11), ]  # logical ands & ors
+X[which(X$var2 > 8),]             # Dealing with missing values
+
+#
+# Sorting: sort() , order()
+#
+sort(X$var2,decreasing=TRUE,na.last=T)
+X[order(X$var1,X$var3),]
+
+# Sorting: sort() , order()
+Ordering with plyr {package plyr}   (arrange)
+arrange(X,var1)
+
+
 
 #
 # vector indexing: logical, + int, - int, named, (subset)
@@ -230,6 +262,10 @@ is.element('b', vector)
 which()
 match()
 grep()
+
+## Split data
+cut()
+
 
 #-------------------------
 # Dates & Times
@@ -684,11 +720,11 @@ proc.time()
 # The R Profiler:  Rprof()
 #
 
- !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
- !!
- !! DO NOT use system.time() and Rprof() together or you will be sad !!
- !!
- !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
+## !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
+## !!
+## !! DO NOT use system.time() and Rprof() together or you will be sad !!
+## !!
+## !!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!! !!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!
 
 Rprof()
 summaryRprof()
