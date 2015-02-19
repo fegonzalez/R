@@ -684,9 +684,12 @@ data()  ## Loads specified data sets, or list the available data sets.
 
 17.3.1) Cross Tabulation (xtabs)
 
-Create a contingency table (optionally a sparse matrix) from cross-classifying
-factors, usually contained in a data frame, using a formula interface.
+xtabs() to create contingency tables to study:
+        a) The distribution of one factor variable:
+        b) The relationship between two factor variables.
+        c) The relationship between one factor and others.
 
+Example.-
 data(UCBAdmissions)
 DF <- as.data.frame(UCBAdmissions)
 summary(DF)
@@ -697,11 +700,41 @@ summary(DF)
 ##                            D:4   Mean   :188.6
 ##                            E:4   3rd Qu.:302.5
 ##                            F:4   Max.   :512.0
-xt <- xtabs(Freq ~ Gender + Admit, data = DF)
+
+## a)
+xtabs(~ Gender , data = DF)
+## Gender
+##   Male Female
+##     12     12
+
+## b)
+xtabs(~ Gender + Admit , data = DF)
+##         Admit
+## Gender   Admitted Rejected
+##   Male          6        6
+##   Female        6        6
+
+c1) One factor vs ALL the others (~.)
+xtabs(Freq ~. , data = DF)
+## , , Dept = A
+##           Gender
+## Admit      Male Female
+##   Admitted  512     89
+##   Rejected  313     19
+## ...
+## , , Dept = F
+##           Gender
+## Admit      Male Female
+##   Admitted   22     24
+##   Rejected  351    317
+
+c2) One factor vs SOME of the others
+xtabs(Freq ~ Gender + Admit , data = DF)
 ##         Admit
 ## Gender   Admitted Rejected
 ##   Male       1198     1493
 ##   Female      557     1278
+
 
 
 17.3.2) Flat contingency tables (ftable)
