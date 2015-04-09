@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Information about variables
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Basics.html">Basics</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Information_about_variables
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="information-about-variables">Information about variables</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Information_about_variables.html#information-about-variables">Information about variables</a><ul>
+<li><a href="Information_about_variables.html#problem">Problem</a></li>
+<li><a href="Information_about_variables.html#solution">Solution</a><ul>
+<li><a href="Information_about_variables.html#information-about-existence">Information about existence</a></li>
+<li><a href="Information_about_variables.html#information-about-sizestructure">Information about size/structure</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to find information about variables.</p>
+<h2 id="solution">Solution</h2>
+<p>Here are some sample variables to work with in the examples below:</p>
+<div class="codehilite"><pre>x <span class="o">&lt;-</span> <span class="m">6</span>
+n <span class="o">&lt;-</span> <span class="m">1</span><span class="o">:</span><span class="m">4</span>
+let <span class="o">&lt;-</span> <span class="kc">LETTERS</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">]</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>n<span class="p">,</span> let<span class="p">)</span>
+</pre></div>
+
+
+<h3 id="information-about-existence">Information about existence</h3>
+<div class="codehilite"><pre><span class="c1"># List currently defined variables</span>
+<span class="kp">ls</span><span class="p">()</span>
+<span class="c1">#  &quot;df&quot;  &quot;let&quot; &quot;n&quot;   &quot;x&quot;  </span>
+
+
+<span class="c1"># Check if a variable named &quot;x&quot; exists</span>
+<span class="kp">exists</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">)</span>
+<span class="c1">#  TRUE</span>
+
+<span class="c1"># Check if &quot;y&quot; exists</span>
+<span class="kp">exists</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">)</span>
+<span class="c1">#  FALSE</span>
+
+
+<span class="c1"># Delete variable x</span>
+<span class="kp">rm</span><span class="p">(</span>x<span class="p">)</span>
+x
+<span class="c1"># Error: object &quot;x&quot; not found</span>
+</pre></div>
+
+
+<h3 id="information-about-sizestructure">Information about size/structure</h3>
+<div class="codehilite"><pre><span class="c1"># Get information about structure</span>
+str<span class="p">(</span>n<span class="p">)</span>
+<span class="c1">#  int [1:4] 1 2 3 4</span>
+
+str<span class="p">(</span>df<span class="p">)</span>
+<span class="c1"># &#39;data.frame&#39;: 4 obs. of  2 variables:</span>
+<span class="c1">#  $ n  : int  1 2 3 4</span>
+<span class="c1">#  $ let: Factor w/ 4 levels &quot;A&quot;,&quot;B&quot;,&quot;C&quot;,&quot;D&quot;: 1 2 3 4</span>
+
+
+<span class="c1"># Get the length of a vector</span>
+<span class="kp">length</span><span class="p">(</span>n<span class="p">)</span>
+<span class="c1">#  4</span>
+
+<span class="c1"># Length probably doesn&#39;t give us what we want here:</span>
+<span class="kp">length</span><span class="p">(</span>df<span class="p">)</span>
+<span class="c1">#  2</span>
+
+<span class="c1"># Number of rows</span>
+<span class="kp">nrow</span><span class="p">(</span>df<span class="p">)</span>
+<span class="c1">#  4</span>
+
+<span class="c1"># Number of columns</span>
+<span class="kp">ncol</span><span class="p">(</span>df<span class="p">)</span>
+<span class="c1">#  2</span>
+
+<span class="c1"># Get rows and columns</span>
+<span class="kp">dim</span><span class="p">(</span>df<span class="p">)</span>
+<span class="c1">#  4 2</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

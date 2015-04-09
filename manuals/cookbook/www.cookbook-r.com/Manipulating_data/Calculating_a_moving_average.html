@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Calculating a moving average
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Calculating_a_moving_average
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="calculating-a-moving-average">Calculating a moving average</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to calculate a moving average.</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose your data is a noisy sine wave with some missing values:</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">993</span><span class="p">)</span>
+x <span class="o">&lt;-</span> <span class="m">1</span><span class="o">:</span><span class="m">300</span>
+y <span class="o">&lt;-</span> <span class="kp">sin</span><span class="p">(</span>x<span class="o">/</span><span class="m">20</span><span class="p">)</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">300</span><span class="p">,</span>sd<span class="o">=</span><span class="m">.1</span><span class="p">)</span>
+y<span class="p">[</span><span class="m">251</span><span class="o">:</span><span class="m">255</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">NA</span>
+</pre></div>
+
+
+<p>The <code>filter()</code> function can be used to calculate a moving average.</p>
+<div class="codehilite"><pre><span class="c1"># Plot the unsmoothed data (gray)</span>
+plot<span class="p">(</span>x<span class="p">,</span> y<span class="p">,</span> type<span class="o">=</span><span class="s">&quot;l&quot;</span><span class="p">,</span> col<span class="o">=</span>grey<span class="p">(</span><span class="m">.5</span><span class="p">))</span>
+<span class="c1"># Draw gridlines</span>
+grid<span class="p">()</span>
+
+<span class="c1"># Smoothed with lag:</span>
+<span class="c1"># average of current sample and 19 previous samples (red)</span>
+f20 <span class="o">&lt;-</span> <span class="kp">rep</span><span class="p">(</span><span class="m">1</span><span class="o">/</span><span class="m">20</span><span class="p">,</span> <span class="m">20</span><span class="p">)</span>
+<span class="c1"># [1] 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05</span>
+<span class="c1">#[16] 0.05 0.05 0.05 0.05 0.05</span>
+y_lag <span class="o">&lt;-</span> filter<span class="p">(</span>y<span class="p">,</span> f20<span class="p">,</span> sides<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_lag<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">)</span>
+
+<span class="c1"># Smoothed symmetrically:</span>
+<span class="c1"># average of current sample, 10 future samples, and 10 past samples (blue)</span>
+f21 <span class="o">&lt;-</span> <span class="kp">rep</span><span class="p">(</span><span class="m">1</span><span class="o">/</span><span class="m">21</span><span class="p">,</span><span class="m">21</span><span class="p">)</span>
+<span class="c1"># [1] 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048</span>
+<span class="c1">#[13] 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048 0.048</span>
+y_sym <span class="o">&lt;-</span> filter<span class="p">(</span>y<span class="p">,</span> f21<span class="p">,</span> sides<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_sym<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Calculating_a_moving_average/moving_average.png" /></p>
+<p><code>filter()</code> will leave holes wherever it encounters missing values, as shown in the graph above.</p>
+<p>A different way to handle missing data is to simply ignore it, and not include it in the average. The function defined here will do that.</p>
+<div class="codehilite"><pre><span class="c1"># x: the vector</span>
+<span class="c1"># n: the number of samples</span>
+<span class="c1"># centered: if FALSE, then average current sample and previous (n-1) samples</span>
+<span class="c1">#           if TRUE, then average symmetrically in past and future. (If n is even, use one more sample from future.)</span>
+movingAverage <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">,</span> n<span class="o">=</span><span class="m">1</span><span class="p">,</span> centered<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kr">if</span> <span class="p">(</span>centered<span class="p">)</span> <span class="p">{</span>
+        before <span class="o">&lt;-</span> floor  <span class="p">((</span>n<span class="m">-1</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="p">)</span>
+        after  <span class="o">&lt;-</span> <span class="kp">ceiling</span><span class="p">((</span>n<span class="m">-1</span><span class="p">)</span><span class="o">/</span><span class="m">2</span><span class="p">)</span>
+    <span class="p">}</span> <span class="kr">else</span> <span class="p">{</span>
+        before <span class="o">&lt;-</span> n<span class="m">-1</span>
+        after  <span class="o">&lt;-</span> <span class="m">0</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Track the sum and count of number of non-NA items</span>
+    s     <span class="o">&lt;-</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x<span class="p">))</span>
+    count <span class="o">&lt;-</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x<span class="p">))</span>
+
+    <span class="c1"># Add the centered data </span>
+    new <span class="o">&lt;-</span> x
+    <span class="c1"># Add to count list wherever there isn&#39;t a </span>
+    count <span class="o">&lt;-</span> count <span class="o">+</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)</span>
+    <span class="c1"># Now replace NA_s with 0_s and add to total</span>
+    new<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)]</span> <span class="o">&lt;-</span> <span class="m">0</span>
+    s <span class="o">&lt;-</span> s <span class="o">+</span> new
+
+    <span class="c1"># Add the data from before</span>
+    i <span class="o">&lt;-</span> <span class="m">1</span>
+    <span class="kr">while</span> <span class="p">(</span>i <span class="o">&lt;=</span> before<span class="p">)</span> <span class="p">{</span>
+        <span class="c1"># This is the vector with offset values to add</span>
+        new   <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kp">rep</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> i<span class="p">),</span> x<span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="p">(</span><span class="kp">length</span><span class="p">(</span>x<span class="p">)</span><span class="o">-</span>i<span class="p">)])</span>
+
+        count <span class="o">&lt;-</span> count <span class="o">+</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)</span>
+        new<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)]</span> <span class="o">&lt;-</span> <span class="m">0</span>
+        s <span class="o">&lt;-</span> s <span class="o">+</span> new
+
+        i <span class="o">&lt;-</span> i<span class="m">+1</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Add the data from after</span>
+    i <span class="o">&lt;-</span> <span class="m">1</span>
+    <span class="kr">while</span> <span class="p">(</span>i <span class="o">&lt;=</span> after<span class="p">)</span> <span class="p">{</span>
+        <span class="c1"># This is the vector with offset values to add</span>
+        new   <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span>x<span class="p">[(</span>i<span class="m">+1</span><span class="p">)</span><span class="o">:</span><span class="kp">length</span><span class="p">(</span>x<span class="p">)],</span> <span class="kp">rep</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> i<span class="p">))</span>
+
+        count <span class="o">&lt;-</span> count <span class="o">+</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)</span>
+        new<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>new<span class="p">)]</span> <span class="o">&lt;-</span> <span class="m">0</span>
+        s <span class="o">&lt;-</span> s <span class="o">+</span> new
+
+        i <span class="o">&lt;-</span> i<span class="m">+1</span>
+    <span class="p">}</span>
+
+    <span class="c1"># return sum divided by count</span>
+    s<span class="o">/</span>count
+<span class="p">}</span>
+
+
+<span class="c1"># Make same plots from before, with thicker lines</span>
+plot<span class="p">(</span>x<span class="p">,</span> y<span class="p">,</span> type<span class="o">=</span><span class="s">&quot;l&quot;</span><span class="p">,</span> col<span class="o">=</span>grey<span class="p">(</span><span class="m">.5</span><span class="p">))</span>
+grid<span class="p">()</span>
+y_lag <span class="o">&lt;-</span> filter<span class="p">(</span>y<span class="p">,</span> <span class="kp">rep</span><span class="p">(</span><span class="m">1</span><span class="o">/</span><span class="m">20</span><span class="p">,</span> <span class="m">20</span><span class="p">),</span> sides<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_lag<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">4</span><span class="p">)</span>         <span class="c1"># Lagged average in red</span>
+y_sym <span class="o">&lt;-</span> filter<span class="p">(</span>y<span class="p">,</span> <span class="kp">rep</span><span class="p">(</span><span class="m">1</span><span class="o">/</span><span class="m">21</span><span class="p">,</span><span class="m">21</span><span class="p">),</span> sides<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_sym<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">4</span><span class="p">)</span>        <span class="c1"># Symmetrical average in blue</span>
+
+<span class="c1"># Calculate lagged moving average with new method and overplot with green</span>
+y_lag_na.rm <span class="o">&lt;-</span> movingAverage<span class="p">(</span>y<span class="p">,</span> <span class="m">20</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_lag_na.rm<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+
+<span class="c1"># Calculate symmetrical moving average  with new method and overplot with green</span>
+y_sym_na.rm <span class="o">&lt;-</span> movingAverage<span class="p">(</span>y<span class="p">,</span> <span class="m">21</span><span class="p">,</span> <span class="kc">TRUE</span><span class="p">)</span>
+lines<span class="p">(</span>x<span class="p">,</span> y_sym_na.rm<span class="p">,</span> col<span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Calculating_a_moving_average/moving_average_ignoreNA.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Sorting
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Sorting
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="sorting">Sorting</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Sorting.html#sorting">Sorting</a><ul>
+<li><a href="Sorting.html#problem">Problem</a></li>
+<li><a href="Sorting.html#solution">Solution</a><ul>
+<li><a href="Sorting.html#vectors">Vectors</a></li>
+<li><a href="Sorting.html#data-frames">Data frames</a><ul>
+<li><a href="Sorting.html#reverse-sort">Reverse sort</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to sort a vector, matrix, or data frame.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="vectors">Vectors</h3>
+<div class="codehilite"><pre><span class="c1"># Make up a randomly ordered vector</span>
+v <span class="o">&lt;-</span> <span class="kp">sample</span><span class="p">(</span><span class="m">101</span><span class="o">:</span><span class="m">110</span><span class="p">)</span>
+<span class="c1"># 102 107 104 106 105 103 101 108 109 110</span>
+
+<span class="c1"># Sort the vector</span>
+<span class="kp">sort</span><span class="p">(</span>v<span class="p">)</span>
+<span class="c1"># 101 102 103 104 105 106 107 108 109 110</span>
+
+<span class="c1"># Reverse sort</span>
+<span class="kp">sort</span><span class="p">(</span>v<span class="p">,</span> decreasing<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># 110 109 108 107 106 105 104 103 102 101</span>
+</pre></div>
+
+
+<h3 id="data-frames">Data frames</h3>
+<p>To sort a data frame on one or more columns, you can use the <code>arrange</code> function from <code>plyr</code> package, or use R's built-in functions. The <code>arrange</code> function is much easier to use, but does require the external package to be installed.</p>
+<div class="codehilite"><pre><span class="c1"># Make a data frame</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span> <span class="p">(</span>id<span class="o">=</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">,</span>
+            weight<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">20</span><span class="p">,</span><span class="m">27</span><span class="p">,</span><span class="m">24</span><span class="p">,</span><span class="m">22</span><span class="p">),</span>
+            size<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">))</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  1     20  small</span>
+<span class="c1">#  2     27  large</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  4     22  large</span>
+
+<span class="kn">library</span><span class="p">(</span>plyr<span class="p">)</span>
+
+<span class="c1"># Sort by weight column. These have the same result</span>
+arrange<span class="p">(</span>df<span class="p">,</span> weight<span class="p">)</span>       <span class="c1"># Use arrange from plyr package</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span>df<span class="o">$</span>weight<span class="p">),</span> <span class="p">]</span>   <span class="c1"># Use built-in R functions</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  1     20  small</span>
+<span class="c1">#  4     22  large</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  2     27  large</span>
+
+
+<span class="c1"># Sort by size, then by weight</span>
+arrange<span class="p">(</span>df<span class="p">,</span> size<span class="p">,</span> weight<span class="p">)</span>         <span class="c1"># Use arrange from plyr package</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span>df<span class="o">$</span>size<span class="p">,</span> df<span class="o">$</span>weight<span class="p">),</span> <span class="p">]</span>  <span class="c1"># Use built-in R functions</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  4     22  large</span>
+<span class="c1">#  2     27  large</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  1     20  small</span>
+
+
+<span class="c1"># Sort by all columns in the data frame, from left to right</span>
+df<span class="p">[</span> <span class="kp">do.call</span><span class="p">(</span><span class="kp">order</span><span class="p">,</span> <span class="kp">as.list</span><span class="p">(</span>df<span class="p">)),</span> <span class="p">]</span> 
+<span class="c1"># In this particular example, the order will be unchanged</span>
+</pre></div>
+
+
+<p>Note that the <code>size</code> column is a factor and is sorted by the order of the factor levels. In this case, the levels were automatically assigned alphabetically (when creating the data frame), so <strong>large</strong> is first and <strong>small</strong> is last.</p>
+<h4 id="reverse-sort">Reverse sort</h4>
+<p>The overall order of the sort can be reversed with the argument <code>decreasing=TRUE</code>.</p>
+<p>To reverse the direction of a particular column, the method depends on the data type:</p>
+<ul>
+<li>Numbers: put a <code>-</code> in front of the variable name, e.g. <code>df[ order(-df$weight), ]</code>.</li>
+<li>Factors: convert to integer and put a <code>-</code> in front of the variable name, e.g. <code>df[ order(-xtfrm(df$size)), ]</code>.</li>
+<li>Characters: there isn't a simple way to do this. One method is to convert to a factor first and then sort as above.</li>
+</ul>
+<div class="codehilite"><pre><span class="c1"># Reverse sort by weight column. These all have the same effect:</span>
+arrange<span class="p">(</span>df<span class="p">,</span> <span class="o">-</span>weight<span class="p">)</span>                      <span class="c1"># Use arrange from plyr package</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span>df<span class="o">$</span>weight<span class="p">,</span> decreasing<span class="o">=</span><span class="kc">TRUE</span><span class="p">),</span> <span class="p">]</span>  <span class="c1"># Use built-in R functions</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span><span class="o">-</span>df<span class="o">$</span>weight<span class="p">),</span> <span class="p">]</span>                  <span class="c1"># Use built-in R functions</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  2     27  large</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  4     22  large</span>
+<span class="c1">#  1     20  small</span>
+
+
+<span class="c1"># Sort by size (increasing), then by weight (decreasing)</span>
+arrange<span class="p">(</span>df<span class="p">,</span> size<span class="p">,</span> <span class="o">-</span>weight<span class="p">)</span>         <span class="c1"># Use arrange from plyr package</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span>df<span class="o">$</span>size<span class="p">,</span> <span class="o">-</span>df<span class="o">$</span>weight<span class="p">),</span> <span class="p">]</span>  <span class="c1"># Use built-in R functions</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  2     27  large</span>
+<span class="c1">#  4     22  large</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  1     20  small</span>
+
+
+<span class="c1"># Sort by size (decreasing), then by weight (increasing)</span>
+<span class="c1"># The call to xtfrm() is needed for factors</span>
+arrange<span class="p">(</span>df<span class="p">,</span> <span class="o">-</span><span class="kp">xtfrm</span><span class="p">(</span>size<span class="p">),</span> weight<span class="p">)</span>         <span class="c1"># Use arrange from plyr package</span>
+df<span class="p">[</span> <span class="kp">order</span><span class="p">(</span><span class="o">-</span><span class="kp">xtfrm</span><span class="p">(</span>df<span class="o">$</span>size<span class="p">),</span> df<span class="o">$</span>weight<span class="p">),</span> <span class="p">]</span>  <span class="c1"># Use built-in R functions</span>
+<span class="c1"># id weight   size</span>
+<span class="c1">#  1     20  small</span>
+<span class="c1">#  3     24 medium</span>
+<span class="c1">#  4     22  large</span>
+<span class="c1">#  2     27  large</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

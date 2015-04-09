@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Recoding data
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Recoding_data
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="recoding-data">Recoding data</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Recoding_data.html#recoding-data">Recoding data</a><ul>
+<li><a href="Recoding_data.html#problem">Problem</a></li>
+<li><a href="Recoding_data.html#solution">Solution</a><ul>
+<li><a href="Recoding_data.html#recoding-a-categorical-variable">Recoding a categorical variable</a></li>
+<li><a href="Recoding_data.html#recoding-a-continuous-variable-into-categorical-variable">Recoding a continuous variable into categorical variable</a></li>
+<li><a href="Recoding_data.html#calculating-a-new-continuous-variable">Calculating a new continuous variable</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to recode data or calculate new data columns from existing ones.</p>
+<h2 id="solution">Solution</h2>
+<p><strong>This page was recently updated to reflect changes in the new version of plyr, 1.8. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version.</strong></p>
+<p>The examples below will use this data:</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject sex control cond1 cond2</span>
+<span class="s">       1   M     7.9  12.3  10.7</span>
+<span class="s">       2   F     6.3  10.6  11.1</span>
+<span class="s">       3   F     9.5  13.1  13.8</span>
+<span class="s">       4   M    11.5  13.4  12.9</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="recoding-a-categorical-variable">Recoding a categorical variable</h3>
+<p>The easiest way is to use <code>revalue()</code> or <code>mapvalues()</code> from the plyr package.
+This will code <code>M</code> as <code>1</code> and <code>F</code> as <code>2</code>, and put it in a new column.
+Note that these functions preserves the type: if the input is a factor, the output will be a factor; and if the input is a character vector, the output will be a character vector.</p>
+<div class="codehilite"><pre><span class="c1"># The following two lines are equivalent:</span>
+data<span class="o">$</span>scode <span class="o">&lt;-</span> revalue<span class="p">(</span>data<span class="o">$</span>sex<span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;M&quot;</span><span class="o">=</span><span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="o">=</span><span class="s">&quot;2&quot;</span><span class="p">))</span>
+data<span class="o">$</span>scode <span class="o">&lt;-</span> mapvalues<span class="p">(</span>data<span class="o">$</span>sex<span class="p">,</span> from <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;M&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">),</span> to <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="s">&quot;2&quot;</span><span class="p">))</span>
+<span class="c1"># subject sex control cond1 cond2 scode</span>
+<span class="c1">#       1   M     7.9  12.3  10.7     1</span>
+<span class="c1">#       2   F     6.3  10.6  11.1     2</span>
+<span class="c1">#       3   F     9.5  13.1  13.8     2</span>
+<span class="c1">#       4   M    11.5  13.4  12.9     1</span>
+
+<span class="c1"># data$sex is a factor, so data$scode is also a factor</span>
+</pre></div>
+
+
+<p>See <a href="Mapping_vector_values.html">../Mapping vector values</a> and <a href="Renaming_levels_of_a_factor.html">../Renaming levels of a factor</a> for more information about these functions.</p>
+<p>If you don't want to rely on plyr, you can do the following with R's built-in functions:</p>
+<div class="codehilite"><pre>data<span class="o">$</span>scode<span class="p">[</span>data<span class="o">$</span>sex<span class="o">==</span><span class="s">&quot;M&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;1&quot;</span>
+data<span class="o">$</span>scode<span class="p">[</span>data<span class="o">$</span>sex<span class="o">==</span><span class="s">&quot;F&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;2&quot;</span>
+
+<span class="c1"># Convert the column to a factor</span>
+data<span class="o">$</span>scode <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>data<span class="o">$</span>scode<span class="p">)</span>
+<span class="c1"># subject sex control cond1 cond2 scode</span>
+<span class="c1">#       1   M     7.9  12.3  10.7     1</span>
+<span class="c1">#       2   F     6.3  10.6  11.1     2</span>
+<span class="c1">#       3   F     9.5  13.1  13.8     2</span>
+<span class="c1">#       4   M    11.5  13.4  12.9     1</span>
+</pre></div>
+
+
+<p>Another way to do it is to use the <code>match</code> function:</p>
+<div class="codehilite"><pre>oldvalues <span class="o">&lt;-</span>        <span class="kt">c</span><span class="p">(</span><span class="s">&quot;M&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">)</span>
+newvalues <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;g1&quot;</span><span class="p">,</span><span class="s">&quot;g2&quot;</span><span class="p">))</span>  <span class="c1"># Make this a factor</span>
+
+data<span class="o">$</span>scode <span class="o">&lt;-</span> newvalues<span class="p">[</span> <span class="kp">match</span><span class="p">(</span>data<span class="o">$</span>sex<span class="p">,</span> oldvalues<span class="p">)</span> <span class="p">]</span>
+<span class="c1"># subject sex control cond1 cond2  scode</span>
+<span class="c1">#       1   M     7.9  12.3  10.7     g1</span>
+<span class="c1">#       2   F     6.3  10.6  11.1     g2</span>
+<span class="c1">#       3   F     9.5  13.1  13.8     g2</span>
+<span class="c1">#       4   M    11.5  13.4  12.9     g1</span>
+</pre></div>
+
+
+<h3 id="recoding-a-continuous-variable-into-categorical-variable">Recoding a continuous variable into categorical variable</h3>
+<p>Mark those whose control measurement is &lt;7 as "low", and those with &gt;=7 as "high":</p>
+<div class="codehilite"><pre>data<span class="o">$</span><span class="kp">category</span><span class="p">[</span>data<span class="o">$</span>control<span class="o">&lt;</span> <span class="m">7</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;low&quot;</span>
+data<span class="o">$</span><span class="kp">category</span><span class="p">[</span>data<span class="o">$</span>control<span class="o">&gt;=</span><span class="m">7</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;high&quot;</span>
+<span class="c1"># Convert the column to a factor</span>
+data<span class="o">$</span><span class="kt">category</span> <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>data<span class="o">$</span><span class="kp">category</span><span class="p">)</span>
+<span class="c1"># subject sex control cond1 cond2 scode category</span>
+<span class="c1">#       1   M     7.9  12.3  10.7    g1     high</span>
+<span class="c1">#       2   F     6.3  10.6  11.1    g2      low</span>
+<span class="c1">#       3   F     9.5  13.1  13.8    g2     high</span>
+<span class="c1">#       4   M    11.5  13.4  12.9    g1     high</span>
+</pre></div>
+
+
+<p>With the <code>cut</code> function, you specify boundaries and the resulting values:</p>
+<div class="codehilite"><pre>data<span class="o">$</span><span class="kt">category</span> <span class="o">&lt;-</span> <span class="kp">cut</span><span class="p">(</span>data<span class="o">$</span>control<span class="p">,</span>
+                     breaks<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="o">-</span><span class="kc">Inf</span><span class="p">,</span> <span class="m">7</span><span class="p">,</span> <span class="m">9</span><span class="p">,</span> <span class="kc">Inf</span><span class="p">),</span>
+                     labels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;low&quot;</span><span class="p">,</span><span class="s">&quot;medium&quot;</span><span class="p">,</span><span class="s">&quot;high&quot;</span><span class="p">))</span>
+<span class="c1"># subject sex control cond1 cond2 scode category</span>
+<span class="c1">#       1   M     7.9  12.3  10.7    g1   middle</span>
+<span class="c1">#       2   F     6.3  10.6  11.1    g2      low</span>
+<span class="c1">#       3   F     9.5  13.1  13.8    g2     high</span>
+<span class="c1">#       4   M    11.5  13.4  12.9    g1     high</span>
+</pre></div>
+
+
+<p>By default, the ranges are open on the left, and closed on the right, as in (7,9]. To set it so that ranges are closed on the left and open on the right, like [7,9), use <code>right=FALSE</code>.</p>
+<h3 id="calculating-a-new-continuous-variable">Calculating a new continuous variable</h3>
+<p>Suppose you want to add a new column with the sum of the three measurements.</p>
+<div class="codehilite"><pre>data<span class="o">$</span>total <span class="o">&lt;-</span> data<span class="o">$</span>control <span class="o">+</span> data<span class="o">$</span>cond1 <span class="o">+</span> data<span class="o">$</span>cond2
+<span class="c1"># subject sex control cond1 cond2 scode category total</span>
+<span class="c1">#       1   M     7.9  12.3  10.7    g1   middle  30.9</span>
+<span class="c1">#       2   F     6.3  10.6  11.1    g2      low  28.0</span>
+<span class="c1">#       3   F     9.5  13.1  13.8    g2     high  36.4</span>
+<span class="c1">#       4   M    11.5  13.4  12.9    g1     high  37.8</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

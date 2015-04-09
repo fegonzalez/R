@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Box plot
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Box_plot
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="box-plot">Box plot</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to make a box plot.</p>
+<h2 id="solution">Solution</h2>
+<p>This page shows how to make quick, simple box plots with base graphics. For more sophisticated ones, see <a href="Plotting_distributions_(ggplot2).html">Plotting distributions (ggplot2)</a>.</p>
+<h3 id="sample-data">Sample data</h3>
+<p>The examples here will use the !ToothGrowth data set, which has two independent variables, and one dependent variable.</p>
+<div class="codehilite"><pre>ToothGrowth
+<span class="c1">#  len supp dose</span>
+<span class="c1">#  4.2   VC  0.5</span>
+<span class="c1"># 11.5   VC  0.5</span>
+<span class="c1">#  7.3   VC  0.5</span>
+<span class="c1">#  ...</span>
+<span class="c1"># 27.3   OJ    2</span>
+<span class="c1"># 29.4   OJ    2</span>
+<span class="c1"># 23.0   OJ    2</span>
+</pre></div>
+
+
+<p>Simple box plots of <code>len</code> against <code>supp</code> and <code>dose</code>:</p>
+<div class="codehilite"><pre>boxplot<span class="p">(</span>len <span class="o">~</span> supp<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+
+<span class="c1"># Even though `dose` is a numeric variable, `boxplot` will convert it to a factor</span>
+boxplot<span class="p">(</span>len <span class="o">~</span> dose<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Box_plot/ToothGrowth-len-supp.png" />
+<img alt="" src="Box_plot/ToothGrowth-len-dose.png" /></p>
+<p>A boxplot of <code>len</code> against <code>supp</code> and <code>dose</code> together.</p>
+<div class="codehilite"><pre>boxplot<span class="p">(</span>len <span class="o">~</span> <span class="kp">interaction</span><span class="p">(</span>dose<span class="p">,</span>supp<span class="p">),</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Box_plot/ToothGrowth-len-dosesupp.png" /></p>
+<p>Note that <code>boxplot</code> and <code>plot</code> have much the same output, except that <code>plot</code> puts in axis labels, and doesn't automatically convert numeric variables to factors, as was done with <code>dose</code> above.</p>
+<div class="codehilite"><pre>plot<span class="p">(</span>len <span class="o">~</span> <span class="kp">interaction</span><span class="p">(</span>dose<span class="p">,</span>supp<span class="p">),</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Box_plot/ToothGrowth-len-dosesupp-plot.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

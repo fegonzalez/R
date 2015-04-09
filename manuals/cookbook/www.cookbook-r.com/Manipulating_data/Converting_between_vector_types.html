@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Converting between vector types
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Converting_between_vector_types
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="converting-between-vector-types">Converting between vector types</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to convert between Numeric vectors, Character vectors, and Factors.</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose you start with this Numeric vector <code>n</code>:</p>
+<div class="codehilite"><pre>n <span class="o">&lt;-</span> <span class="m">10</span><span class="o">:</span><span class="m">14</span>
+<span class="c1"># 10 11 12 13 14</span>
+</pre></div>
+
+
+<p>To convert the Numeric vector to the other two (we_ll also save these results in <code>c</code> and  <code>f</code>):</p>
+<div class="codehilite"><pre><span class="c1"># Numeric to Character</span>
+<span class="kt">c</span> <span class="o">&lt;-</span> <span class="kp">as.character</span><span class="p">(</span>n<span class="p">)</span>
+<span class="c1"># &quot;10&quot; &quot;11&quot; &quot;12&quot; &quot;13&quot; &quot;14&quot;</span>
+
+<span class="c1"># Numeric to Factor</span>
+f <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>n<span class="p">)</span>
+<span class="c1"># 10 11 12 13 14</span>
+<span class="c1"># Levels: 10 11 12 13 14</span>
+</pre></div>
+
+
+<p>To convert the Character vector to the other two:</p>
+<div class="codehilite"><pre><span class="c1"># Character to Numeric</span>
+<span class="kp">as.numeric</span><span class="p">(</span><span class="kt">c</span><span class="p">)</span>
+<span class="c1"># 10 11 12 13 14</span>
+
+<span class="c1"># Character to Factor</span>
+<span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">)</span>
+<span class="c1"># 10 11 12 13 14</span>
+<span class="c1"># Levels: 10 11 12 13 14</span>
+</pre></div>
+
+
+<p>Converting a Factor to a Character vector is straightforward:</p>
+<div class="codehilite"><pre><span class="c1"># Factor to Character</span>
+<span class="kp">as.character</span><span class="p">(</span>f<span class="p">)</span>
+<span class="c1"># &quot;10&quot; &quot;11&quot; &quot;12&quot; &quot;13&quot; &quot;14&quot;</span>
+</pre></div>
+
+
+<p>However, converting a Factor to a Numeric vector is a little trickier. If you just convert it with <code>as.numeric</code>, it will give you the numeric coding of the factor, which probably isn't what you want.</p>
+<div class="codehilite"><pre><span class="kp">as.numeric</span><span class="p">(</span>f<span class="p">)</span>
+<span class="c1"># 1 2 3 4 5</span>
+
+<span class="c1"># Another way to get the numeric coding, if that&#39;s what you want:</span>
+<span class="kp">unclass</span><span class="p">(</span>f<span class="p">)</span>
+<span class="c1"># 1 2 3 4 5</span>
+<span class="c1"># attr(,&quot;levels&quot;)</span>
+<span class="c1"># &quot;10&quot; &quot;11&quot; &quot;12&quot; &quot;13&quot; &quot;14&quot;</span>
+</pre></div>
+
+
+<p>The way to get the proper values is to first convert it to a Character vector, then a Numeric vector.</p>
+<div class="codehilite"><pre><span class="c1"># Factor to Numeric</span>
+<span class="kp">as.numeric</span><span class="p">(</span><span class="kp">as.character</span><span class="p">(</span>f<span class="p">))</span>
+<span class="c1"># 10 11 12 13 14</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Titles (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Titles_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="titles-ggplot2">Titles (ggplot2)</h1>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to set the title of your graph.</p>
+<h2 id="solution">Solution</h2>
+<p>An example graph without a title:</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>PlantGrowth<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>group<span class="p">,</span> y<span class="o">=</span>weight<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span>
+bp
+</pre></div>
+
+
+<p><img alt="" src="Titles_(ggplot2)/notitle.png" /></p>
+<p>With a title:</p>
+<div class="codehilite"><pre>bp <span class="o">+</span> ggtitle<span class="p">(</span><span class="s">&quot;Plant growth&quot;</span><span class="p">)</span>
+<span class="c1"># Equivalent to</span>
+bp <span class="o">+</span> labs<span class="p">(</span>title<span class="o">=</span><span class="s">&quot;Plant growth&quot;</span><span class="p">)</span>
+
+<span class="c1"># If the title is long, it can be split into multiple lines with \n</span>
+bp <span class="o">+</span> ggtitle<span class="p">(</span><span class="s">&quot;Plant growth with\ndifferent treatments&quot;</span><span class="p">)</span>
+
+<span class="c1"># Reduce line spacing and use bold text</span>
+bp <span class="o">+</span> ggtitle<span class="p">(</span><span class="s">&quot;Plant growth with\ndifferent treatments&quot;</span><span class="p">)</span> <span class="o">+</span> 
+     theme<span class="p">(</span>plot.title <span class="o">=</span> element_text<span class="p">(</span>lineheight<span class="o">=</span><span class="m">.8</span><span class="p">,</span> face<span class="o">=</span><span class="s">&quot;bold&quot;</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Titles_(ggplot2)/title.png" />
+<img alt="" src="Titles_(ggplot2)/title_wrap.png" />
+<img alt="" src="Titles_(ggplot2)/title_wrap_lineheight.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

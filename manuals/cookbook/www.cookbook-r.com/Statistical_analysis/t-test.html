@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        t-test
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Statistical_analysis.html">Statistical_analysis</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            t-test
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="t-test">t-test</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="t-test.html#t-test">t-test</a><ul>
+<li><a href="t-test.html#problem">Problem</a></li>
+<li><a href="t-test.html#solution">Solution</a><ul>
+<li><a href="t-test.html#sample-data">Sample data</a></li>
+<li><a href="t-test.html#comparing-two-groups-independent-two-sample-t-test">Comparing two groups: independent two-sample t-test</a></li>
+<li><a href="t-test.html#paired-sample-t-test">Paired-sample t-test</a></li>
+<li><a href="t-test.html#comparing-a-group-against-an-expected-population-mean-one-sample-t-test">Comparing a group against an expected population mean: one-sample t-test</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to test whether two samples are drawn from populations with different means, or test whether one sample is drawn from a population with a mean different from some theoretical mean.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="sample-data">Sample data</h3>
+<p>We will use the built-in <code>sleep</code> data set.</p>
+<div class="codehilite"><pre>sleep
+<span class="c1"># extra group ID</span>
+<span class="c1">#   0.7     1  1</span>
+<span class="c1">#  -1.6     1  2</span>
+<span class="c1">#  -0.2     1  3</span>
+<span class="c1">#  -1.2     1  4</span>
+<span class="c1">#  -0.1     1  5</span>
+<span class="c1">#   3.4     1  6</span>
+<span class="c1">#   3.7     1  7</span>
+<span class="c1">#   0.8     1  8</span>
+<span class="c1">#   0.0     1  9</span>
+<span class="c1">#   2.0     1 10</span>
+<span class="c1">#   1.9     2  1</span>
+<span class="c1">#   0.8     2  2</span>
+<span class="c1">#   1.1     2  3</span>
+<span class="c1">#   0.1     2  4</span>
+<span class="c1">#  -0.1     2  5</span>
+<span class="c1">#   4.4     2  6</span>
+<span class="c1">#   5.5     2  7</span>
+<span class="c1">#   1.6     2  8</span>
+<span class="c1">#   4.6     2  9</span>
+<span class="c1">#   3.4     2 10</span>
+</pre></div>
+
+
+<p>Sometimes it is useful to work with wide-formatted data, so we'll make a wide version of the <code>sleep</code> data.</p>
+<div class="codehilite"><pre>sleep.wide <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>ID<span class="o">=</span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">,</span> group1<span class="o">=</span>sleep<span class="o">$</span>extra<span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">],</span> group2<span class="o">=</span>sleep<span class="o">$</span>extra<span class="p">[</span><span class="m">11</span><span class="o">:</span><span class="m">20</span><span class="p">])</span>
+<span class="c1"># ID group1 group2</span>
+<span class="c1">#  1    0.7    1.9</span>
+<span class="c1">#  2   -1.6    0.8</span>
+<span class="c1">#  3   -0.2    1.1</span>
+<span class="c1">#  4   -1.2    0.1</span>
+<span class="c1">#  5   -0.1   -0.1</span>
+<span class="c1">#  6    3.4    4.4</span>
+<span class="c1">#  7    3.7    5.5</span>
+<span class="c1">#  8    0.8    1.6</span>
+<span class="c1">#  9    0.0    4.6</span>
+<span class="c1"># 10    2.0    3.4</span>
+</pre></div>
+
+
+<h3 id="comparing-two-groups-independent-two-sample-t-test">Comparing two groups: independent two-sample t-test</h3>
+<p>Suppose the two groups are independently sampled; we'll ignore the ID variable for the purposes here.</p>
+<p>The <code>t.test</code> function can operate on long-structered data like <code>sleep</code>, where one column (<code>extra</code>) records the measurement, and the other column (<code>group</code>) specifies the grouping; or it can operate on two separate vectors.</p>
+<div class="codehilite"><pre><span class="c1"># Welch t-test</span>
+<span class="c1"># These two commands have the same effect.</span>
+t.test<span class="p">(</span>extra <span class="o">~</span> group<span class="p">,</span> sleep<span class="p">)</span>
+t.test<span class="p">(</span>sleep.wide<span class="o">$</span>group1<span class="p">,</span> sleep.wide<span class="o">$</span>group2<span class="p">)</span>
+<span class="c1">#       Welch Two Sample t-test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  extra by group </span>
+<span class="c1"># t = -1.8608, df = 17.776, p-value = 0.07939</span>
+<span class="c1"># alternative hypothesis: true difference in means is not equal to 0 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  -3.3654832  0.2054832 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># mean in group 1 mean in group 2 </span>
+<span class="c1">#            0.75            2.33 </span>
+</pre></div>
+
+
+<p>By default, <code>t.test</code> does <strong><em>not</em></strong> assume equal variances; instead of Student's t-test, it uses the Welch t-test by default. Note that in the Welch t-test, df=17.776, because of the adjustment for unequal variances. To use Student's t-test, set <code>var.equal=TRUE</code>.</p>
+<div class="codehilite"><pre><span class="c1"># Student t-test</span>
+<span class="c1"># These two commands have the same effect.</span>
+t.test<span class="p">(</span>extra <span class="o">~</span> group<span class="p">,</span> sleep<span class="p">,</span> var.equal<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+t.test<span class="p">(</span>sleep.wide<span class="o">$</span>group1<span class="p">,</span> sleep.wide<span class="o">$</span>group2<span class="p">,</span> var.equal<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1">#       Two Sample t-test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  extra by group </span>
+<span class="c1"># t = -1.8608, df = 18, p-value = 0.07919</span>
+<span class="c1"># alternative hypothesis: true difference in means is not equal to 0 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  -3.363874  0.203874 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># mean in group 1 mean in group 2 </span>
+<span class="c1">#            0.75            2.33 </span>
+</pre></div>
+
+
+<h3 id="paired-sample-t-test">Paired-sample t-test</h3>
+<p>You can also compare paired data, using a paired-sample t-test. You might have observations before and after a treatment, or of two matched subjects with different treatments.</p>
+<p>Again, the <code>t-test</code> function can be used on a data frame with a grouping variable, or on two vectors. It relies the relative position to determine the pairing. If you are using long-format data with a grouping variable, the first row with group=1 is paired with the first row with group=2. It is important to make sure that the data is sorted and there are not missing observations; otherwise the pairing can be thrown off.</p>
+<div class="codehilite"><pre><span class="c1"># These two ways of doing it have the same effect.</span>
+<span class="c1"># 1. Use long-format data with grouping variable</span>
+<span class="c1"># 2. Use two vectors, in this case from wide-format data frame</span>
+t.test<span class="p">(</span>extra <span class="o">~</span> group<span class="p">,</span> sleep<span class="p">,</span> paired<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+t.test<span class="p">(</span>sleep.wide<span class="o">$</span>group1<span class="p">,</span> sleep.wide<span class="o">$</span>group2<span class="p">,</span> paired<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1">#        Paired t-test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  extra by group </span>
+<span class="c1"># t = -4.0621, df = 9, p-value = 0.002833</span>
+<span class="c1"># alternative hypothesis: true difference in means is not equal to 0 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  -2.4598858 -0.7001142 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># mean of the differences </span>
+<span class="c1">#                   -1.58 </span>
+</pre></div>
+
+
+<p>The paired t-test is equivalent to testing whether <strong>difference</strong> between each pair of observations has a population mean of 0. (See below for comparing a single group to a population mean.)</p>
+<div class="codehilite"><pre>t.test<span class="p">(</span>sleep.wide<span class="o">$</span>group1 <span class="o">-</span> sleep.wide<span class="o">$</span>group2<span class="p">,</span> mu<span class="o">=</span><span class="m">0</span><span class="p">,</span> var.equal<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1">#        One Sample t-test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  sleep.wide$group1 - sleep.wide$group2 </span>
+<span class="c1"># t = -4.0621, df = 9, p-value = 0.002833</span>
+<span class="c1"># alternative hypothesis: true mean is not equal to 0 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  -2.4598858 -0.7001142 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># mean of x </span>
+<span class="c1">#     -1.58 </span>
+</pre></div>
+
+
+<h3 id="comparing-a-group-against-an-expected-population-mean-one-sample-t-test">Comparing a group against an expected population mean: one-sample t-test</h3>
+<p>Suppose that you want to test whether the data in column <code>extra</code> is drawn from a population whose true mean is 0. In this case, the <code>group</code> and <code>ID</code> columns are ignored.</p>
+<div class="codehilite"><pre>t.test<span class="p">(</span>sleep<span class="o">$</span>extra<span class="p">,</span> mu<span class="o">=</span><span class="m">0</span><span class="p">)</span>
+<span class="c1">#</span>
+<span class="c1">#       One Sample t-test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  sleep$extra </span>
+<span class="c1"># t = 3.413, df = 19, p-value = 0.002918</span>
+<span class="c1"># alternative hypothesis: true mean is not equal to 0 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  0.5955845 2.4844155 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># mean of x </span>
+<span class="c1">#      1.54 </span>
+</pre></div>
+
+
+<p>To visualize the groups, see <a href="../Graphs/Plotting_distributions_(ggplot2).html">../../Graphs/Plotting distributions (ggplot2)</a>, <a href="../Graphs/Histogram_and_density_plot.html">../../Graphs/Histogram and density plot</a>,and <a href="../Graphs/Box_plot.html">../../Graphs/Box plot</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

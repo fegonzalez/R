@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Debugging a script or function
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Scripts_and_functions.html">Scripts_and_functions</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Debugging_a_script_or_function
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="debugging-a-script-or-function">Debugging a script or function</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to debug a script or function.</p>
+<h2 id="solution">Solution</h2>
+<p>Insert this into your code at the place where you want to start debugging:</p>
+<div class="codehilite"><pre><span class="kp">browser</span><span class="p">()</span>
+</pre></div>
+
+
+<p>It will pause your code and you will be able to look at and change variables.</p>
+<p>In the browser, typing these letters will do things:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>c</td>
+<td>Continue</td>
+</tr>
+<tr>
+<td>n (or Return)</td>
+<td>Next step</td>
+</tr>
+<tr>
+<td>Q</td>
+<td>quit</td>
+</tr>
+<tr>
+<td>Ctrl-C</td>
+<td>go to top level</td>
+</tr>
+</tbody>
+</table>
+<p>When in the browser, you can see what variables are in the current scope.</p>
+<div class="codehilite"><pre><span class="kp">objects</span><span class="p">()</span>
+</pre></div>
+
+
+<p>To pause and start a browser for every line in your function:</p>
+<div class="codehilite"><pre><span class="kp">debug</span><span class="p">(</span>myfunction<span class="p">)</span>
+myfunction<span class="p">(</span>x<span class="p">)</span>
+</pre></div>
+
+
+<p>To start debugging when an error is thrown, run this before your function which throws an error:</p>
+<div class="codehilite"><pre><span class="kp">options</span><span class="p">(</span>error<span class="o">=</span>recover<span class="p">)</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

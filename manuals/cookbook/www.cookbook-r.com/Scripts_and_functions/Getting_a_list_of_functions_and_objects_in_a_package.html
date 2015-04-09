@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Getting a list of functions and objects in a package
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Scripts_and_functions.html">Scripts_and_functions</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Getting_a_list_of_functions_and_objects_in_a_package
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="getting-a-list-of-functions-and-objects-in-a-package">Getting a list of functions and objects in a package</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to find out what's in a package.</p>
+<h2 id="solution">Solution</h2>
+<p>This code snippet will list the functions and objects in a package.</p>
+<div class="codehilite"><pre><span class="c1"># Using search() in a new R session says that these packages are </span>
+<span class="c1"># loaded by default:</span>
+<span class="c1"># &quot;package:stats&quot;     &quot;package:graphics&quot; </span>
+<span class="c1"># &quot;package:grDevices&quot; &quot;package:utils&quot;     &quot;package:datasets&quot; </span>
+<span class="c1"># &quot;package:methods&quot;   &quot;package:base&quot;  </span>
+
+<span class="c1"># Others that are useful:</span>
+<span class="c1"># gplots</span>
+<span class="c1"># ggplot2, reshape, plyr</span>
+
+showPackageContents <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>packageName<span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1"># Get a list of things contained in a particular package</span>
+    funlist <span class="o">&lt;-</span> <span class="kp">objects</span><span class="p">(</span>packageName<span class="p">)</span>
+
+    <span class="c1"># Remove things that don&#39;t start with a letter</span>
+    idx <span class="o">&lt;-</span> <span class="kp">grep</span><span class="p">(</span><span class="s">&#39;^[a-zA-Z][a-zA-Z0-9._]*&#39;</span><span class="p">,</span> funlist<span class="p">)</span>
+    funlist <span class="o">&lt;-</span> funlist<span class="p">[</span>idx<span class="p">]</span>
+
+    <span class="c1"># Remove things that contain arrow &lt;-</span>
+    idx <span class="o">&lt;-</span> <span class="kp">grep</span><span class="p">(</span><span class="s">&#39;&lt;-&#39;</span><span class="p">,</span> funlist<span class="p">)</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">length</span><span class="p">(</span>idx<span class="p">)</span><span class="o">!=</span><span class="m">0</span><span class="p">)</span>
+        funlist <span class="o">&lt;-</span> funlist<span class="p">[</span><span class="o">-</span>idx<span class="p">]</span>
+
+
+    <span class="c1"># Make a data frame to keep track of status</span>
+    objectlist <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>name<span class="o">=</span>funlist<span class="p">,</span>
+                             primitive<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                             func<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                             object<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                             constant<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                             stringsAsFactors<span class="o">=</span><span class="bp">F</span><span class="p">)</span>
+
+    <span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>objectlist<span class="p">))</span> <span class="p">{</span>
+        fname <span class="o">&lt;-</span> objectlist<span class="o">$</span>name<span class="p">[</span>i<span class="p">]</span>
+        <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span>fname<span class="p">))</span> <span class="p">{</span>
+            obj <span class="o">&lt;-</span> <span class="kp">get</span><span class="p">(</span>fname<span class="p">)</span>
+            <span class="kr">if</span> <span class="p">(</span><span class="kp">is.primitive</span><span class="p">(</span>obj<span class="p">))</span> <span class="p">{</span>
+                objectlist<span class="o">$</span>primitive<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">TRUE</span>
+            <span class="p">}</span>
+            <span class="kr">if</span> <span class="p">(</span><span class="kp">is.function</span><span class="p">(</span>obj<span class="p">))</span> <span class="p">{</span>
+                objectlist<span class="o">$</span>func<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">TRUE</span>
+            <span class="p">}</span>
+            <span class="kr">if</span> <span class="p">(</span><span class="kp">is.object</span><span class="p">(</span>obj<span class="p">))</span> <span class="p">{</span>
+                objectlist<span class="o">$</span>object<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">TRUE</span>
+            <span class="p">}</span>
+
+            <span class="c1"># I think these are generally constants</span>
+            <span class="kr">if</span> <span class="p">(</span><span class="kp">is.vector</span><span class="p">(</span>obj<span class="p">))</span> <span class="p">{</span>
+                objectlist<span class="o">$</span>constant<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">TRUE</span>
+            <span class="p">}</span>
+
+
+        <span class="p">}</span>  
+    <span class="p">}</span>
+
+
+    <span class="kp">cat</span><span class="p">(</span>packageName<span class="p">)</span>
+
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n================================================\n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Primitive functions: \n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span>objectlist<span class="o">$</span>name<span class="p">[</span>objectlist<span class="o">$</span>primitive<span class="p">])</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n&quot;</span><span class="p">)</span>
+
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n================================================\n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Non-primitive functions: \n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span>objectlist<span class="o">$</span>name<span class="p">[</span>objectlist<span class="o">$</span>func  <span class="o">&amp;</span>  <span class="o">!</span>objectlist<span class="o">$</span>primitive<span class="p">])</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n&quot;</span><span class="p">)</span>
+
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n================================================\n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Constants: \n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span>objectlist<span class="o">$</span>name<span class="p">[</span>objectlist<span class="o">$</span>constant<span class="p">])</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n&quot;</span><span class="p">)</span>
+
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n================================================\n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;Objects: \n&quot;</span><span class="p">)</span>
+    <span class="kp">cat</span><span class="p">(</span>objectlist<span class="o">$</span>name<span class="p">[</span>objectlist<span class="o">$</span>object<span class="p">])</span>
+    <span class="kp">cat</span><span class="p">(</span><span class="s">&quot;\n&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="c1"># Run the function using base package</span>
+showPackageContents<span class="p">(</span><span class="s">&quot;package:base&quot;</span><span class="p">)</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

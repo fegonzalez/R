@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Scatterplot
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Scatterplot
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="scatterplot">Scatterplot</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to make a scatterplot.</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose this is your data:</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">955</span><span class="p">)</span>
+<span class="c1"># Make some noisily increasing data</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>xvar <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">20</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span>sd<span class="o">=</span><span class="m">3</span><span class="p">),</span>
+                 yvar <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">20</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span>sd<span class="o">=</span><span class="m">3</span><span class="p">),</span>
+                 zvar <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">20</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span>sd<span class="o">=</span><span class="m">3</span><span class="p">))</span>
+<span class="c1">#         xvar         yvar        zvar</span>
+<span class="c1"># -4.252354091  3.473157275 -2.97806724</span>
+<span class="c1">#  1.702317971  0.005939612 -1.16183118</span>
+<span class="c1">#     ... </span>
+<span class="c1"># 17.793359218 19.718587761 14.11978650</span>
+<span class="c1"># 19.319909163 19.647899863 13.76377001</span>
+</pre></div>
+
+
+<h3 id="basic-scatterplots">Basic scatterplots</h3>
+<div class="codehilite"><pre><span class="c1"># Plot the points using the vectors xvar and yvar</span>
+plot<span class="p">(</span>df<span class="o">$</span>xvar<span class="p">,</span> df<span class="o">$</span>yvar<span class="p">)</span>
+
+<span class="c1"># Add a regression line</span>
+fitline <span class="o">&lt;-</span> lm<span class="p">(</span>df<span class="o">$</span>yvar <span class="o">~</span> df<span class="o">$</span>xvar<span class="p">)</span>
+abline<span class="p">(</span>fitline<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Scatterplot/scatterplot.png" />
+<img alt="" src="Scatterplot/scatterplot_abline.png" /></p>
+<h3 id="scatterplot-matrices">Scatterplot matrices</h3>
+<p>It is also possible to make a matrix of scatterplots if you would like to compare several variables.</p>
+<p>See <a href="http://addictedtor.free.fr/graphiques/graphcode.php?graph=137">this</a> for a way to make a scatterplot matrix with r values.</p>
+<div class="codehilite"><pre><span class="c1"># A scatterplot matrix</span>
+plot<span class="p">(</span>df<span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">])</span>
+
+
+<span class="c1"># Another way of making a scatterplot matrix, with regression lines</span>
+<span class="c1"># and histogram/boxplot/density/qqplot/none along the diagonal</span>
+<span class="kn">library</span><span class="p">(</span>car<span class="p">)</span>
+scatterplotMatrix<span class="p">(</span>df<span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">],</span>
+                   diagonal<span class="o">=</span><span class="s">&quot;histogram&quot;</span><span class="p">,</span>
+                   smooth<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Scatterplot/scatterplot_matrix.png" />
+<img alt="" src="Scatterplot/scatterplot_matrix_car.png" /></p>
+<p>To calculate the corresponding correlation matrix, see <a href="../Statistical_analysis/Regression_and_correlation.html">../../Statistical analysis/Regression and correlation</a>.</p>
+<p>To visualize the correlation matrix, see <a href="Correlation_matrix.html">../Correlation matrix</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

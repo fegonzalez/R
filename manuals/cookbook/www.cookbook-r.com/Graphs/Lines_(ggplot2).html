@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Lines (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Lines_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="lines-ggplot2">Lines (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Lines_(ggplot2).html#lines-ggplot2">Lines (ggplot2)</a><ul>
+<li><a href="Lines_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Lines_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Lines_(ggplot2).html#with-one-continuous-and-one-categorical-axis">With one continuous and one categorical axis</a><ul>
+<li><a href="Lines_(ggplot2).html#lines-that-go-all-the-way-across">Lines that go all the way across</a></li>
+<li><a href="Lines_(ggplot2).html#separate-lines-for-each-categorical-value">Separate lines for each categorical value</a></li>
+<li><a href="Lines_(ggplot2).html#lines-over-grouped-bars">Lines over grouped bars</a></li>
+<li><a href="Lines_(ggplot2).html#lines-over-individual-grouped-bars">Lines over individual grouped bars</a></li>
+</ul>
+</li>
+<li><a href="Lines_(ggplot2).html#with-two-continuous-axes">With two continuous axes</a><ul>
+<li><a href="Lines_(ggplot2).html#basic-lines">Basic lines</a></li>
+<li><a href="Lines_(ggplot2).html#automatically-drawing-lines-for-the-mean">Automatically drawing lines for the mean</a></li>
+<li><a href="Lines_(ggplot2).html#using-lines-with-facets">Using lines with facets</a></li>
+</ul>
+</li>
+<li><a href="Lines_(ggplot2).html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do add lines to a plot.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="with-one-continuous-and-one-categorical-axis">With one continuous and one categorical axis</h3>
+<div class="codehilite"><pre><span class="c1"># Some sample data</span>
+df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">     cond result</span>
+<span class="s">  control     10</span>
+<span class="s">treatment   11.5</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+</pre></div>
+
+
+<h4 id="lines-that-go-all-the-way-across">Lines that go all the way across</h4>
+<p>These use <code>geom_hline</code> because the y-axis is the continuous one, but it is also possible to use <code>geom_vline</code> (with <code>xintercept</code>) if the x-axis is continuous.</p>
+<div class="codehilite"><pre><span class="c1"># Basic bar plot</span>
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>result<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>position<span class="o">=</span>position_dodge<span class="p">())</span>
+bp    
+
+<span class="c1"># Add a horizontal line</span>
+bp <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">12</span><span class="p">))</span>
+
+<span class="c1"># Make the line red and dashed</span>
+bp <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">12</span><span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#990000&quot;</span><span class="p">,</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/barplot-1.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-2.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-3.png" /></p>
+<h4 id="separate-lines-for-each-categorical-value">Separate lines for each categorical value</h4>
+<p>To make separate lines for each bar, use <code>geom_errorbar</code>. The error bars have no height -- <code>ymin</code>=<code>ymax</code>. It also seems necessary to specify <code>y</code> for some reason, even though it doesn't do anything.</p>
+<div class="codehilite"><pre><span class="c1"># Draw separate hlines for each bar. First add another column to df</span>
+df<span class="o">$</span>hline <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">9</span><span class="p">,</span><span class="m">12</span><span class="p">)</span>
+<span class="c1">#      cond result hline</span>
+<span class="c1">#   control   10.0     9</span>
+<span class="c1"># treatment   11.5    12</span>
+
+<span class="c1"># Need to re-specify bp, because the data has changed</span>
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>result<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>position<span class="o">=</span>position_dodge<span class="p">())</span>
+
+<span class="c1"># Draw with separate lines for each bar</span>
+bp <span class="o">+</span> geom_errorbar<span class="p">(</span>aes<span class="p">(</span>y<span class="o">=</span>hline<span class="p">,</span> ymax<span class="o">=</span>hline<span class="p">,</span> ymin<span class="o">=</span>hline<span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#AA0000&quot;</span><span class="p">)</span>
+
+<span class="c1"># Make the lines narrower</span>
+bp <span class="o">+</span> geom_errorbar<span class="p">(</span>width<span class="o">=</span><span class="m">0.5</span><span class="p">,</span> aes<span class="p">(</span>y<span class="o">=</span>hline<span class="p">,</span> ymax<span class="o">=</span>hline<span class="p">,</span> ymin<span class="o">=</span>hline<span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#AA0000&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Can get the same result, even if we get the hline values from a second data frame</span>
+<span class="c1"># Define data frame with hline</span>
+df.hlines <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;control&quot;</span><span class="p">,</span><span class="s">&quot;treatment&quot;</span><span class="p">),</span> hline<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">9</span><span class="p">,</span><span class="m">12</span><span class="p">))</span>
+<span class="c1">#      cond hline</span>
+<span class="c1">#   control     9</span>
+<span class="c1"># treatment    12</span>
+
+<span class="c1"># The bar graph are from df, but the lines are from df.hlines</span>
+bp <span class="o">+</span> geom_errorbar<span class="p">(</span>data<span class="o">=</span>df.hlines<span class="p">,</span> aes<span class="p">(</span>y<span class="o">=</span>hline<span class="p">,</span> ymax<span class="o">=</span>hline<span class="p">,</span> ymin<span class="o">=</span>hline<span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#AA0000&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/barplot-4.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-5.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-4.png" /></p>
+<h4 id="lines-over-grouped-bars">Lines over grouped bars</h4>
+<p>It is possible to add lines over grouped bars. In this example, there are actually four lines (one for each entry for <code>hline</code>), but it looks like two, because they are drawn on top of each other. I don't think it's possible to avoid this, but it doesn't cause any problems.</p>
+<div class="codehilite"><pre>df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">     cond group result hline</span>
+<span class="s">  control     A     10     9</span>
+<span class="s">treatment     A   11.5    12</span>
+<span class="s">  control     B     12     9</span>
+<span class="s">treatment     B     14    12</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Define basic bar plot</span>
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>result<span class="p">,</span> fill<span class="o">=</span>group<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>position<span class="o">=</span>position_dodge<span class="p">())</span> 
+bp
+
+<span class="c1"># The error bars get plotted over one another -- there are four but it looks like two</span>
+bp <span class="o">+</span> geom_errorbar<span class="p">(</span>aes<span class="p">(</span>y<span class="o">=</span>hline<span class="p">,</span> ymax<span class="o">=</span>hline<span class="p">,</span> ymin<span class="o">=</span>hline<span class="p">),</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/barplot-7.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-8.png" /></p>
+<h4 id="lines-over-individual-grouped-bars">Lines over individual grouped bars</h4>
+<p>It is also possible to have lines over each individual bar, even when grouped.</p>
+<div class="codehilite"><pre>df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">     cond group result hline</span>
+<span class="s">  control     A     10    11</span>
+<span class="s">treatment     A   11.5    12</span>
+<span class="s">  control     B     12  12.5</span>
+<span class="s">treatment     B     14    15</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Define basic bar plot</span>
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>result<span class="p">,</span> fill<span class="o">=</span>group<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>position<span class="o">=</span>position_dodge<span class="p">())</span> 
+bp
+
+bp <span class="o">+</span> geom_errorbar<span class="p">(</span>aes<span class="p">(</span>y<span class="o">=</span>hline<span class="p">,</span> ymax<span class="o">=</span>hline<span class="p">,</span> ymin<span class="o">=</span>hline<span class="p">),</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/barplot-9.png" />
+<img alt="" src="Lines_(ggplot2)/barplot-10.png" /></p>
+<h3 id="with-two-continuous-axes">With two continuous axes</h3>
+<p>Sample data used here:</p>
+<div class="codehilite"><pre>df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">      cond xval yval</span>
+<span class="s">   control 11.5 10.8</span>
+<span class="s">   control  9.3 12.9</span>
+<span class="s">   control  8.0  9.9</span>
+<span class="s">   control 11.5 10.1</span>
+<span class="s">   control  8.6  8.3</span>
+<span class="s">   control  9.9  9.5</span>
+<span class="s">   control  8.8  8.7</span>
+<span class="s">   control 11.7 10.1</span>
+<span class="s">   control  9.7  9.3</span>
+<span class="s">   control  9.8 12.0</span>
+<span class="s"> treatment 10.4 10.6</span>
+<span class="s"> treatment 12.1  8.6</span>
+<span class="s"> treatment 11.2 11.0</span>
+<span class="s"> treatment 10.0  8.8</span>
+<span class="s"> treatment 12.9  9.5</span>
+<span class="s"> treatment  9.1 10.0</span>
+<span class="s"> treatment 13.4  9.6</span>
+<span class="s"> treatment 11.6  9.8</span>
+<span class="s"> treatment 11.5  9.8</span>
+<span class="s"> treatment 12.0 10.6</span>
+<span class="s">&#39;</span><span class="p">))</span>
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+</pre></div>
+
+
+<h4 id="basic-lines">Basic lines</h4>
+<div class="codehilite"><pre><span class="c1"># The basic scatterplot</span>
+sp <span class="o">&lt;-</span> ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Add a horizontal line</span>
+sp <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span>
+
+<span class="c1"># Add a red dashed vertical line</span>
+sp <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span> <span class="o">+</span> geom_vline<span class="p">(</span>aes<span class="p">(</span>xintercept<span class="o">=</span><span class="m">11.5</span><span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#BB0000&quot;</span><span class="p">,</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/scatterplot-1.png" />
+<img alt="" src="Lines_(ggplot2)/scatterplot-2.png" /></p>
+<h4 id="automatically-drawing-lines-for-the-mean">Automatically drawing lines for the mean</h4>
+<p>It is also possible to automatically compute a mean value for each group, divided one some variable. Note that the y range of the line is determined by the data.</p>
+<div class="codehilite"><pre><span class="c1"># Add colored lines for the mean xval of each group</span>
+sp <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span> <span class="o">+</span>
+     geom_line<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;vline&quot;</span><span class="p">,</span> xintercept<span class="o">=</span><span class="s">&quot;mean&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/scatterplot-3.png" /></p>
+<h4 id="using-lines-with-facets">Using lines with facets</h4>
+<p>Normally, if you add a line, it will appear in all facets.</p>
+<div class="codehilite"><pre><span class="c1"># Facet, based on cond</span>
+spf <span class="o">&lt;-</span> sp <span class="o">+</span> facet_grid<span class="p">(</span><span class="m">.</span> <span class="o">~</span> cond<span class="p">)</span>
+spf
+
+<span class="c1"># Draw a horizontal line in all of the facets at the same value</span>
+spf <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/scatterplot-facet-1.png" />
+<img alt="" src="Lines_(ggplot2)/scatterplot-facet-2.png" /></p>
+<p>If you want the different lines to appear in the different facets, there are two options. One is to create a new data frame with the desired values for the lines. Another option (with more limited control) is to use <code>stat</code> and <code>xintercept</code> in <code>geom_line()</code>.</p>
+<div class="codehilite"><pre>df.vlines <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond<span class="o">=</span><span class="kp">levels</span><span class="p">(</span>df<span class="o">$</span>cond<span class="p">),</span> xval<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">10</span><span class="p">,</span><span class="m">11.5</span><span class="p">))</span>
+<span class="c1">#      cond xval</span>
+<span class="c1">#   control 10.0</span>
+<span class="c1"># treatment 11.5</span>
+
+spf <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span> <span class="o">+</span>
+      geom_vline<span class="p">(</span>aes<span class="p">(</span>xintercept<span class="o">=</span>xval<span class="p">),</span> data<span class="o">=</span>df.vlines<span class="p">,</span>
+                    colour<span class="o">=</span><span class="s">&quot;#990000&quot;</span><span class="p">,</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">)</span>
+
+
+spf <span class="o">+</span> geom_hline<span class="p">(</span>aes<span class="p">(</span>yintercept<span class="o">=</span><span class="m">10</span><span class="p">))</span> <span class="o">+</span>
+      geom_line<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;vline&quot;</span><span class="p">,</span> xintercept<span class="o">=</span><span class="s">&quot;mean&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Lines_(ggplot2)/scatterplot-facet-3.png" />
+<img alt="" src="Lines_(ggplot2)/scatterplot-facet-4.png" /></p>
+<h3 id="notes">Notes</h3>
+<p>This code was used to generate the data used in the scatterplots.</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">245</span><span class="p">)</span>
+cond <span class="o">&lt;-</span> <span class="kp">rep</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;control&quot;</span><span class="p">,</span><span class="s">&quot;treatment&quot;</span><span class="p">),</span> each<span class="o">=</span><span class="m">10</span><span class="p">)</span>
+xval <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span><span class="m">10</span><span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">),</span> <span class="m">1</span><span class="p">)</span>
+yval <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span><span class="m">10</span><span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">),</span> <span class="m">1</span><span class="p">)</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond<span class="p">,</span> xval<span class="p">,</span> yval<span class="p">)</span>
+df<span class="o">$</span>xval<span class="p">[</span>cond<span class="o">==</span><span class="s">&quot;treatment&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> df<span class="o">$</span>xval<span class="p">[</span>cond<span class="o">==</span><span class="s">&quot;treatment&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="m">1.5</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

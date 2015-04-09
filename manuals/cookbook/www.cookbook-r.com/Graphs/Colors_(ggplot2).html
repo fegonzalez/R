@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Colors (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Colors_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="colors-ggplot2">Colors (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Colors_(ggplot2).html#colors-ggplot2">Colors (ggplot2)</a><ul>
+<li><a href="Colors_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Colors_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Colors_(ggplot2).html#sample-data">Sample data</a></li>
+<li><a href="Colors_(ggplot2).html#simple-color-assignment">Simple color assignment</a></li>
+<li><a href="Colors_(ggplot2).html#mapping-variable-values-to-colors">Mapping variable values to colors</a></li>
+<li><a href="Colors_(ggplot2).html#a-colorblind-friendly-palette">A colorblind-friendly palette</a></li>
+<li><a href="Colors_(ggplot2).html#color-selection">Color selection</a></li>
+<li><a href="Colors_(ggplot2).html#setting-luminance-and-saturation-chromaticity">Setting luminance and saturation (chromaticity)</a></li>
+<li><a href="Colors_(ggplot2).html#palettes-color-brewer">Palettes: Color Brewer</a></li>
+<li><a href="Colors_(ggplot2).html#palettes-manually-defined">Palettes: manually-defined</a></li>
+<li><a href="Colors_(ggplot2).html#continuous-colors">Continuous colors</a></li>
+</ul>
+</li>
+<li><a href="Colors_(ggplot2).html#color-charts">Color charts</a><ul>
+<li><a href="Colors_(ggplot2).html#hexadecimal-color-code-chart">Hexadecimal color code chart</a></li>
+<li><a href="Colors_(ggplot2).html#rcolorbrewer-palette-chart">RColorBrewer palette chart</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to use colors in a graph with ggplot2.</p>
+<h2 id="solution">Solution</h2>
+<p>The default colors in ggplot2 can be difficult to distinguish from one another because they have equal luminance. They are also not friendly for colorblind viewers. </p>
+<p>A good general-purpose solution is to just use the <a href="Colors_(ggplot2).html#a-colorblind-friendly-palette">colorblind-friendly palette</a> below.</p>
+<h3 id="sample-data">Sample data</h3>
+<p>These two data sets will be used to generate the graphs below.</p>
+<div class="codehilite"><pre><span class="c1"># Two variables</span>
+df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> cond yval</span>
+<span class="s">    A 2</span>
+<span class="s">    B 2.5</span>
+<span class="s">    C 1.6</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+<span class="c1"># Three variables</span>
+df2 <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> cond1 cond2 yval</span>
+<span class="s">    A      I 2</span>
+<span class="s">    A      J 2.5</span>
+<span class="s">    A      K 1.6</span>
+<span class="s">    B      I 2.2</span>
+<span class="s">    B      J 2.4</span>
+<span class="s">    B      K 1.2</span>
+<span class="s">    C      I 1.7</span>
+<span class="s">    C      J 2.3</span>
+<span class="s">    C      K 1.9</span>
+<span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="simple-color-assignment">Simple color assignment</h3>
+<p>The colors of lines and points can be set directly using <code>colour="red"</code>, replacing "red" with a color name. The colors of filled objects, like bars, can be set using <code>fill="red"</code>.</p>
+<p>If you want to use anything other than very basic colors, it may be easier to use hexadecimal codes for colors, like <code>"#FF6699"</code>. (See the hexadecimal color chart below.)</p>
+<div class="codehilite"><pre><span class="c1"># Default: dark bars</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span>
+<span class="c1"># Bars with red outlines</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;#FF9999&quot;</span><span class="p">)</span> 
+<span class="c1"># Red fill, black outlines</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>fill<span class="o">=</span><span class="s">&quot;#FF9999&quot;</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Standard black lines and points</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>aes<span class="p">(</span>group<span class="o">=</span><span class="m">1</span><span class="p">))</span> <span class="o">+</span>     <span class="c1"># Group all points; otherwise no line will show</span>
+    geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">3</span><span class="p">)</span>
+<span class="c1"># Dark blue lines, red dots</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>aes<span class="p">(</span>group<span class="o">=</span><span class="m">1</span><span class="p">),</span> colour<span class="o">=</span><span class="s">&quot;#000099&quot;</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># Blue lines</span>
+    geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">3</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;#CC0000&quot;</span><span class="p">)</span>         <span class="c1"># Red dots</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bar.png" />
+<img alt="" src="Colors_(ggplot2)/bar_colour_red.png" />
+<img alt="" src="Colors_(ggplot2)/bar_fill_red_colour_black.png" />
+<img alt="" src="Colors_(ggplot2)/line_point.png" />
+<img alt="" src="Colors_(ggplot2)/line_point_colour_blue_red.png" /></p>
+<h3 id="mapping-variable-values-to-colors">Mapping variable values to colors</h3>
+<p>Instead of changing colors globally, you can map variables to colors -- in other words, make the color conditional on a variable, by putting it inside an <code>aes()</code> statement.</p>
+<div class="codehilite"><pre><span class="c1"># Bars: x and fill both depend on cond2</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span>
+
+<span class="c1"># Bars with other dataset; fill depends on cond2</span>
+ggplot<span class="p">(</span>df2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond1<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> 
+    geom_bar<span class="p">(</span>aes<span class="p">(</span>fill<span class="o">=</span>cond2<span class="p">),</span>   <span class="c1"># fill depends on cond2</span>
+             colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span>    <span class="c1"># Black outline for all</span>
+             position<span class="o">=</span>position_dodge<span class="p">())</span> <span class="c1"># Put bars side-by-side instead of stacked</span>
+
+<span class="c1"># Lines and points; colour depends on cond2</span>
+ggplot<span class="p">(</span>df2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond1<span class="p">,</span> y<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>aes<span class="p">(</span>colour<span class="o">=</span>cond2<span class="p">,</span> group<span class="o">=</span>cond2<span class="p">))</span> <span class="o">+</span> <span class="c1"># colour, group both depend on cond2</span>
+    geom_point<span class="p">(</span>aes<span class="p">(</span>colour<span class="o">=</span>cond2<span class="p">),</span>               <span class="c1"># colour depends on cond2</span>
+               size<span class="o">=</span><span class="m">3</span><span class="p">)</span>                          <span class="c1"># larger points, different shape</span>
+<span class="c1"># Equivalent to above; but move &quot;colour=cond2&quot; into the global aes() mapping</span>
+ggplot<span class="p">(</span>df2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond1<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>cond2<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>aes<span class="p">(</span>group<span class="o">=</span>cond2<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">3</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bar_fill_cond.png" />
+<img alt="" src="Colors_(ggplot2)/bar_fill_cond2.png" />
+<img alt="" src="Colors_(ggplot2)/line_point_colour_cond2.png" /></p>
+<h3 id="a-colorblind-friendly-palette">A colorblind-friendly palette</h3>
+<p>These are color-blind-friendly palettes, one with gray, and one with black.</p>
+<p><img alt="" src="Colors_(ggplot2)/colorblind-gray.png" />
+<img alt="" src="Colors_(ggplot2)/colorblind-black.png" /></p>
+<p>To use with ggplot2, it is possible to store the palette in a variable, then use it later.</p>
+<div class="codehilite"><pre><span class="c1"># The palette with grey:</span>
+cbPalette <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;#999999&quot;</span><span class="p">,</span> <span class="s">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s">&quot;#009E73&quot;</span><span class="p">,</span> <span class="s">&quot;#F0E442&quot;</span><span class="p">,</span> <span class="s">&quot;#0072B2&quot;</span><span class="p">,</span> <span class="s">&quot;#D55E00&quot;</span><span class="p">,</span> <span class="s">&quot;#CC79A7&quot;</span><span class="p">)</span>
+
+<span class="c1"># The palette with black:</span>
+cbbPalette <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;#000000&quot;</span><span class="p">,</span> <span class="s">&quot;#E69F00&quot;</span><span class="p">,</span> <span class="s">&quot;#56B4E9&quot;</span><span class="p">,</span> <span class="s">&quot;#009E73&quot;</span><span class="p">,</span> <span class="s">&quot;#F0E442&quot;</span><span class="p">,</span> <span class="s">&quot;#0072B2&quot;</span><span class="p">,</span> <span class="s">&quot;#D55E00&quot;</span><span class="p">,</span> <span class="s">&quot;#CC79A7&quot;</span><span class="p">)</span>
+
+<span class="c1"># To use for fills, add</span>
+  scale_fill_manual<span class="p">(</span>values<span class="o">=</span>cbPalette<span class="p">)</span>
+
+<span class="c1"># To use for line and point colors, add</span>
+  scale_colour_manual<span class="p">(</span>values<span class="o">=</span>cbPalette<span class="p">)</span>
+</pre></div>
+
+
+<p>This palette is from <a href="http://jfly.iam.u-tokyo.ac.jp/color/">http://jfly.iam.u-tokyo.ac.jp/color/</a>:</p>
+<p><img alt="" src="Colors_(ggplot2)/colorblind_palette.jpg" /></p>
+<h3 id="color-selection">Color selection</h3>
+<p>By default, the colors for discrete scales are evenly spaced around a HSL color circle. For example, if there are two colors, then they will be selected from opposite points on the circle; if there are three colors, they will be 120° apart on the color circle; and so on.
+The colors used for different numbers of levels are shown here:</p>
+<p><img alt="" src="Colors_(ggplot2)/ggplot2_scale_hue_colors.png" /></p>
+<p>The default color selection uses <code>scale_fill_hue()</code> and <code>scale_colour_hue()</code>. For example, adding those commands is redundant in these cases:</p>
+<div class="codehilite"><pre><span class="c1"># These two are equivalent; by default scale_fill_hue() is used</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> scale_fill_hue<span class="p">()</span>
+
+<span class="c1"># These two are equivalent; by default scale_colour_hue() is used</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">2</span><span class="p">)</span> <span class="o">+</span> scale_colour_hue<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bar_fill_cond.png" />
+<img alt="" src="Colors_(ggplot2)/point_colour_cond.png" /></p>
+<h3 id="setting-luminance-and-saturation-chromaticity">Setting luminance and saturation (chromaticity)</h3>
+<p>Although <code>scale_fill_hue()</code> and <code>scale_colour_hue()</code> were redundant above, they can be used when you want to make changes from the default, like changing the luminance or chromaticity.</p>
+<div class="codehilite"><pre><span class="c1"># Use luminance=45, instead of default 65</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> scale_fill_hue<span class="p">(</span>l<span class="o">=</span><span class="m">40</span><span class="p">)</span>
+
+<span class="c1"># Reduce saturation (chromaticity) from 100 to 50, and increase luminance</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> scale_fill_hue<span class="p">(</span><span class="kt">c</span><span class="o">=</span><span class="m">45</span><span class="p">,</span> l<span class="o">=</span><span class="m">80</span><span class="p">)</span>
+
+<span class="c1"># Note: use scale_colour_hue() for lines and points</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bars_fill_cond_l40.png" />
+<img alt="" src="Colors_(ggplot2)/bars_fill_cond_c45_l80.png" /></p>
+<p>This is a chart of colors with luminance=45:</p>
+<p><img alt="" src="Colors_(ggplot2)/ggplot2_scale_hue_colors_l45.png" /></p>
+<h3 id="palettes-color-brewer">Palettes: Color Brewer</h3>
+<p>You can also use other color scales, such as ones taken from the RColorBrewer package. See the chart of RColorBrewer palettes below. See the scale section <a href="http://had.co.nz/ggplot2/">here</a> for more information.</p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> scale_fill_brewer<span class="p">()</span>
+
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> 
+    scale_fill_brewer<span class="p">(</span>palette<span class="o">=</span><span class="s">&quot;Set1&quot;</span><span class="p">)</span>
+
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> 
+    scale_fill_brewer<span class="p">(</span>palette<span class="o">=</span><span class="s">&quot;Spectral&quot;</span><span class="p">)</span>
+
+<span class="c1"># Note: use scale_colour_brewer() for lines and points</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bars_fill_cond_brewer.png" />
+<img alt="" src="Colors_(ggplot2)/bars_fill_cond_brewer_set1.png" />
+<img alt="" src="Colors_(ggplot2)/bars_fill_cond_brewer_spectral.png" /></p>
+<h3 id="palettes-manually-defined">Palettes: manually-defined</h3>
+<p>Finally, you can define your own set of colors with <code>scale_fill_manual()</code>. See the hexadecimal code chart below for help choosing specific colors.</p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> 
+    scale_fill_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;red&quot;</span><span class="p">,</span> <span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="s">&quot;green&quot;</span><span class="p">))</span>
+
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span> <span class="o">+</span> 
+    scale_fill_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;#CC6666&quot;</span><span class="p">,</span> <span class="s">&quot;#9999CC&quot;</span><span class="p">,</span> <span class="s">&quot;#66CC99&quot;</span><span class="p">))</span>
+
+<span class="c1"># Note: use scale_colour_manual() for lines and points</span>
+</pre></div>
+
+
+<p><img alt="" src="Colors_(ggplot2)/bars_fill_cond_manual_rbg.png" />
+<img alt="" src="Colors_(ggplot2)/bars_fill_cond_manual_hex.png" /></p>
+<h3 id="continuous-colors">Continuous colors</h3>
+<p>[Not complete]</p>
+<p>See the scale section <a href="http://had.co.nz/ggplot2/">here</a> for more information.</p>
+<div class="codehilite"><pre><span class="c1"># Generate some data</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">133</span><span class="p">)</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>xval<span class="o">=</span>rnorm<span class="p">(</span><span class="m">50</span><span class="p">),</span> yval<span class="o">=</span>rnorm<span class="p">(</span><span class="m">50</span><span class="p">))</span>
+
+<span class="c1"># Make color depend on yval</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Use a different gradient</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> colour<span class="o">=</span>yval<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span> <span class="o">+</span> 
+    scale_colour_gradientn<span class="p">(</span>colours<span class="o">=</span>rainbow<span class="p">(</span><span class="m">4</span><span class="p">))</span>
+</pre></div>
+
+
+<h2 id="color-charts">Color charts</h2>
+<h3 id="hexadecimal-color-code-chart">Hexadecimal color code chart</h3>
+<p>Colors can specified as a hexadecimal RGB triplet, such as <code>"#0066CC"</code>. The first two digits are the level of red, the next two green, and the last two blue. The value for each ranges from 00 to FF in hexadecimal (base-16) notation, which is equivalent to 0 and 255 in base-10. For example, in the table below, "#FFFFFF" is white and "#990000" is a deep red.</p>
+<p><img alt="" src="Colors_(ggplot2)/hextable.png" /></p>
+<p>(Color chart is from <a href="http://www.visibone.com">http://www.visibone.com</a>)</p>
+<h3 id="rcolorbrewer-palette-chart">RColorBrewer palette chart</h3>
+<p><img alt="" src="Colors_(ggplot2)/colorbrewer.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

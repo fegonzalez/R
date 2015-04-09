@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Scatterplots (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Scatterplots_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="scatterplots-ggplot2">Scatterplots (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Scatterplots_(ggplot2).html#scatterplots-ggplot2">Scatterplots (ggplot2)</a><ul>
+<li><a href="Scatterplots_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Scatterplots_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Scatterplots_(ggplot2).html#basic-scatterplots-with-regression-lines">Basic scatterplots with regression lines</a></li>
+<li><a href="Scatterplots_(ggplot2).html#set-colorshape-by-another-variable">Set color/shape by another variable</a></li>
+<li><a href="Scatterplots_(ggplot2).html#handling-overplotting">Handling overplotting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to make a scatterplot.</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose this is your data:</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">955</span><span class="p">)</span>
+<span class="c1"># Make some noisily increasing data</span>
+dat <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="s">&quot;B&quot;</span><span class="p">),</span> each<span class="o">=</span><span class="m">10</span><span class="p">),</span>
+                  xvar <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">20</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span>sd<span class="o">=</span><span class="m">3</span><span class="p">),</span>
+                  yvar <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">20</span> <span class="o">+</span> rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span>sd<span class="o">=</span><span class="m">3</span><span class="p">))</span>
+<span class="c1"># cond         xvar         yvar</span>
+<span class="c1">#    A -4.252354091  3.473157275</span>
+<span class="c1">#    A  1.702317971  0.005939612</span>
+<span class="c1">#   ... </span>
+<span class="c1">#    B 17.793359218 19.718587761</span>
+<span class="c1">#    B 19.319909163 19.647899863</span>
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+</pre></div>
+
+
+<h3 id="basic-scatterplots-with-regression-lines">Basic scatterplots with regression lines</h3>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span>      <span class="c1"># Use hollow circles</span>
+
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>    <span class="c1"># Use hollow circles</span>
+    geom_smooth<span class="p">(</span>method<span class="o">=</span>lm<span class="p">)</span>   <span class="c1"># Add linear regression line </span>
+                             <span class="c1">#  (by default includes 95% confidence region)</span>
+
+
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>    <span class="c1"># Use hollow circles</span>
+    geom_smooth<span class="p">(</span>method<span class="o">=</span>lm<span class="p">,</span>   <span class="c1"># Add linear regression line</span>
+                se<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>    <span class="c1"># Don&#39;t add shaded confidence region</span>
+
+
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>    <span class="c1"># Use hollow circles</span>
+    geom_smooth<span class="p">()</span>            <span class="c1"># Add a loess smoothed fit curve with confidence region</span>
+</pre></div>
+
+
+<p><img alt="" src="Scatterplots_(ggplot2)/scatter.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-linear-confidence.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-linear.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-loess.png" /></p>
+<h3 id="set-colorshape-by-another-variable">Set color/shape by another variable</h3>
+<div class="codehilite"><pre><span class="c1"># Set color by cond</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">,</span> color<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+
+<span class="c1"># Same, but with different colors and add regression lines</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">,</span> color<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>
+    scale_colour_hue<span class="p">(</span>l<span class="o">=</span><span class="m">50</span><span class="p">)</span> <span class="o">+</span> <span class="c1"># Use a slightly darker palette than normal</span>
+    geom_smooth<span class="p">(</span>method<span class="o">=</span>lm<span class="p">,</span>   <span class="c1"># Add linear regression lines</span>
+                se<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>    <span class="c1"># Don&#39;t add shaded confidence region</span>
+
+<span class="c1"># Extend the regression lines beyond the domain of the data</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">,</span> color<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>
+    scale_colour_hue<span class="p">(</span>l<span class="o">=</span><span class="m">50</span><span class="p">)</span> <span class="o">+</span> <span class="c1"># Use a slightly darker palette than normal</span>
+    geom_smooth<span class="p">(</span>method<span class="o">=</span>lm<span class="p">,</span>   <span class="c1"># Add linear regression lines</span>
+                se<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>    <span class="c1"># Don&#39;t add shaded confidence region</span>
+                fullrange<span class="o">=</span><span class="bp">T</span><span class="p">)</span> <span class="c1"># Extend regression lines</span>
+
+
+<span class="c1"># Set shape by cond</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">,</span> shape<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Same, but with different shapes</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xvar<span class="p">,</span> y<span class="o">=</span>yvar<span class="p">,</span> shape<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span> <span class="o">+</span>
+    scale_shape_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">))</span>  <span class="c1"># Use a hollow circle and triangle</span>
+</pre></div>
+
+
+<p><img alt="" src="Scatterplots_(ggplot2)/scatter-color.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-color-regression.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-color-regression-extend.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-shape.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-shape-custom.png" /></p>
+<p>See <a href="Colors_(ggplot2).html">Colors (ggplot2)</a> and <a href="Shapes_and_line_types.html">Shapes and line types</a> for more information about colors and shapes.</p>
+<h3 id="handling-overplotting">Handling overplotting</h3>
+<p>If you have many data points, or if your data scales are discrete, then the data points might overlap and it will be impossible to see if there are many points at the same location.</p>
+<div class="codehilite"><pre><span class="c1"># Round xvar and yvar to the nearest 5</span>
+dat<span class="o">$</span>xrnd <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span>dat<span class="o">$</span>xvar<span class="o">/</span><span class="m">5</span><span class="p">)</span><span class="o">*</span><span class="m">5</span>
+dat<span class="o">$</span>yrnd <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span>dat<span class="o">$</span>yvar<span class="o">/</span><span class="m">5</span><span class="p">)</span><span class="o">*</span><span class="m">5</span>
+
+<span class="c1"># Make each dot partially transparent, with 1/4 opacity</span>
+<span class="c1"># For heavy overplotting, try using smaller values</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xrnd<span class="p">,</span> y<span class="o">=</span>yrnd<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">19</span><span class="p">,</span>      <span class="c1"># Use solid circles</span>
+               alpha<span class="o">=</span><span class="m">1</span><span class="o">/</span><span class="m">4</span><span class="p">)</span>     <span class="c1"># 1/4 opacity</span>
+
+
+<span class="c1"># Jitter the points</span>
+<span class="c1"># Jitter range is 1 on the x-axis, .5 on the y-axis</span>
+ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xrnd<span class="p">,</span> y<span class="o">=</span>yrnd<span class="p">))</span> <span class="o">+</span>
+    geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">,</span>      <span class="c1"># Use hollow circles</span>
+               position<span class="o">=</span>position_jitter<span class="p">(</span>width<span class="o">=</span><span class="m">1</span><span class="p">,</span>height<span class="o">=</span><span class="m">.5</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Scatterplots_(ggplot2)/scatter-overplot-opacity.png" />
+<img alt="" src="Scatterplots_(ggplot2)/scatter-overplot-jitter.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

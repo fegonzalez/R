@@ -49,6 +49,10 @@ Install from an external URL (i.e. bioconductor)
 # this is necessary to make available installed packages
 
 library(ggplot2) # example of loading the "ggplot2" package into R.
+require(ggplot2) # idem library into a script (idem #include in C)
+
+# Package version:
+packageVersion("dplyr")
 
 
 # Unloading Packages:
@@ -355,6 +359,10 @@ rownames()
 row.names()
 mean(x = mydata200$nitrate[mydata200$sulfate > 4], na.rm = TRUE)
 mean(subset(mydata200, sulfate > 4)$nitrate, na.rm = TRUE)
+
+
+count.fields #returns a vector equal to the number of lines in the file
+## count.fields("data.txt", sep = "\t")
 
 
 # Selection using the Subset Function

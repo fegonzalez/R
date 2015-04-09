@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Axes (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Axes_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="axes-ggplot2">Axes (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Axes_(ggplot2).html#axes-ggplot2">Axes (ggplot2)</a><ul>
+<li><a href="Axes_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Axes_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Axes_(ggplot2).html#swapping-x-and-y-axes">Swapping X and Y axes</a></li>
+<li><a href="Axes_(ggplot2).html#discrete-axis">Discrete axis</a><ul>
+<li><a href="Axes_(ggplot2).html#changing-the-order-of-items">Changing the order of items</a></li>
+<li><a href="Axes_(ggplot2).html#setting-tick-mark-labels">Setting tick mark labels</a></li>
+</ul>
+</li>
+<li><a href="Axes_(ggplot2).html#continuous-axis">Continuous axis</a><ul>
+<li><a href="Axes_(ggplot2).html#setting-range-and-reversing-direction-of-an-axis">Setting range and reversing direction of an axis</a></li>
+<li><a href="Axes_(ggplot2).html#reversing-the-direction-of-an-axis">Reversing the direction of an axis</a></li>
+<li><a href="Axes_(ggplot2).html#setting-and-hiding-tick-markers">Setting and hiding tick markers</a></li>
+<li><a href="Axes_(ggplot2).html#axis-transformations-log-sqrt-etc">Axis transformations: log, sqrt, etc.</a></li>
+<li><a href="Axes_(ggplot2).html#fixed-ratio-between-x-and-y-axes">Fixed ratio between x and y axes</a></li>
+</ul>
+</li>
+<li><a href="Axes_(ggplot2).html#axis-labels-and-text-formatting">Axis labels and text formatting</a></li>
+<li><a href="Axes_(ggplot2).html#tick-mark-label-text-formatters">Tick mark label text formatters</a></li>
+<li><a href="Axes_(ggplot2).html#hiding-gridlines">Hiding gridlines</a><ul>
+<li><a href="Axes_(ggplot2).html#hiding-only-horizontal-or-vertical-gridlines-old">Hiding only horizontal or vertical gridlines (old)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to change the order or direction of the axes.</p>
+<h2 id="solution">Solution</h2>
+<p>Note: In the examples below, where it says something like scale_y_continuous, scale_x_continuous, or ylim, the <em>y</em> can be replaced with <em>x</em> if you want to operate on the other axis.</p>
+<p>This is the basic boxplot that we will work with, using the built-in <code>PlantGrowth</code> data set.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+
+bp <span class="o">&lt;-</span> ggplot<span class="p">(</span>PlantGrowth<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>group<span class="p">,</span> y<span class="o">=</span>weight<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span>
+bp
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp.png" /></p>
+<h3 id="swapping-x-and-y-axes">Swapping X and Y axes</h3>
+<p>Swap x and y axes (make x vertical, y horizontal):</p>
+<div class="codehilite"><pre>bp <span class="o">+</span> coord_flip<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_coord_flip.png" /></p>
+<h3 id="discrete-axis">Discrete axis</h3>
+<h4 id="changing-the-order-of-items">Changing the order of items</h4>
+<div class="codehilite"><pre><span class="c1"># Manually set the order of a discrete-valued axis</span>
+bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>limits<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;trt1&quot;</span><span class="p">,</span><span class="s">&quot;trt2&quot;</span><span class="p">,</span><span class="s">&quot;ctrl&quot;</span><span class="p">))</span>
+
+
+<span class="c1"># Reverse the order of a discrete-valued axis</span>
+<span class="c1"># Get the levels of the factor</span>
+flevels <span class="o">&lt;-</span> <span class="kp">levels</span><span class="p">(</span>PlantGrowth<span class="o">$</span>group<span class="p">)</span>
+<span class="c1"># &quot;ctrl&quot; &quot;trt1&quot; &quot;trt2&quot;</span>
+<span class="c1"># Reverse the order</span>
+flevels <span class="o">&lt;-</span> <span class="kp">rev</span><span class="p">(</span>flevels<span class="p">)</span>
+<span class="c1"># &quot;trt2&quot; &quot;trt1&quot; &quot;ctrl&quot;</span>
+bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>limits<span class="o">=</span>flevels<span class="p">)</span>
+
+<span class="c1"># Or it can be done in one line:</span>
+bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>limits <span class="o">=</span> <span class="kp">rev</span><span class="p">(</span><span class="kp">levels</span><span class="p">(</span>PlantGrowth<span class="o">$</span>group<span class="p">))</span> <span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_change_x_order.png" />
+<img alt="" src="Axes_(ggplot2)/bp_reverse_x_order.png" /></p>
+<h4 id="setting-tick-mark-labels">Setting tick mark labels</h4>
+<p>For discrete variables, the tick mark labels are taken directly from levels of the factor. However, sometimes the factor levels have short names that aren't suitable for presentation.</p>
+<div class="codehilite"><pre>bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>breaks<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;ctrl&quot;</span><span class="p">,</span> <span class="s">&quot;trt1&quot;</span><span class="p">,</span> <span class="s">&quot;trt2&quot;</span><span class="p">),</span> labels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Control&quot;</span><span class="p">,</span> <span class="s">&quot;Treat 1&quot;</span><span class="p">,</span> <span class="s">&quot;Treat 2&quot;</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_tick_labels.png" /></p>
+<div class="codehilite"><pre><span class="c1"># Hide x tick marks, labels, and grid lines</span>
+bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>breaks<span class="o">=</span><span class="kc">NULL</span><span class="p">)</span>
+
+<span class="c1"># Hide all tick marks and labels (on X axis), but keep the gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>axis.ticks <span class="o">=</span> element_blank<span class="p">(),</span> axis.text.x <span class="o">=</span> element_blank<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_no_x_ticks.png" />
+<img alt="" src="Axes_(ggplot2)/bp_no_x_ticks_gridlines.png" /></p>
+<h3 id="continuous-axis">Continuous axis</h3>
+<h4 id="setting-range-and-reversing-direction-of-an-axis">Setting range and reversing direction of an axis</h4>
+<p>Note that if <strong>any</strong> <code>scale_y_continuous</code> command is used, it overrides any <code>ylim</code> command, and the <code>ylim</code> will be ignored.</p>
+<div class="codehilite"><pre><span class="c1"># Set the range of a continuous-valued axis</span>
+<span class="c1"># These are equivalent</span>
+bp <span class="o">+</span> ylim<span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">8</span><span class="p">)</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>limits<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">8</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_ylim0-8.png" /></p>
+<p>If the y range is reduced using the method above, the data outside the range is ignored. This might be OK for a scatterplot, but it can be problematic for the box plots used here. For bar graphs, if the range does not include 0, the bars will not show at all!</p>
+<p>To avoid this problem, you can use <code>coord_cartesian</code> instead. Instead of setting the limits of the data, it sets the viewing area of the data.</p>
+<div class="codehilite"><pre><span class="c1"># These two do the same thing; all data points outside the graphing range are dropped,</span>
+<span class="c1"># resulting in a misleading box plot</span>
+bp <span class="o">+</span> ylim<span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="m">7.5</span><span class="p">)</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>limits<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="m">7.5</span><span class="p">))</span>
+
+<span class="c1"># Using coord_cartesian &quot;zooms&quot; into the area</span>
+bp <span class="o">+</span> coord_cartesian<span class="p">(</span>ylim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="m">7.5</span><span class="p">))</span>
+
+<span class="c1"># Specify tick marks directly</span>
+bp <span class="o">+</span> coord_cartesian<span class="p">(</span>ylim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="m">7.5</span><span class="p">))</span> <span class="o">+</span> 
+    scale_y_continuous<span class="p">(</span>breaks<span class="o">=</span><span class="kp">seq</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">10</span><span class="p">,</span> <span class="m">0.25</span><span class="p">))</span>  <span class="c1"># Ticks from 0-10, every .25</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_ylim5-7.5.png" />
+<img alt="" src="Axes_(ggplot2)/bp_coordcartesian.png" />
+<img alt="" src="Axes_(ggplot2)/bp_coordcartesian_tickmarks.png" /></p>
+<h4 id="reversing-the-direction-of-an-axis">Reversing the direction of an axis</h4>
+<div class="codehilite"><pre><span class="c1"># Reverse order of a continuous-valued axis</span>
+bp <span class="o">+</span> scale_y_reverse<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_y_reverse.png" /></p>
+<h4 id="setting-and-hiding-tick-markers">Setting and hiding tick markers</h4>
+<div class="codehilite"><pre><span class="c1"># Setting the tick marks on an axis</span>
+<span class="c1"># This will show tick marks on every 0.25 from 1 to 10</span>
+<span class="c1"># The scale will show only the ones that are within range (3.50-6.25 in this case)</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>breaks<span class="o">=</span><span class="kp">seq</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">10</span><span class="p">,</span><span class="m">1</span><span class="o">/</span><span class="m">4</span><span class="p">))</span>
+
+<span class="c1"># The breaks can be spaced unevenly</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>breaks<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">4</span><span class="p">,</span> <span class="m">4.25</span><span class="p">,</span> <span class="m">4.5</span><span class="p">,</span> <span class="m">5</span><span class="p">,</span> <span class="m">6</span><span class="p">,</span><span class="m">8</span><span class="p">))</span>
+
+<span class="c1"># Suppress ticks and gridlines</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>breaks<span class="o">=</span><span class="kc">NULL</span><span class="p">)</span>
+
+<span class="c1"># Hide tick marks and labels (on Y axis), but keep the gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>axis.ticks <span class="o">=</span> element_blank<span class="p">(),</span> axis.text.y <span class="o">=</span> element_blank<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_y_break.25.png" />
+<img alt="" src="Axes_(ggplot2)/bp_y_break_different_size.png" />
+<img alt="" src="Axes_(ggplot2)/bp_y_break_na.png" />
+<img alt="" src="Axes_(ggplot2)/bp_no-ticks_no-ytext.png" /></p>
+<h4 id="axis-transformations-log-sqrt-etc">Axis transformations: log, sqrt, etc.</h4>
+<p>By default, the axes are linearly scaled. It is possible to transform the axes with log, power, roots, and so on.</p>
+<p>There are two ways of transforming an axis. One is to use a <em>scale</em> transform, and the other is to use a <em>coordinate</em> transform. With a scale transform, the data is transformed before properties such as breaks (the tick locations) and range of the axis are decided. With a coordinate transform, the transformation happens <em>after</em> the breaks and scale range are decided. This results in different appearances, as shown below.</p>
+<div class="codehilite"><pre><span class="c1"># Create some noisy exponentially-distributed data</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">201</span><span class="p">)</span>
+n <span class="o">&lt;-</span> <span class="m">100</span>
+dat <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>xval <span class="o">=</span> <span class="p">(</span><span class="m">1</span><span class="o">:</span>n<span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">,</span>sd<span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="o">/</span><span class="m">20</span><span class="p">,</span> yval <span class="o">=</span> <span class="m">2</span><span class="o">*</span><span class="m">2</span><span class="o">^</span><span class="p">((</span><span class="m">1</span><span class="o">:</span>n<span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">,</span>sd<span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="o">/</span><span class="m">20</span><span class="p">))</span>
+
+<span class="c1"># A scatterplot with regular (linear) axis scaling</span>
+sp <span class="o">&lt;-</span> ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>xval<span class="p">,</span> yval<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+sp
+
+<span class="c1"># log2 scaling of the y axis (with visually-equal spacing)</span>
+<span class="kn">library</span><span class="p">(</span>scales<span class="p">)</span>     <span class="c1"># Need the scales package</span>
+sp <span class="o">+</span> scale_y_continuous<span class="p">(</span>trans<span class="o">=</span>log2_trans<span class="p">())</span>
+
+<span class="c1"># log2 coordinate transformation (with visually-diminishing spacing)</span>
+sp <span class="o">+</span> coord_trans<span class="p">(</span>y<span class="o">=</span><span class="s">&quot;log2&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/sp_linear.png" />
+<img alt="" src="Axes_(ggplot2)/sp_scale_log2.png" />
+<img alt="" src="Axes_(ggplot2)/sp_trans_log2.png" /></p>
+<p>With a scale transformation, you can also set the axis tick marks to show exponents.</p>
+<div class="codehilite"><pre>sp <span class="o">+</span> scale_y_continuous<span class="p">(</span>trans <span class="o">=</span> log2_trans<span class="p">(),</span>
+                        breaks <span class="o">=</span> trans_breaks<span class="p">(</span><span class="s">&quot;log2&quot;</span><span class="p">,</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">)</span> <span class="m">2</span><span class="o">^</span>x<span class="p">),</span>
+                        labels <span class="o">=</span> trans_format<span class="p">(</span><span class="s">&quot;log2&quot;</span><span class="p">,</span> math_format<span class="p">(</span><span class="m">2</span><span class="o">^</span><span class="m">.</span>x<span class="p">)))</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/sp_scale_log2_expticks.png" /></p>
+<p>Many transformations are available. See <code>?trans_new</code> for a full list. If the transformation you need isn't on the list, it is possible to write your own transformation function.</p>
+<p>A couple scale transformations have convenience functions: <code>scale_y_log10</code> and <code>scale_y_sqrt</code> (with corresponding versions for x).</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">205</span><span class="p">)</span>
+n <span class="o">&lt;-</span> <span class="m">100</span>
+dat10 <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>xval <span class="o">=</span> <span class="p">(</span><span class="m">1</span><span class="o">:</span>n<span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">,</span>sd<span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="o">/</span><span class="m">20</span><span class="p">,</span> yval <span class="o">=</span> <span class="m">10</span><span class="o">*</span><span class="m">10</span><span class="o">^</span><span class="p">((</span><span class="m">1</span><span class="o">:</span>n<span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">,</span>sd<span class="o">=</span><span class="m">5</span><span class="p">))</span><span class="o">/</span><span class="m">20</span><span class="p">))</span>
+
+sp10 <span class="o">&lt;-</span> ggplot<span class="p">(</span>dat10<span class="p">,</span> aes<span class="p">(</span>xval<span class="p">,</span> yval<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># log10</span>
+sp10 <span class="o">+</span> scale_y_log10<span class="p">()</span>
+
+<span class="c1"># log10 with exponents on tick labels</span>
+sp10 <span class="o">+</span> scale_y_log10<span class="p">(</span>breaks <span class="o">=</span> trans_breaks<span class="p">(</span><span class="s">&quot;log10&quot;</span><span class="p">,</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">)</span> <span class="m">10</span><span class="o">^</span>x<span class="p">),</span>
+                     labels <span class="o">=</span> trans_format<span class="p">(</span><span class="s">&quot;log10&quot;</span><span class="p">,</span> math_format<span class="p">(</span><span class="m">10</span><span class="o">^</span><span class="m">.</span>x<span class="p">)))</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/sp_scale_log10.png" />
+<img alt="" src="Axes_(ggplot2)/sp_scale_log10_expticks.png" /></p>
+<h4 id="fixed-ratio-between-x-and-y-axes">Fixed ratio between x and y axes</h4>
+<p>It is possible to set the scaling of the axes to an equal ratio, with one visual unit being representing the same numeric unit on both axes. It is also possible to set them to ratios other than 1:1.</p>
+<div class="codehilite"><pre><span class="c1"># Data where x ranges from 0-10, y ranges from 0-30</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">202</span><span class="p">)</span>
+dat <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>xval <span class="o">=</span> runif<span class="p">(</span><span class="m">40</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span> yval <span class="o">=</span> runif<span class="p">(</span><span class="m">40</span><span class="p">,</span><span class="m">0</span><span class="p">,</span><span class="m">30</span><span class="p">))</span>
+sp <span class="o">&lt;-</span> ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>xval<span class="p">,</span> yval<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Force equal scaling</span>
+sp <span class="o">+</span> coord_fixed<span class="p">()</span>
+
+<span class="c1"># Equal scaling, with each 1 on the x axis the same length as y on x axis</span>
+sp <span class="o">+</span> coord_fixed<span class="p">(</span>ratio<span class="o">=</span><span class="m">1</span><span class="o">/</span><span class="m">3</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/sp_coord_fixed.png" />
+<img alt="" src="Axes_(ggplot2)/sp_coord_fixed_1-3.png" /></p>
+<h3 id="axis-labels-and-text-formatting">Axis labels and text formatting</h3>
+<p>To set and hide the axis labels:</p>
+<div class="codehilite"><pre>bp <span class="o">+</span> theme<span class="p">(</span>axis.title.x <span class="o">=</span> element_blank<span class="p">())</span> <span class="o">+</span>   <span class="c1"># Remove x-axis label</span>
+     ylab<span class="p">(</span><span class="s">&quot;Weight (Kg)&quot;</span><span class="p">)</span>                    <span class="c1"># Set y-axis label</span>
+
+<span class="c1"># Also possible to set the axis label with the scale</span>
+<span class="c1"># Note that vertical space is still reserved for x&#39;s label</span>
+bp <span class="o">+</span> scale_x_discrete<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span>
+     scale_y_continuous<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;Weight (Kg)&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_axis_labels.png" />
+<img alt="" src="Axes_(ggplot2)/bp_axis_labels_scale.png" /></p>
+<p>To change the fonts, and rotate tick mark labels:</p>
+<div class="codehilite"><pre><span class="c1"># Change font options:</span>
+<span class="c1"># X-axis label: bold, red, and 20 points</span>
+<span class="c1"># X-axis tick marks: rotate 90 degrees CCW, move to the left a bit (using vjust,</span>
+<span class="c1">#   since the labels are rotated), and 16 points</span>
+bp <span class="o">+</span> theme<span class="p">(</span>axis.title.x <span class="o">=</span> element_text<span class="p">(</span>face<span class="o">=</span><span class="s">&quot;bold&quot;</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;#990000&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">20</span><span class="p">),</span>
+           axis.text.x  <span class="o">=</span> element_text<span class="p">(</span>angle<span class="o">=</span><span class="m">90</span><span class="p">,</span> vjust<span class="o">=</span><span class="m">0.5</span><span class="p">,</span> size<span class="o">=</span><span class="m">16</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_fonts.png" /></p>
+<h3 id="tick-mark-label-text-formatters">Tick mark label text formatters</h3>
+<p>You may want to display your values as percents, or dollars, or in scientific notation. To do this you can use a <strong>formatter</strong>, which is a function that changes the text:</p>
+<div class="codehilite"><pre><span class="c1"># Label formatters</span>
+<span class="kn">library</span><span class="p">(</span>scales<span class="p">)</span>   <span class="c1"># Need the scales package</span>
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>labels<span class="o">=</span>percent<span class="p">)</span> <span class="o">+</span>
+     scale_x_discrete<span class="p">(</span>labels<span class="o">=</span><span class="kp">abbreviate</span><span class="p">)</span>  <span class="c1"># In this particular case, it has no effect</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_formatter_percent.png" /></p>
+<p>Other useful formatters for continuous scales include <code>comma</code>, <code>percent</code>, <code>dollar</code>, and <code>scientific</code>. For discrete scales, <code>abbreviate</code> will remove vowels and spaces and shorten to four characters. For dates, use <code>date_format</code>.</p>
+<p>Sometimes you may need to create your own formatting function. This one will display numeric minutes in HH:MM:SS format.</p>
+<div class="codehilite"><pre><span class="c1"># Self-defined formatting function for times.</span>
+timeHMS_formatter <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">)</span> <span class="p">{</span>
+    h <span class="o">&lt;-</span> <span class="kp">floor</span><span class="p">(</span>x<span class="o">/</span><span class="m">60</span><span class="p">)</span>
+    m <span class="o">&lt;-</span> <span class="kp">floor</span><span class="p">(</span>x <span class="o">%%</span> <span class="m">60</span><span class="p">)</span>
+    s <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span><span class="m">60</span><span class="o">*</span><span class="p">(</span>x <span class="o">%%</span> <span class="m">1</span><span class="p">))</span>                   <span class="c1"># Round to nearest second</span>
+    lab <span class="o">&lt;-</span> <span class="kp">sprintf</span><span class="p">(</span><span class="s">&#39;%02d:%02d:%02d&#39;</span><span class="p">,</span> h<span class="p">,</span> m<span class="p">,</span> s<span class="p">)</span> <span class="c1"># Format the strings as HH:MM:SS</span>
+    lab <span class="o">&lt;-</span> <span class="kp">gsub</span><span class="p">(</span><span class="s">&#39;^00:&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> lab<span class="p">)</span>              <span class="c1"># Remove leading 00: if present</span>
+    lab <span class="o">&lt;-</span> <span class="kp">gsub</span><span class="p">(</span><span class="s">&#39;^0&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> lab<span class="p">)</span>                <span class="c1"># Remove leading 0 if present</span>
+<span class="p">}</span>
+
+bp <span class="o">+</span> scale_y_continuous<span class="p">(</span>label<span class="o">=</span>timeHMS_formatter<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_formatter_hms.png" /></p>
+<h3 id="hiding-gridlines">Hiding gridlines</h3>
+<p>To hide all gridlines, both vertical and horizontal:</p>
+<div class="codehilite"><pre><span class="c1"># Hide all the gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>panel.grid.minor<span class="o">=</span>element_blank<span class="p">(),</span> panel.grid.major<span class="o">=</span>element_blank<span class="p">())</span>
+
+<span class="c1"># Hide just the minor gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>panel.grid.minor<span class="o">=</span>element_blank<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_no_gridlines.png" />
+<img alt="" src="Axes_(ggplot2)/bp_no_minor_gridlines.png" /></p>
+<p>It's also possible to hide just the vertical or horizontal gridlines:</p>
+<div class="codehilite"><pre><span class="c1"># Hide all the horizontal gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>panel.grid.minor.x<span class="o">=</span>element_blank<span class="p">(),</span> panel.grid.major.x<span class="o">=</span>element_blank<span class="p">())</span>
+
+<span class="c1"># Hide all the vertical gridlines</span>
+bp <span class="o">+</span> theme<span class="p">(</span>panel.grid.minor.y<span class="o">=</span>element_blank<span class="p">(),</span> panel.grid.major.y<span class="o">=</span>element_blank<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_no_x_gridlines.png" />
+<img alt="" src="Axes_(ggplot2)/bp_no_y_gridlines.png" /></p>
+<h4 id="hiding-only-horizontal-or-vertical-gridlines-old">Hiding only horizontal or vertical gridlines (old)</h4>
+<p><strong>This is needed only for versions of ggplot2 before 0.9.2. In 0.9.2, it is much easier to control horizontal and vertical gridlines separately (see previous).</strong></p>
+<p>Hiding just the vertical or horizontal gridlines with ggplot2 requires a bit of a hack. An internal function called <code>guide_grid</code> must be redefined to not draw the vertical or horizontal grid lines.</p>
+<div class="codehilite"><pre><span class="c1"># Save the original definition of the guide_grid</span>
+guide_grid_orig <span class="o">&lt;-</span> ggplot2<span class="o">:::</span>guide_grid
+
+<span class="c1"># Create the replacement function</span>
+guide_grid_no_vline <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>theme<span class="p">,</span> x.minor<span class="p">,</span> x.major<span class="p">,</span> y.minor<span class="p">,</span> y.major<span class="p">)</span> <span class="p">{</span>  
+  x.minor <span class="o">&lt;-</span> <span class="kp">setdiff</span><span class="p">(</span>x.minor<span class="p">,</span> x.major<span class="p">)</span>
+  y.minor <span class="o">&lt;-</span> <span class="kp">setdiff</span><span class="p">(</span>y.minor<span class="p">,</span> y.major<span class="p">)</span>
+
+  ggname<span class="p">(</span><span class="s">&quot;grill&quot;</span><span class="p">,</span> grobTree<span class="p">(</span>
+    theme_render<span class="p">(</span>theme<span class="p">,</span> <span class="s">&quot;panel.background&quot;</span><span class="p">),</span>
+    <span class="kr">if</span><span class="p">(</span><span class="kp">length</span><span class="p">(</span>y.minor<span class="p">)</span> <span class="o">&gt;</span> <span class="m">0</span><span class="p">)</span> theme_render<span class="p">(</span>
+      theme<span class="p">,</span> <span class="s">&quot;panel.grid.minor&quot;</span><span class="p">,</span> name <span class="o">=</span> <span class="s">&quot;y&quot;</span><span class="p">,</span>
+      x <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="o">:</span><span class="m">1</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>y.minor<span class="p">)),</span> y <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span>y.minor<span class="p">,</span> each<span class="o">=</span><span class="m">2</span><span class="p">),</span> 
+      id.lengths <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>y.minor<span class="p">))</span>
+    <span class="p">),</span>
+    <span class="kr">if</span><span class="p">(</span><span class="kp">length</span><span class="p">(</span>y.major<span class="p">)</span> <span class="o">&gt;</span> <span class="m">0</span><span class="p">)</span> theme_render<span class="p">(</span>
+      theme<span class="p">,</span> <span class="s">&quot;panel.grid.major&quot;</span><span class="p">,</span> name <span class="o">=</span> <span class="s">&quot;y&quot;</span><span class="p">,</span>
+      x <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="o">:</span><span class="m">1</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>y.major<span class="p">)),</span> y <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span>y.major<span class="p">,</span> each<span class="o">=</span><span class="m">2</span><span class="p">),</span> 
+      id.lengths <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>y.major<span class="p">))</span>
+    <span class="p">)</span>
+  <span class="p">))</span>
+<span class="p">}</span>
+<span class="c1"># Set the environment to be the same as original</span>
+<span class="kp">environment</span><span class="p">(</span>guide_grid_no_vline<span class="p">)</span> <span class="o">&lt;-</span> <span class="kp">environment</span><span class="p">(</span>ggplot2<span class="o">:::</span>guide_grid<span class="p">)</span>
+
+<span class="c1"># Assign the function inside ggplot2</span>
+assignInNamespace<span class="p">(</span><span class="s">&quot;guide_grid&quot;</span><span class="p">,</span> guide_grid_no_vline<span class="p">,</span> ns<span class="o">=</span><span class="s">&quot;ggplot2&quot;</span><span class="p">)</span>
+
+<span class="c1"># Draw the graph</span>
+bp
+
+<span class="c1"># Restore the original guide_grid function so that it will draw all gridlines again</span>
+assignInNamespace<span class="p">(</span><span class="s">&quot;guide_grid&quot;</span><span class="p">,</span> guide_grid_orig<span class="p">,</span> ns<span class="o">=</span><span class="s">&quot;ggplot2&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_no_vgrid.png" /></p>
+<p>This will hide vertical grid lines -- even if the x and y axes have been swapped with <code>coord_flip()</code>, it will still hide the vertical lines.</p>
+<p>Unfortunately, the replacement <code>guide_grid</code> does not get stored as part of the definition of the plot -- the call to <code>assignInNamespace()</code> must be done just before outputting the plot. This can be annoying if you define the plots in one place and output them in another.</p>
+<p>This will hide horizontal grid lines:</p>
+<div class="codehilite"><pre><span class="c1"># Save the original definition of guide_grid</span>
+guide_grid_orig <span class="o">&lt;-</span> ggplot2<span class="o">:::</span>guide_grid
+
+<span class="c1"># Create the replacement function</span>
+guide_grid_no_hline <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>theme<span class="p">,</span> x.minor<span class="p">,</span> x.major<span class="p">,</span> y.minor<span class="p">,</span> y.major<span class="p">)</span> <span class="p">{</span>  
+  x.minor <span class="o">&lt;-</span> <span class="kp">setdiff</span><span class="p">(</span>x.minor<span class="p">,</span> x.major<span class="p">)</span>
+  y.minor <span class="o">&lt;-</span> <span class="kp">setdiff</span><span class="p">(</span>y.minor<span class="p">,</span> y.major<span class="p">)</span>
+
+  ggname<span class="p">(</span><span class="s">&quot;grill&quot;</span><span class="p">,</span> grobTree<span class="p">(</span>
+    theme_render<span class="p">(</span>theme<span class="p">,</span> <span class="s">&quot;panel.background&quot;</span><span class="p">),</span>
+    <span class="kr">if</span><span class="p">(</span><span class="kp">length</span><span class="p">(</span>x.minor<span class="p">)</span> <span class="o">&gt;</span> <span class="m">0</span><span class="p">)</span> theme_render<span class="p">(</span>
+      theme<span class="p">,</span> <span class="s">&quot;panel.grid.minor&quot;</span><span class="p">,</span> name <span class="o">=</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> 
+      x <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span>x.minor<span class="p">,</span> each<span class="o">=</span><span class="m">2</span><span class="p">),</span> y <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="o">:</span><span class="m">1</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x.minor<span class="p">)),</span>
+      id.lengths <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x.minor<span class="p">))</span>
+    <span class="p">),</span>
+    <span class="kr">if</span><span class="p">(</span><span class="kp">length</span><span class="p">(</span>x.major<span class="p">)</span> <span class="o">&gt;</span> <span class="m">0</span><span class="p">)</span> theme_render<span class="p">(</span>
+      theme<span class="p">,</span> <span class="s">&quot;panel.grid.major&quot;</span><span class="p">,</span> name <span class="o">=</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> 
+      x <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span>x.major<span class="p">,</span> each<span class="o">=</span><span class="m">2</span><span class="p">),</span> y <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">0</span><span class="o">:</span><span class="m">1</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x.major<span class="p">)),</span> 
+      id.lengths <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="kp">length</span><span class="p">(</span>x.major<span class="p">))</span>
+    <span class="p">)</span>
+  <span class="p">))</span>
+<span class="p">}</span>
+<span class="c1"># Set the environment to be the same as original</span>
+<span class="kp">environment</span><span class="p">(</span>guide_grid_no_hline<span class="p">)</span> <span class="o">&lt;-</span> <span class="kp">environment</span><span class="p">(</span>ggplot2<span class="o">:::</span>guide_grid<span class="p">)</span>
+
+<span class="c1"># Assign the function inside ggplot2</span>
+assignInNamespace<span class="p">(</span><span class="s">&quot;guide_grid&quot;</span><span class="p">,</span> guide_grid_no_hline<span class="p">,</span> ns<span class="o">=</span><span class="s">&quot;ggplot2&quot;</span><span class="p">)</span>
+
+<span class="c1"># Draw the graph</span>
+bp
+
+<span class="c1"># Restore the original guide_grid function so that it will draw all gridlines again</span>
+assignInNamespace<span class="p">(</span><span class="s">&quot;guide_grid&quot;</span><span class="p">,</span> guide_grid_orig<span class="p">,</span> ns<span class="o">=</span><span class="s">&quot;ggplot2&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Axes_(ggplot2)/bp_no_hgrid.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

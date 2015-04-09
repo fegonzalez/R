@@ -6,6 +6,10 @@ link2data
 link2doc
 *.mp4
 *.srt
+#R files
+.Rhistory
+.RData
+
 
 # swirl
 swirl

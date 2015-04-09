@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Finding and removing duplicate records
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Finding_and_removing_duplicate_records
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="finding-and-removing-duplicate-records">Finding and removing duplicate records</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to find and/or remove duplicate entries from a vector or data frame.</p>
+<h2 id="solution">Solution</h2>
+<p>With vectors:</p>
+<div class="codehilite"><pre><span class="c1"># Generate a vector </span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">158</span><span class="p">)</span>
+x <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span>rnorm<span class="p">(</span><span class="m">20</span><span class="p">,</span> <span class="m">10</span><span class="p">,</span> <span class="m">5</span><span class="p">))</span>
+<span class="c1"># 14 11  8  4 12  5 10 10  3  3 11  6  0 16  8 10  8  5  6  6</span>
+
+<span class="c1"># For each element: is this one a duplicate (first instance of a particular value not counted)</span>
+<span class="kp">duplicated</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE  TRUE FALSE  TRUE  TRUE FALSE</span>
+<span class="c1">#[13] FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE</span>
+
+<span class="c1"># The values of the duplicated entries</span>
+<span class="c1"># note that &#39;6&#39; appears in the original vector three times, and so it has two entries here</span>
+x<span class="p">[</span><span class="kp">duplicated</span><span class="p">(</span>x<span class="p">)]</span>
+<span class="c1"># [1] 10  3 11  8 10  8  5  6  6</span>
+
+<span class="c1"># Duplicated entries, without repeats</span>
+<span class="kp">unique</span><span class="p">(</span>x<span class="p">[</span><span class="kp">duplicated</span><span class="p">(</span>x<span class="p">)])</span>
+<span class="c1"># 10  3 11  8  5  6</span>
+
+<span class="c1"># The original vector with all duplicates removed. These do the same:</span>
+<span class="kp">unique</span><span class="p">(</span>x<span class="p">)</span>
+x<span class="p">[</span><span class="o">!</span><span class="kp">duplicated</span><span class="p">(</span>x<span class="p">)]</span>
+<span class="c1"># 14 11  8  4 12  5 10  3  6  0 16</span>
+</pre></div>
+
+
+<p>With data frames:</p>
+<div class="codehilite"><pre><span class="c1"># A sample data frame:</span>
+df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> label value</span>
+<span class="s">     A     4</span>
+<span class="s">     B     3</span>
+<span class="s">     C     6</span>
+<span class="s">     B     3</span>
+<span class="s">     B     1</span>
+<span class="s">     A     2</span>
+<span class="s">     A     4</span>
+<span class="s">     A     4</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># Is each row a repeat?</span>
+<span class="kp">duplicated</span><span class="p">(</span>df<span class="p">)</span>
+<span class="c1"># FALSE FALSE FALSE  TRUE FALSE FALSE  TRUE  TRUE</span>
+
+<span class="c1"># Show the repeat entries</span>
+df<span class="p">[</span><span class="kp">duplicated</span><span class="p">(</span>df<span class="p">),]</span>
+<span class="c1"># label value</span>
+<span class="c1">#     B     3</span>
+<span class="c1">#     A     4</span>
+<span class="c1">#     A     4</span>
+
+<span class="c1"># Show unique repeat entries </span>
+<span class="kp">unique</span><span class="p">(</span>df<span class="p">[</span><span class="kp">duplicated</span><span class="p">(</span>df<span class="p">),])</span>
+<span class="c1"># label value</span>
+<span class="c1">#     B     3</span>
+<span class="c1">#     A     4</span>
+
+<span class="c1"># Original data with repeats removed. These do the same:</span>
+<span class="kp">unique</span><span class="p">(</span>df<span class="p">)</span>
+df<span class="p">[</span><span class="o">!</span><span class="kp">duplicated</span><span class="p">(</span>df<span class="p">),]</span>
+<span class="c1"># label value</span>
+<span class="c1">#     A     4</span>
+<span class="c1">#     B     3</span>
+<span class="c1">#     C     6</span>
+<span class="c1">#     B     1</span>
+<span class="c1">#     A     2</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

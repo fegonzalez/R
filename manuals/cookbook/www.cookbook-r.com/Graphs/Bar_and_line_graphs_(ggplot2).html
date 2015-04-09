@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Bar and line graphs (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Bar_and_line_graphs_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="bar-and-line-graphs-ggplot2">Bar and line graphs (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#bar-and-line-graphs-ggplot2">Bar and line graphs (ggplot2)</a><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#basic-graphs-with-discrete-x-axis">Basic graphs with discrete x-axis</a><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#bar-graphs-of-values">Bar graphs of values</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#bar-graphs-of-counts">Bar graphs of counts</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#line-graphs">Line graphs</a></li>
+</ul>
+</li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#graphs-with-more-variables">Graphs with more variables</a><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#bar-graphs">Bar graphs</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#line-graphs_1">Line graphs</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#finished-examples">Finished examples</a></li>
+</ul>
+</li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#with-a-numeric-x-axis">With a numeric x-axis</a><ul>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#with-x-axis-treated-as-continuous">With x-axis treated as continuous</a></li>
+<li><a href="Bar_and_line_graphs_(ggplot2).html#with-x-axis-treated-as-categorical">With x-axis treated as categorical</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to do make basic bar or line graphs.</p>
+<h2 id="solution">Solution</h2>
+<p>To make graphs with ggplot2, the data must be in a data frame, and in "long" (as opposed to wide) format. If your data needs to be restructured, see <a href="../Manipulating_data/Converting_data_between_wide_and_long_format.html">this page</a> for more information.</p>
+<h3 id="basic-graphs-with-discrete-x-axis">Basic graphs with discrete x-axis</h3>
+<p>With bar graphs, there are two different things that the heights of bars commonly represent:</p>
+<ul>
+<li>The <em>count</em> of cases for each group -- typically, each x value represents one group. This is done with <code>stat_bin</code>, which calculates the number of cases in each group (if x is discrete, then each x value is a group; if x is continuous, then all the data is automatically in one group, unless you specifiy grouping with <code>group=xx</code>).</li>
+<li>The <em>value</em> of a column in the data set. This is done with <code>stat_identity</code>, which leaves the y values unchanged.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>x axis is</th>
+<th>Height of bar represents</th>
+<th>Common name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><em>Continuous</em></strong></td>
+<td><strong><em>Count</em></strong></td>
+<td>Histogram</td>
+</tr>
+<tr>
+<td><strong><em>Discrete</em></strong></td>
+<td><strong><em>Count</em></strong></td>
+<td>Bar graph</td>
+</tr>
+<tr>
+<td><strong><em>Continuous</em></strong></td>
+<td><strong><em>Value</em></strong></td>
+<td>Bar graph</td>
+</tr>
+<tr>
+<td><strong><em>Discrete</em></strong></td>
+<td><strong><em>Value</em></strong></td>
+<td>Bar graph</td>
+</tr>
+</tbody>
+</table>
+<p>In ggplot2, the default is to use <code>stat_bin</code>, so that the bar height represents the count of cases.</p>
+<h5 id="bar-graphs-of-values">Bar graphs of values</h5>
+<p>Here is some sample data (derived from the <code>tips</code> dataset in the reshape2 package):</p>
+<div class="codehilite"><pre>df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>time <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Lunch&quot;</span><span class="p">,</span><span class="s">&quot;Dinner&quot;</span><span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Lunch&quot;</span><span class="p">,</span><span class="s">&quot;Dinner&quot;</span><span class="p">)),</span>
+                 total_bill <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">14.89</span><span class="p">,</span> <span class="m">17.23</span><span class="p">))</span>
+<span class="c1">#   time total_bill</span>
+<span class="c1">#  Lunch      14.89</span>
+<span class="c1"># Dinner      17.23</span>
+
+<span class="c1"># Load the ggplot2 library</span>
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+</pre></div>
+
+
+<p>In these examples, the height of the bar will represent the <em>value</em> in a column of the data frame.
+This is done by using <code>stat="identity"</code> instead of the default, <code>stat="bin"</code>.</p>
+<p>These are the variable mappings used here:</p>
+<ul>
+<li><code>time</code>: x-axis and sometimes color fill</li>
+<li><code>total_bill</code>: y-axis</li>
+</ul>
+<div class="codehilite"><pre><span class="c1"># Very basic bar graph</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+
+<span class="c1"># Map the time of day to different fill colors. These both have the same result.</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>aes<span class="p">(</span>fill<span class="o">=</span>time<span class="p">),</span> stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Add a black outline</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># No legend, since the information is redundant</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span>
+    geom_bar<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span> <span class="o">+</span>
+    guides<span class="p">(</span>fill<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar-color.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar-color-outline.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar-color-outline-nolegend.png" /></p>
+<p>The desired bar graph might look something like this:</p>
+<div class="codehilite"><pre><span class="c1"># Add title, narrower bars, gray fill, and change axis labels</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span> 
+    geom_bar<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;#DD8888&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">.7</span><span class="p">,</span> stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span> <span class="o">+</span> 
+    guides<span class="p">(</span>fill<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="o">+</span>
+    xlab<span class="p">(</span><span class="s">&quot;Time of day&quot;</span><span class="p">)</span> <span class="o">+</span> ylab<span class="p">(</span><span class="s">&quot;Total bill&quot;</span><span class="p">)</span> <span class="o">+</span>
+    ggtitle<span class="p">(</span><span class="s">&quot;Average bill for 2 people&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar-newcolor-outline-nolegend-narrow.png" /></p>
+<p>See <a href="Colors_(ggplot2).html">../Colors (ggplot2)</a> for more information on colors.</p>
+<h5 id="bar-graphs-of-counts">Bar graphs of counts</h5>
+<p>In these examples, the height of the bar will represent the <em>count</em> of cases.
+This is done by using <code>stat="bin"</code> (which is the default).</p>
+<p>We'll start with the <code>tips</code> data from the reshape2 package:</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+tips
+<span class="c1"># total_bill   tip    sex smoker  day   time size</span>
+<span class="c1">#      16.99  1.01 Female     No  Sun Dinner    2</span>
+<span class="c1">#      10.34  1.66   Male     No  Sun Dinner    3</span>
+<span class="c1">#      21.01  3.50   Male     No  Sun Dinner    3</span>
+<span class="c1">#  ... &lt;244 total rows&gt; ...</span>
+<span class="c1">#      22.67  2.00   Male    Yes  Sat Dinner    2</span>
+<span class="c1">#      17.82  1.75   Male     No  Sat Dinner    2</span>
+<span class="c1">#      18.78  3.00 Female     No Thur Dinner    2</span>
+</pre></div>
+
+
+<p>To get a bar graph of counts, don't map a variable to <code>y</code>, and use <code>stat="bin"</code> (which is the default) instead of <code>stat="identity"</code>:</p>
+<div class="codehilite"><pre><span class="c1"># Bar graph of counts</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>tips<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>day<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;bin&quot;</span><span class="p">)</span>
+<span class="c1"># Equivalent to this, since stat=&quot;bin&quot; is the default:</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>tips<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>day<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar-count.png" /></p>
+<h4 id="line-graphs">Line graphs</h4>
+<p>For line graphs, the data points must be grouped so that it knows which points to connect. In this case, it is simple -- all points should be connected, so <code>group=1</code>. When more variables are used and multiple lines are drawn, the grouping for lines is usually done by variable (this is seen in later examples).</p>
+<p>These are the variable mappings used here:</p>
+<ul>
+<li><code>time</code>: x-axis</li>
+<li><code>total_bill</code>: y-axis</li>
+</ul>
+<div class="codehilite"><pre><span class="c1"># Basic line graph. These both have the same result.</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span><span class="m">1</span><span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">(</span>aes<span class="p">(</span>group<span class="o">=</span><span class="m">1</span><span class="p">))</span>
+
+<span class="c1"># Add points</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span><span class="m">1</span><span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+
+<span class="c1"># Change color of both line and points</span>
+<span class="c1"># Change line type and point type, and use thicker line and larger points</span>
+<span class="c1"># Change points to circles with white fill</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span><span class="m">1</span><span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span> linetype<span class="o">=</span><span class="s">&quot;dotted&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">1.5</span><span class="p">)</span> <span class="o">+</span> 
+    geom_point<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">4</span><span class="p">,</span> shape<span class="o">=</span><span class="m">21</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/line.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line-point.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line-red-dotted-shape.png" /></p>
+<p>The desired line graph might look something like this:</p>
+<div class="codehilite"><pre><span class="c1"># Change the y-range to go from 0 to the maximum value in the total_bill column,</span>
+<span class="c1"># and change axis labels</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span><span class="m">1</span><span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span> <span class="o">+</span>
+    ylim<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="kp">max</span><span class="p">(</span>df<span class="o">$</span>total_bill<span class="p">))</span> <span class="o">+</span>
+    xlab<span class="p">(</span><span class="s">&quot;Time of day&quot;</span><span class="p">)</span> <span class="o">+</span> ylab<span class="p">(</span><span class="s">&quot;Total bill&quot;</span><span class="p">)</span> <span class="o">+</span>
+    ggtitle<span class="p">(</span><span class="s">&quot;Average bill for 2 people&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/line-point-ylim.png" /></p>
+<p>See <a href="Colors_(ggplot2).html">../Colors (ggplot2)</a> for more information on colors, and <a href="Shapes_and_line_types.html">../Shapes and line types</a> for information on shapes and line types.</p>
+<h3 id="graphs-with-more-variables">Graphs with more variables</h3>
+<p>This data will be used for the examples below:</p>
+<div class="codehilite"><pre>df1 <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>sex       <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Female&quot;</span><span class="p">,</span><span class="s">&quot;Female&quot;</span><span class="p">,</span><span class="s">&quot;Male&quot;</span><span class="p">,</span><span class="s">&quot;Male&quot;</span><span class="p">)),</span>
+                 time       <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Lunch&quot;</span><span class="p">,</span><span class="s">&quot;Dinner&quot;</span><span class="p">,</span><span class="s">&quot;Lunch&quot;</span><span class="p">,</span><span class="s">&quot;Dinner&quot;</span><span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Lunch&quot;</span><span class="p">,</span><span class="s">&quot;Dinner&quot;</span><span class="p">)),</span>
+                 total_bill <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">13.53</span><span class="p">,</span> <span class="m">16.81</span><span class="p">,</span> <span class="m">16.24</span><span class="p">,</span> <span class="m">17.42</span><span class="p">))</span>
+<span class="c1">#    sex   time total_bill</span>
+<span class="c1"># Female  Lunch      13.53</span>
+<span class="c1"># Female Dinner      16.81</span>
+<span class="c1">#   Male  Lunch      16.24</span>
+<span class="c1">#   Male Dinner      17.42</span>
+</pre></div>
+
+
+<p>This is derived from the <code>tips</code> dataset in the reshape2 package.</p>
+<h4 id="bar-graphs">Bar graphs</h4>
+<p>These are the variable mappings used here:</p>
+<ul>
+<li><code>time</code>: x-axis</li>
+<li><code>sex</code>: color fill</li>
+<li><code>total_bill</code>: y-axis.</li>
+</ul>
+<div class="codehilite"><pre><span class="c1"># Stacked bar graph -- this is probably not what you want</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+
+<span class="c1"># Bar graph, time on x-axis, color fill grouped by sex -- use position_dodge()</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">())</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">(),</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">)</span>
+
+<span class="c1"># Change colors</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">(),</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">)</span> <span class="o">+</span>
+    scale_fill_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;#999999&quot;</span><span class="p">,</span> <span class="s">&quot;#E69F00&quot;</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-stack.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-dodge.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-dodge-outline.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-dodge-outline-color.png" /></p>
+<p>It is easy to change which variable is mapped the x-axis and which is mapped to the fill. </p>
+<div class="codehilite"><pre><span class="c1"># Bar graph, time on x-axis, color fill grouped by sex -- use position_dodge()</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>sex<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">(),</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-swapxy.png" /></p>
+<p>See <a href="Colors_(ggplot2).html">../Colors (ggplot2)</a> for more information on colors.</p>
+<h4 id="line-graphs_1">Line graphs</h4>
+<p>These are the variable mappings used here:</p>
+<ul>
+<li><code>time</code>: x-axis</li>
+<li><code>sex</code>: line color</li>
+<li><code>total_bill</code>: y-axis.</li>
+</ul>
+<p>To draw multiple lines, the points must be grouped by a variable; otherwise all points will be connected by a single line. In this case, we want them to be grouped by sex.</p>
+<div class="codehilite"><pre><span class="c1"># Basic line graph with points</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Map sex to color</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>sex<span class="p">,</span> colour<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Map sex to different point shape, and use larger points</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>sex<span class="p">,</span> shape<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+
+<span class="c1"># Use thicker lines and larger points, and hollow white-filled points</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>sex<span class="p">,</span> shape<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>size<span class="o">=</span><span class="m">1.5</span><span class="p">)</span> <span class="o">+</span> 
+    geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">3</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span>
+    scale_shape_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">22</span><span class="p">,</span><span class="m">21</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/line2.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line2-color.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line2-shape.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line2-shapefill.png" /></p>
+<p>It is easy to change which variable is mapped the x-axis and which is mapped to the color or shape. </p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>sex<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>time<span class="p">,</span> shape<span class="o">=</span>time<span class="p">,</span> color<span class="o">=</span>time<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/line2-swapxy.png" /></p>
+<p>See <a href="Colors_(ggplot2).html">../Colors (ggplot2)</a> for more information on colors, and <a href="Shapes_and_line_types.html">../Shapes and line types</a> for information on shapes and line types.</p>
+<h4 id="finished-examples">Finished examples</h4>
+<p>The finished graphs might look like these:</p>
+<div class="codehilite"><pre><span class="c1"># A bar graph</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> fill<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> 
+    geom_bar<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span>
+             position<span class="o">=</span>position_dodge<span class="p">(),</span>
+             size<span class="o">=</span><span class="m">.3</span><span class="p">)</span> <span class="o">+</span>                        <span class="c1"># Thinner lines</span>
+    scale_fill_hue<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;Sex of payer&quot;</span><span class="p">)</span> <span class="o">+</span>      <span class="c1"># Set legend title</span>
+    xlab<span class="p">(</span><span class="s">&quot;Time of day&quot;</span><span class="p">)</span> <span class="o">+</span> ylab<span class="p">(</span><span class="s">&quot;Total bill&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="c1"># Set axis labels</span>
+    ggtitle<span class="p">(</span><span class="s">&quot;Average bill for 2 people&quot;</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># Set title</span>
+    theme_bw<span class="p">()</span>
+
+
+<span class="c1"># A line graph</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>df1<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>time<span class="p">,</span> y<span class="o">=</span>total_bill<span class="p">,</span> group<span class="o">=</span>sex<span class="p">,</span> shape<span class="o">=</span>sex<span class="p">,</span> colour<span class="o">=</span>sex<span class="p">))</span> <span class="o">+</span> 
+    geom_line<span class="p">(</span>aes<span class="p">(</span>linetype<span class="o">=</span>sex<span class="p">),</span> size<span class="o">=</span><span class="m">1</span><span class="p">)</span> <span class="o">+</span>     <span class="c1"># Set linetype by sex</span>
+    geom_point<span class="p">(</span>size<span class="o">=</span><span class="m">3</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span>         <span class="c1"># Use larger points, fill with white</span>
+    ylim<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="kp">max</span><span class="p">(</span>df1<span class="o">$</span>total_bill<span class="p">))</span> <span class="o">+</span>             <span class="c1"># Set y range</span>
+    scale_colour_hue<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;Sex of payer&quot;</span><span class="p">,</span>      <span class="c1"># Set legend title</span>
+                     l<span class="o">=</span><span class="m">30</span><span class="p">)</span>  <span class="o">+</span>                  <span class="c1"># Use darker colors (lightness=30)</span>
+    scale_shape_manual<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;Sex of payer&quot;</span><span class="p">,</span>
+                       values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">22</span><span class="p">,</span><span class="m">21</span><span class="p">))</span> <span class="o">+</span>      <span class="c1"># Use points with a fill color</span>
+    scale_linetype_discrete<span class="p">(</span>name<span class="o">=</span><span class="s">&quot;Sex of payer&quot;</span><span class="p">)</span> <span class="o">+</span>
+    xlab<span class="p">(</span><span class="s">&quot;Time of day&quot;</span><span class="p">)</span> <span class="o">+</span> ylab<span class="p">(</span><span class="s">&quot;Total bill&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="c1"># Set axis labels</span>
+    ggtitle<span class="p">(</span><span class="s">&quot;Average bill for 2 people&quot;</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># Set title</span>
+    theme_bw<span class="p">()</span> <span class="o">+</span>
+    theme<span class="p">(</span>legend.position<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">.7</span><span class="p">,</span> <span class="m">.4</span><span class="p">))</span> <span class="c1"># Position legend inside</span>
+                                    <span class="c1"># This must go after theme_bw</span>
+</pre></div>
+
+
+<p>In the line graph, the reason that the legend title, "Sex of payer", must be specified three times is so that there is only one legend. The issue is explained <a href="Legends_(ggplot2).html#With_lines_and_points">here</a>.</p>
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/bar2-final.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/line2-final.png" /></p>
+<h3 id="with-a-numeric-x-axis">With a numeric x-axis</h3>
+<p>When the variable on the x-axis is numeric, it is sometimes useful to treat it as continuous, and sometimes useful to treat it as categorical. In this data set, the dose is a numeric variable with values 0.5, 1.0, and 2.0. It might be useful to treat these values as equal categories when making a graph.</p>
+<div class="codehilite"><pre>dfn <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">supp dose length</span>
+<span class="s">  OJ  0.5  13.23</span>
+<span class="s">  OJ  1.0  22.70</span>
+<span class="s">  OJ  2.0  26.06</span>
+<span class="s">  VC  0.5   7.98</span>
+<span class="s">  VC  1.0  16.77</span>
+<span class="s">  VC  2.0  26.14</span>
+<span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This is derived from the <code>ToothGrowth</code> dataset included with R.</p>
+<h4 id="with-x-axis-treated-as-continuous">With x-axis treated as continuous</h4>
+<p>A simple graph might put dose on the x-axis as a numeric value. It is possible to make a line graph this way, but not a bar graph.</p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>data<span class="o">=</span>dfn<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>dose<span class="p">,</span> y<span class="o">=</span><span class="kp">length</span><span class="p">,</span> group<span class="o">=</span>supp<span class="p">,</span> colour<span class="o">=</span>supp<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/linenum.png" /></p>
+<h4 id="with-x-axis-treated-as-categorical">With x-axis treated as categorical</h4>
+<p>If you wish to treat it as a categorical variable instead of a numeric one, it must be converted to a factor. This can be done by modifying the data frame, or by changing the specification of the graph.</p>
+<div class="codehilite"><pre><span class="c1"># Copy the data frame and convert dose to a factor</span>
+dfn2 <span class="o">&lt;-</span> dfn
+dfn2<span class="o">$</span>dose <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>dfn2<span class="o">$</span>dose<span class="p">)</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>dfn2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>dose<span class="p">,</span> y<span class="o">=</span><span class="kp">length</span><span class="p">,</span> group<span class="o">=</span>supp<span class="p">,</span> colour<span class="o">=</span>supp<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+
+<span class="c1"># Use the original data frame, but put factor() directly in the plot specification</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>dfn<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span><span class="kp">factor</span><span class="p">(</span>dose<span class="p">),</span> y<span class="o">=</span><span class="kp">length</span><span class="p">,</span> group<span class="o">=</span>supp<span class="p">,</span> colour<span class="o">=</span>supp<span class="p">))</span> <span class="o">+</span> geom_line<span class="p">()</span> <span class="o">+</span> geom_point<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/linenum-factor1.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/linenum-factor2.png" /></p>
+<p>It is also possible to make a bar graph when the variable is treated as categorical rather than numeric.</p>
+<div class="codehilite"><pre><span class="c1"># Use dfn2 from above</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>dfn2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>dose<span class="p">,</span> y<span class="o">=</span><span class="kp">length</span><span class="p">,</span> fill<span class="o">=</span>supp<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">())</span>
+
+<span class="c1"># Use the original data frame, but put factor() directly in the plot specification</span>
+ggplot<span class="p">(</span>data<span class="o">=</span>dfn<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span><span class="kp">factor</span><span class="p">(</span>dose<span class="p">),</span> y<span class="o">=</span><span class="kp">length</span><span class="p">,</span> fill<span class="o">=</span>supp<span class="p">))</span> <span class="o">+</span> geom_bar<span class="p">(</span>stat<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">,</span> position<span class="o">=</span>position_dodge<span class="p">())</span>
+</pre></div>
+
+
+<p><img alt="" src="Bar_and_line_graphs_(ggplot2)/barnum-factor1.png" />
+<img alt="" src="Bar_and_line_graphs_(ggplot2)/barnum-factor2.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

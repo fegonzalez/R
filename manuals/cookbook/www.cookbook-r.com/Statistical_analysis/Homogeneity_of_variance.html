@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Homogeneity of variance
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Statistical_analysis.html">Statistical_analysis</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Homogeneity_of_variance
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="homogeneity-of-variance">Homogeneity of variance</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Homogeneity_of_variance.html#homogeneity-of-variance">Homogeneity of variance</a><ul>
+<li><a href="Homogeneity_of_variance.html#problem">Problem</a></li>
+<li><a href="Homogeneity_of_variance.html#solution">Solution</a><ul>
+<li><a href="Homogeneity_of_variance.html#sample-data">Sample data</a></li>
+<li><a href="Homogeneity_of_variance.html#bartletts-test">Bartlett's test</a></li>
+<li><a href="Homogeneity_of_variance.html#levenes-test">Levene's test</a></li>
+<li><a href="Homogeneity_of_variance.html#fligner-killeen-test">Fligner-Killeen test</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want test samples to see for homogeneity of variance (homoscedasticity) -- or more accurately. Many statistical tests assume that the populations are homoscedastic.</p>
+<h2 id="solution">Solution</h2>
+<p>There are many ways of testing data for homogeneity of variance. Three methods are shown here.</p>
+<ul>
+<li><strong><em>Bartlett's test</em></strong> - If the data is normally distributed, this is the best test to use. It is sensitive to data which is not non-normally distribution; it is more likely to return a "false positive" when the data is non-normal.</li>
+<li><strong><em>Levene's test</em></strong> - this is more robust to departures from normality than Bartlett's test. It is in the <code>car</code> package.</li>
+<li><strong><em>Fligner-Killeen test</em></strong> - this is a non-parametric test which is very robust against departures from normality.</li>
+</ul>
+<p>For all these tests, the null hypothesis is that all populations variances are equal; the alternative hypothesis is that at least two of them differ.</p>
+<h3 id="sample-data">Sample data</h3>
+<p>The examples here will use the <code>InsectSprays</code> and <code>ToothGrowth</code> data sets. The <code>InsectSprays</code> data set has one independent variable, while the <code>ToothGrowth</code> data set has two independent variables.</p>
+<div class="codehilite"><pre>InsectSprays
+<span class="c1"># count spray</span>
+<span class="c1">#    10     A</span>
+<span class="c1">#     7     A</span>
+<span class="c1">#   ...</span>
+<span class="c1">#    24     F</span>
+<span class="c1">#    13     F</span>
+
+df      <span class="o">&lt;-</span> ToothGrowth
+df<span class="o">$</span>dose <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>df<span class="o">$</span>dose<span class="p">)</span> <span class="c1"># Treat this column as a factor, not numeric</span>
+<span class="c1">#  len supp dose</span>
+<span class="c1">#  4.2   VC  0.5</span>
+<span class="c1"># 11.5   VC  0.5</span>
+<span class="c1">#  ...</span>
+<span class="c1"># 29.4   OJ    2</span>
+<span class="c1"># 23.0   OJ    2</span>
+</pre></div>
+
+
+<p>Quick boxplots of these data sets: </p>
+<div class="codehilite"><pre>plot<span class="p">(</span>count <span class="o">~</span> spray<span class="p">,</span> data <span class="o">=</span> InsectSprays<span class="p">)</span>
+
+plot<span class="p">(</span>len <span class="o">~</span> <span class="kp">interaction</span><span class="p">(</span>dose<span class="p">,</span>supp<span class="p">),</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Homogeneity_of_variance/InsectSprays.png" />
+<img alt="" src="Homogeneity_of_variance/ToothGrowth.png" /></p>
+<p>On a first glance, it appears that both data sets are heteroscedastic, but this needs to be properly tested, which we do below.</p>
+<h3 id="bartletts-test">Bartlett's test</h3>
+<p>With one independent variable:</p>
+<div class="codehilite"><pre><span class="c1"># These two methods have the same result.</span>
+<span class="c1"># The first operates on two columns from a data frame, </span>
+<span class="c1"># while the second operates on two vectors.</span>
+bartlett.test<span class="p">(</span>count <span class="o">~</span> spray<span class="p">,</span> data<span class="o">=</span>InsectSprays<span class="p">)</span>
+bartlett.test<span class="p">(</span>InsectSprays<span class="o">$</span>count <span class="o">~</span> InsectSprays<span class="o">$</span>spray<span class="p">)</span>
+<span class="c1">#         Bartlett test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  count by spray </span>
+<span class="c1"># Bartlett&#39;s K-squared = 25.9598, df = 5, p-value = 9.085e-05</span>
+</pre></div>
+
+
+<p>With multiple independent variables, the <code>interaction</code> function must be used to collapse the IV's into a single variable with all combinations of the factors. If it is not used, then the will be the wrong degrees of freedom, and the p-value will be wrong.</p>
+<div class="codehilite"><pre>bartlett.test<span class="p">(</span>len <span class="o">~</span> <span class="kp">interaction</span><span class="p">(</span>supp<span class="p">,</span>dose<span class="p">),</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Bartlett test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by interaction(dose, supp) </span>
+<span class="c1"># Bartlett&#39;s K-squared = 6.9273, df = 5, p-value = 0.2261</span>
+
+
+
+<span class="c1"># The WRONG WAY to use it; note that df is wrong</span>
+bartlett.test<span class="p">(</span>len <span class="o">~</span> dose<span class="o">*</span>supp<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Bartlett test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by dose by supp </span>
+<span class="c1"># Bartlett&#39;s K-squared = 0.6655, df = 2, p-value = 0.717</span>
+
+<span class="c1"># The above gives the same result as testing len vs. dose alone, without supp</span>
+bartlett.test<span class="p">(</span>len <span class="o">~</span> dose<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Bartlett test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by dose</span>
+<span class="c1"># Bartlett&#39;s K-squared = 0.6655, df = 2, p-value = 0.717</span>
+</pre></div>
+
+
+<h3 id="levenes-test">Levene's test</h3>
+<p>The <code>leveneTest</code> function is part of the <code>car</code> package.</p>
+<p>With one independent variable:</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>car<span class="p">)</span>
+
+leveneTest<span class="p">(</span>count <span class="o">~</span> spray<span class="p">,</span> data<span class="o">=</span>InsectSprays<span class="p">)</span>
+<span class="c1"># Levene&#39;s Test for Homogeneity of Variance (center = median)</span>
+<span class="c1">#       Df F value   Pr(&gt;F)   </span>
+<span class="c1"># group  5  3.8214 0.004223 **</span>
+<span class="c1">#       66                    </span>
+</pre></div>
+
+
+<p>With two independent variables. Note that the <code>interaction</code> function is not needed, as it is for the other two tests.</p>
+<div class="codehilite"><pre>leveneTest<span class="p">(</span>len <span class="o">~</span> supp<span class="o">*</span>dose<span class="p">,</span> data<span class="o">=</span>df<span class="p">)</span>
+<span class="c1"># Levene&#39;s Test for Homogeneity of Variance (center = median)</span>
+<span class="c1">#       Df F value Pr(&gt;F)</span>
+<span class="c1"># group  5  1.7086 0.1484</span>
+<span class="c1">#       54   </span>
+</pre></div>
+
+
+<h3 id="fligner-killeen-test">Fligner-Killeen test</h3>
+<p>With one independent variable:</p>
+<div class="codehilite"><pre><span class="c1"># These two methods have the same result.</span>
+<span class="c1"># The first operates on two columns from a data frame, </span>
+<span class="c1"># while the second operates on two vectors.</span>
+fligner.test<span class="p">(</span>count <span class="o">~</span> spray<span class="p">,</span> data<span class="o">=</span>InsectSprays<span class="p">)</span>
+fligner.test<span class="p">(</span>InsectSprays<span class="o">$</span>count <span class="o">~</span> InsectSprays<span class="o">$</span>spray<span class="p">)</span>
+<span class="c1">#         Fligner-Killeen test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  InsectSprays$count by InsectSprays$spray </span>
+<span class="c1"># Fligner-Killeen:med chi-squared = 14.4828, df = 5, p-value = 0.01282</span>
+</pre></div>
+
+
+<p>The <code>fligner.test</code> function has the same quirks as <code>bartlett.test</code> when working with multiple IV's. With multiple independent variables, the <code>interaction</code> function must be used. If it is not used, then the will be the wrong degrees of freedom, and the p-value will be wrong.</p>
+<div class="codehilite"><pre>fligner.test<span class="p">(</span>len <span class="o">~</span> <span class="kp">interaction</span><span class="p">(</span>supp<span class="p">,</span>dose<span class="p">),</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Fligner-Killeen test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by interaction(supp, dose) </span>
+<span class="c1"># Fligner-Killeen:med chi-squared = 7.7488, df = 5, p-value = 0.1706</span>
+
+
+
+
+<span class="c1"># The WRONG WAY to use it; note that df is wrong</span>
+fligner.test<span class="p">(</span>len <span class="o">~</span> dose<span class="o">*</span>supp<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Fligner-Killeen test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by dose by supp </span>
+<span class="c1"># Fligner-Killeen:med chi-squared = 1.3879, df = 2, p-value = 0.4996</span>
+
+
+<span class="c1"># The above gives the same result as testing len vs. dose alone, without supp</span>
+fligner.test<span class="p">(</span>len <span class="o">~</span> dose<span class="p">,</span> data<span class="o">=</span>ToothGrowth<span class="p">)</span>
+<span class="c1">#         Fligner-Killeen test of homogeneity of variances</span>
+<span class="c1">#</span>
+<span class="c1"># data:  len by dose </span>
+<span class="c1"># Fligner-Killeen:med chi-squared = 1.3879, df = 2, p-value = 0.4996</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Mapping vector values
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Mapping_vector_values
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="mapping-vector-values">Mapping vector values</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Mapping_vector_values.html#mapping-vector-values">Mapping vector values</a><ul>
+<li><a href="Mapping_vector_values.html#problem">Problem</a></li>
+<li><a href="Mapping_vector_values.html#solution">Solution</a></li>
+<li><a href="Mapping_vector_values.html#see-also">See also</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to change all instances of value <code>x</code> to value <code>y</code> in a vector.</p>
+<h2 id="solution">Solution</h2>
+<p><strong>This page was recently updated to reflect changes in the new version of plyr, 1.8. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version.</strong></p>
+<div class="codehilite"><pre><span class="c1"># Create some example data</span>
+str <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span> <span class="s">&quot;beta&quot;</span><span class="p">,</span> <span class="s">&quot;gamma&quot;</span><span class="p">)</span>
+num <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The easiest way is to use <code>revalue()</code> or <code>mapvalues()</code> from the plyr package:</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>plyr<span class="p">)</span>
+revalue<span class="p">(</span>str<span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;beta&quot;</span><span class="o">=</span><span class="s">&quot;two&quot;</span><span class="p">,</span> <span class="s">&quot;gamma&quot;</span><span class="o">=</span><span class="s">&quot;three&quot;</span><span class="p">))</span>
+<span class="c1"># &quot;alpha&quot; &quot;two&quot;   &quot;three&quot;</span>
+
+mapvalues<span class="p">(</span>str<span class="p">,</span> from <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;beta&quot;</span><span class="p">,</span> <span class="s">&quot;gamma&quot;</span><span class="p">),</span> to <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;two&quot;</span><span class="p">,</span> <span class="s">&quot;three&quot;</span><span class="p">))</span>
+<span class="c1"># &quot;alpha&quot; &quot;two&quot;   &quot;three&quot;</span>
+
+
+<span class="c1"># For numeric vectors, revalue() won&#39;t work, since it uses a named vector, and</span>
+<span class="c1"># the names are always strings, not numbers. mapvalues() will work, though:</span>
+mapvalues<span class="p">(</span>num<span class="p">,</span> from <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">),</span> to <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="m">6</span><span class="p">))</span>
+<span class="c1"># 1 5 6</span>
+</pre></div>
+
+
+<p>If you don't want to rely on plyr, you can do the following with R's built-in functions.
+Note that these methods will modify the vectors directly; that is, you don't have to save the result back into the variable.</p>
+<div class="codehilite"><pre><span class="c1"># Rename by name: change &quot;beta&quot; to &quot;two&quot;</span>
+str<span class="p">[</span>str<span class="o">==</span><span class="s">&quot;beta&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;two&quot;</span>
+<span class="c1"># &quot;alpha&quot; &quot;two&quot;   &quot;gamma&quot;</span>
+
+num<span class="p">[</span>num<span class="o">==</span><span class="m">2</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="m">5</span>
+<span class="c1"># 1 5 3</span>
+</pre></div>
+
+
+<p>It's also possible to use R's string search-and-replace functions to remap values in character vectors.
+Note that the <code>^</code> and <code>$</code> surrounding <code>alpha</code> are there to ensure that the entire string matches.
+Without them, if there were a value named <code>alphabet</code>, it would also match, and the replacement would be <code>onebet</code>.</p>
+<div class="codehilite"><pre>str <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span> <span class="s">&quot;beta&quot;</span><span class="p">,</span> <span class="s">&quot;gamma&quot;</span><span class="p">)</span>
+
+<span class="kp">sub</span><span class="p">(</span><span class="s">&quot;^alpha$&quot;</span><span class="p">,</span> <span class="s">&quot;one&quot;</span><span class="p">,</span> str<span class="p">)</span>
+<span class="c1"># &quot;one&quot;   &quot;beta&quot;  &quot;gamma&quot;</span>
+
+
+<span class="c1"># Across all columns, replace all instances of &quot;t&quot; with &quot;X&quot;</span>
+<span class="kp">gsub</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;X&quot;</span><span class="p">,</span> str<span class="p">)</span>
+<span class="c1"># &quot;XlphX&quot; &quot;betX&quot;  &quot;gXmmX&quot;</span>
+
+
+<span class="c1"># gsub() replaces all instances of the pattern in each element</span>
+<span class="c1"># sub() replaces only the first instance in each element</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<p>Changing the name of factor levels works much the same. See <a href="Renaming_levels_of_a_factor.html">../Renaming levels of a factor</a> for more information.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

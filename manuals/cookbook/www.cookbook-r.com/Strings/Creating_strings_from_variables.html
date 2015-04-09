@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Creating strings from variables
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Strings.html">Strings</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Creating_strings_from_variables
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="creating-strings-from-variables">Creating strings from variables</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Creating_strings_from_variables.html#creating-strings-from-variables">Creating strings from variables</a><ul>
+<li><a href="Creating_strings_from_variables.html#problem">Problem</a></li>
+<li><a href="Creating_strings_from_variables.html#solution">Solution</a><ul>
+<li><a href="Creating_strings_from_variables.html#using-paste">Using paste()</a></li>
+<li><a href="Creating_strings_from_variables.html#using-sprintf">Using sprintf()</a></li>
+<li><a href="Creating_strings_from_variables.html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do create a string from variables.</p>
+<h2 id="solution">Solution</h2>
+<p>The two common ways of creating strings from variables are the <code>paste</code> function and the <code>sprintf</code> function. <code>paste</code> is more useful for vectors, and <code>sprintf</code> is more useful for precise control of the output.</p>
+<h3 id="using-paste">Using paste()</h3>
+<div class="codehilite"><pre>a <span class="o">&lt;-</span> <span class="s">&quot;apple&quot;</span>
+b <span class="o">&lt;-</span> <span class="s">&quot;banana&quot;</span>
+
+<span class="c1"># Put a and b together, with a space in between:</span>
+<span class="kp">paste</span><span class="p">(</span>a<span class="p">,</span> b<span class="p">)</span>
+<span class="c1"># &quot;apple banana&quot;</span>
+
+<span class="c1"># With no space:</span>
+<span class="kp">paste</span><span class="p">(</span>a<span class="p">,</span> b<span class="p">,</span> sep<span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+<span class="c1"># &quot;applebanana&quot;</span>
+
+<span class="c1"># With a comma and space:</span>
+<span class="kp">paste</span><span class="p">(</span>a<span class="p">,</span> b<span class="p">,</span> sep<span class="o">=</span><span class="s">&quot;, &quot;</span><span class="p">)</span>
+<span class="c1"># &quot;apple, banana&quot;</span>
+
+
+<span class="c1"># With a vector</span>
+d <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;fig&quot;</span><span class="p">,</span> <span class="s">&quot;grapefruit&quot;</span><span class="p">,</span> <span class="s">&quot;honeydew&quot;</span><span class="p">)</span>
+
+<span class="c1"># If the input is a vector, use collapse to put the elements together:</span>
+<span class="kp">paste</span><span class="p">(</span>d<span class="p">,</span> collapse<span class="o">=</span><span class="s">&quot;, &quot;</span><span class="p">)</span>
+<span class="c1"># &quot;fig, grapefruit, honeydew&quot;</span>
+
+<span class="c1"># If the input is a scalar and a vector, it puts the scalar with each</span>
+<span class="c1"># element of the vector, and returns a vector:</span>
+<span class="kp">paste</span><span class="p">(</span>a<span class="p">,</span> d<span class="p">)</span>
+<span class="c1"># &quot;apple fig&quot;  &quot;apple grapefruit&quot;  &quot;apple honeydew&quot;  </span>
+
+<span class="c1"># Use sep and collapse:</span>
+<span class="kp">paste</span><span class="p">(</span>a<span class="p">,</span> d<span class="p">,</span> sep<span class="o">=</span><span class="s">&quot;-&quot;</span><span class="p">,</span> collapse<span class="o">=</span><span class="s">&quot;, &quot;</span><span class="p">)</span>
+<span class="c1"># &quot;apple-fig, apple-grapefruit, apple-honeydew&quot;</span>
+</pre></div>
+
+
+<h3 id="using-sprintf">Using sprintf()</h3>
+<p>Another way is to use <code>sprintf</code> function. This is derived from the function of the same name in the C programming language.</p>
+<p>To substitute in a string or string variable, use <code>%s</code>:</p>
+<div class="codehilite"><pre>a <span class="o">&lt;-</span> <span class="s">&quot;string&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;This is where a %s goes.&quot;</span><span class="p">,</span> a<span class="p">)</span>
+<span class="c1"># &quot;This is where a string goes.&quot;</span>
+</pre></div>
+
+
+<p>For integers, use <code>%d</code> or a variant:</p>
+<div class="codehilite"><pre>x <span class="o">&lt;-</span> <span class="m">8</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;Regular:%d&quot;</span><span class="p">,</span> x<span class="p">)</span>
+<span class="c1"># &quot;Regular:8&quot;</span>
+
+<span class="c1"># Can print to take some number of characters, leading with spaces.</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;Leading spaces:%4d&quot;</span><span class="p">,</span> x<span class="p">)</span>
+<span class="c1"># &quot;Leading spaces:   8&quot;</span>
+
+<span class="c1"># Can also lead with zeros instead.</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;Leading zeros:%04d&quot;</span><span class="p">,</span> x<span class="p">)</span>
+<span class="c1">#&quot;Leading zeros:0008:&quot;</span>
+</pre></div>
+
+
+<p>For floating-point numbers, use <code>%f</code> for standard notation, and <code>%e</code> or <code>%E</code> for exponential notation. You can also use <code>%g</code> or <code>%G</code> for a "smart" formatter that automatically switches between the two formats, depending on where the significant digits are. The following examples are taken from the R help page for sprintf:</p>
+<div class="codehilite"><pre><span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>         <span class="c1"># &quot;3.141593&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%.3f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>       <span class="c1"># &quot;3.142&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%1.0f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>      <span class="c1"># &quot;3&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%5.1f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>      <span class="c1"># &quot;  3.1&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%05.1f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>     <span class="c1"># &quot;003.1&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%+f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>        <span class="c1"># &quot;+3.141593&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;% f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>        <span class="c1"># &quot; 3.141593&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%-10f&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>      <span class="c1"># &quot;3.141593  &quot;   (left justified)</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%e&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>         <span class="c1">#&quot;3.141593e+00&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%E&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>         <span class="c1"># &quot;3.141593E+00&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%g&quot;</span><span class="p">,</span> <span class="kc">pi</span><span class="p">)</span>         <span class="c1"># &quot;3.14159&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%g&quot;</span><span class="p">,</span>   <span class="m">1e6</span> <span class="o">*</span> <span class="kc">pi</span><span class="p">)</span> <span class="c1"># &quot;3.14159e+06&quot;  (exponential)</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%.9g&quot;</span><span class="p">,</span> <span class="m">1e6</span> <span class="o">*</span> <span class="kc">pi</span><span class="p">)</span> <span class="c1"># &quot;3141592.65&quot;   (&quot;fixed&quot;)</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;%G&quot;</span><span class="p">,</span> <span class="m">1e-6</span> <span class="o">*</span> <span class="kc">pi</span><span class="p">)</span>  <span class="c1"># &quot;3.14159E-06&quot;</span>
+</pre></div>
+
+
+<p>In the <code>%m.nf</code> format specification: The <code>m</code> represents the field width, which is the <strong>minimum</strong> number of characters in the output string, and can be padded with leading spaces, or zeros if there is a zero in front of <code>m</code>. The <code>n</code> represents precision, which the number of digits after the decimal.</p>
+<p>Other miscellaneous things:</p>
+<div class="codehilite"><pre>x <span class="o">&lt;-</span> <span class="s">&quot;string&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;Substitute in multiple strings: %s %s&quot;</span><span class="p">,</span> x<span class="p">,</span> <span class="s">&quot;string2&quot;</span><span class="p">)</span>
+<span class="c1"># &quot;Substitute in multiple strings: string string2&quot;</span>
+
+<span class="c1"># To print a percent sign, use &quot;%%&quot;</span>
+<span class="kp">sprintf</span><span class="p">(</span><span class="s">&quot;A single percent sign here %%&quot;</span><span class="p">)</span>
+<span class="c1"># &quot;A single percent sign here %&quot;</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p>See <a href="../Data_input_and_output/Writing_text_and_output_from_analyses_to_a_file.html">this page</a> for more information about output in scripts.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

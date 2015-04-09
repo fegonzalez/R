@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Loading and storing data with the keyboard and clipboard
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Data_input_and_output.html">Data_input_and_output</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Loading_and_storing_data_with_the_keyboard_and_clipboard
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="loading-and-storing-data-with-the-keyboard-and-clipboard">Loading and storing data with the keyboard and clipboard</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#loading-and-storing-data-with-the-keyboard-and-clipboard">Loading and storing data with the keyboard and clipboard</a><ul>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#problem">Problem</a></li>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#solution">Solution</a></li>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#data-input">Data input</a><ul>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#loading-data-from-keyboard-input-or-clipboard">Loading data from keyboard input or clipboard</a></li>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#loading-data-in-a-script">Loading data in a script</a></li>
+</ul>
+</li>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#data-output">Data output</a><ul>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#writing-data-for-copying-and-pasting-or-to-the-clipboard">Writing data for copying and pasting, or to the clipboard</a></li>
+<li><a href="Loading_and_storing_data_with_the_keyboard_and_clipboard.html#output-for-loading-in-r">Output for loading in R</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to enter data using input from the keyboard (not a file).</p>
+<h2 id="solution">Solution</h2>
+<h2 id="data-input">Data input</h2>
+<p>Suppose this is your data:</p>
+<div class="codehilite"><pre>    size weight cost
+  small      5    6
+ medium      8   10
+  large     11    9
+</pre></div>
+
+
+<h3 id="loading-data-from-keyboard-input-or-clipboard">Loading data from keyboard input or clipboard</h3>
+<p>One way enter from the keyboard is to read from standard input (<code>stdin()</code>).</p>
+<div class="codehilite"><pre><span class="c1"># Cutting and pasting using read.table and stdin()</span>
+data <span class="o">&lt;-</span> read.table<span class="p">(</span><span class="kp">stdin</span><span class="p">(),</span> header<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span> 
+<span class="c1"># You will be prompted for input; copy and paste text here</span>
+
+<span class="c1"># Or:</span>
+<span class="c1"># data &lt;- read.csv(stdin())</span>
+</pre></div>
+
+
+<p>You can also load directly from the clipboard:</p>
+<div class="codehilite"><pre><span class="c1"># First copy the data to the clipboard</span>
+data <span class="o">&lt;-</span> read.table<span class="p">(</span><span class="s">&#39;clipboard&#39;</span><span class="p">,</span> header<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="c1"># Or:</span>
+<span class="c1"># data &lt;- read.csv(&#39;clipboard&#39;)</span>
+</pre></div>
+
+
+<h3 id="loading-data-in-a-script">Loading data in a script</h3>
+<p>The previous method can't be used to load data in a script file because the input must be typed (or pasted) after running the command.</p>
+<div class="codehilite"><pre><span class="c1"># Using read.table()</span>
+data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">    size weight cost</span>
+<span class="s">   small      5    6</span>
+<span class="s">  medium      8   10</span>
+<span class="s">   large     11    9</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>For different data formats (e.g., comma-delimited, no headers, etc.), options to <code>read.table()</code> can be set. See <a href="Loading_data_from_a_file.html">../Loading data from a file</a> for more information.</p>
+<h2 id="data-output">Data output</h2>
+<p>By default, R prints row names. If you want to print the table in a format that can be copied and pasted, it may be useful to suppress them.</p>
+<div class="codehilite"><pre><span class="kp">print</span><span class="p">(</span>data<span class="p">,</span> row.names<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="c1">#    size weight cost</span>
+<span class="c1">#  small      5    6</span>
+<span class="c1"># medium      8   10</span>
+<span class="c1">#  large     11    9</span>
+</pre></div>
+
+
+<h3 id="writing-data-for-copying-and-pasting-or-to-the-clipboard">Writing data for copying and pasting, or to the clipboard</h3>
+<p>It is possible to write delimited data to terminal (<code>stdout()</code>), so that it can be copied and pasted elsewhere. Or it can be written directly to the clipboard.</p>
+<div class="codehilite"><pre>write.csv<span class="p">(</span>data<span class="p">,</span> <span class="kp">stdout</span><span class="p">(),</span> row.names<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="c1"># &quot;size&quot;,&quot;weight&quot;,&quot;cost&quot;</span>
+<span class="c1"># &quot;small&quot;,5,6</span>
+<span class="c1"># &quot;medium&quot;,8,10</span>
+<span class="c1"># &quot;large&quot;,11,9</span>
+
+
+<span class="c1"># Write to the clipboard (does not work on Mac or Unix)</span>
+write.csv<span class="p">(</span>df<span class="p">,</span> <span class="s">&#39;clipboard&#39;</span><span class="p">,</span> row.names<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="output-for-loading-in-r">Output for loading in R</h3>
+<p>If the data has already been loaded into R, the data structure can be saved using <code>dput()</code>. The output from <code>dput()</code> is a command which will recreate the data structure. The advantage of this method is that it will keep any modifications to data types; for example, if one column consists of numbers and you have converted it to a factor, this method will preserve that type, whereas simply loading the text table (as shown above) will treat it as numeric.</p>
+<div class="codehilite"><pre><span class="c1"># Suppose you have already loaded data</span>
+
+<span class="kp">dput</span><span class="p">(</span>data<span class="p">)</span>
+<span class="c1"># This returns:</span>
+<span class="c1"># structure(list(size = structure(c(3L, 2L, 1L), .Label = c(&quot;large&quot;, </span>
+<span class="c1"># &quot;medium&quot;, &quot;small&quot;), class = &quot;factor&quot;), weight = c(5L, 8L, 11L</span>
+<span class="c1"># ), cost = c(6L, 10L, 9L)), .Names = c(&quot;size&quot;, &quot;weight&quot;, &quot;cost&quot;</span>
+<span class="c1"># ), class = &quot;data.frame&quot;, row.names = c(NA, -3L))</span>
+
+
+<span class="c1"># Later, we can use the output from dput to recreate the data structure</span>
+newdata <span class="o">&lt;-</span> <span class="kp">structure</span><span class="p">(</span><span class="kt">list</span><span class="p">(</span>size <span class="o">=</span> <span class="kp">structure</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="m">3L</span><span class="p">,</span> <span class="m">2L</span><span class="p">,</span> <span class="m">1L</span><span class="p">),</span> <span class="m">.L</span>abel <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;large&quot;</span><span class="p">,</span> 
+  <span class="s">&quot;medium&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">),</span> class <span class="o">=</span> <span class="s">&quot;factor&quot;</span><span class="p">),</span> weight <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">5L</span><span class="p">,</span> <span class="m">8L</span><span class="p">,</span> <span class="m">11L</span>
+  <span class="p">),</span> cost <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="m">6L</span><span class="p">,</span> <span class="m">10L</span><span class="p">,</span> <span class="m">9L</span><span class="p">)),</span> <span class="m">.</span>Names <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;size&quot;</span><span class="p">,</span> <span class="s">&quot;weight&quot;</span><span class="p">,</span> <span class="s">&quot;cost&quot;</span>
+  <span class="p">),</span> class <span class="o">=</span> <span class="s">&quot;data.frame&quot;</span><span class="p">,</span> row.names <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> <span class="m">-3L</span><span class="p">))</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

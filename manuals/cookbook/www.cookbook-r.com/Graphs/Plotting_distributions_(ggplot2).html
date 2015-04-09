@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Plotting distributions (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Plotting_distributions_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="plotting-distributions-ggplot2">Plotting distributions (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Plotting_distributions_(ggplot2).html#plotting-distributions-ggplot2">Plotting distributions (ggplot2)</a><ul>
+<li><a href="Plotting_distributions_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Plotting_distributions_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Plotting_distributions_(ggplot2).html#histogram-and-density-plots">Histogram and density plots</a></li>
+<li><a href="Plotting_distributions_(ggplot2).html#histogram-and-density-plots-with-multiple-groups">Histogram and density plots with multiple groups</a></li>
+<li><a href="Plotting_distributions_(ggplot2).html#box-plots">Box plots</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to plot a distribution of data.</p>
+<h2 id="solution">Solution</h2>
+<p>This sample data will be used for the examples below:</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">1234</span><span class="p">)</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span> <span class="kp">rep</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">),</span> each<span class="o">=</span><span class="m">200</span><span class="p">)</span> <span class="p">),</span> 
+                   rating <span class="o">=</span> <span class="kt">c</span><span class="p">(</span>rnorm<span class="p">(</span><span class="m">200</span><span class="p">),</span>rnorm<span class="p">(</span><span class="m">200</span><span class="p">,</span> mean<span class="o">=</span><span class="m">.8</span><span class="p">)))</span>
+<span class="c1"># cond     rating</span>
+<span class="c1">#    A -1.2070657</span>
+<span class="c1">#    A  0.2774292</span>
+<span class="c1">#    A  1.0844412</span>
+<span class="c1">#   ...</span>
+<span class="c1">#    B  1.3388331</span>
+<span class="c1">#    B  0.8146431</span>
+<span class="c1">#    B -0.1164891</span>
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+</pre></div>
+
+
+<h3 id="histogram-and-density-plots">Histogram and density plots</h3>
+<p>The <code>qplot</code> function is supposed make the same graphs as <code>ggplot</code>, but with a simpler syntax. However, in practice, it's often easier to just use <code>ggplot</code> because the options for <code>qplot</code> can be more confusing to use.</p>
+<div class="codehilite"><pre><span class="c1"># Basic histogram from the vector &quot;rating&quot;. Each bin is .5 wide.</span>
+<span class="c1"># These both do the same thing:</span>
+qplot<span class="p">(</span>df<span class="o">$</span>rating<span class="p">,</span> binwidth<span class="o">=</span><span class="m">.5</span><span class="p">)</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">)</span>
+
+<span class="c1"># Draw with black outline, white fill</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="c1"># Density curve</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_density<span class="p">()</span>
+
+<span class="c1"># Histogram overlaid with kernel density curve</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> 
+    geom_histogram<span class="p">(</span>aes<span class="p">(</span>y<span class="o">=</span><span class="m">..</span>density..<span class="p">),</span>      <span class="c1"># Histogram with density instead of count on y-axis</span>
+                   binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span>
+                   colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span>
+    geom_density<span class="p">(</span>alpha<span class="o">=</span><span class="m">.2</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;#FF6666&quot;</span><span class="p">)</span>  <span class="c1"># Overlay with transparent density plot</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/hist.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/hist-white.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/density.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/hist-density.png" /></p>
+<p>Add a line for the mean:</p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span>
+    geom_vline<span class="p">(</span>aes<span class="p">(</span>xintercept<span class="o">=</span><span class="kp">mean</span><span class="p">(</span>rating<span class="p">,</span> na.rm<span class="o">=</span><span class="bp">T</span><span class="p">)),</span>   <span class="c1"># Ignore NA values for mean</span>
+               color<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span> linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/hist-mean.png" /></p>
+<h3 id="histogram-and-density-plots-with-multiple-groups">Histogram and density plots with multiple groups</h3>
+<div class="codehilite"><pre><span class="c1"># Overlaid histograms</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> alpha<span class="o">=</span><span class="m">.5</span><span class="p">,</span> position<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span>
+
+<span class="c1"># Interleaved histograms</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> position<span class="o">=</span><span class="s">&quot;dodge&quot;</span><span class="p">)</span>
+
+<span class="c1"># Density plots</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> colour<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_density<span class="p">()</span>
+
+<span class="c1"># Density plots with semi-transparent fill</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_density<span class="p">(</span>alpha<span class="o">=</span><span class="m">.3</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/multihist-overlay.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/multihist-interleave.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/multidensity.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/multidensity-fill.png" /></p>
+<p>Add lines for each mean requires first creating a separate data frame with the means:</p>
+<div class="codehilite"><pre><span class="c1"># Find the mean of each group</span>
+<span class="kn">library</span><span class="p">(</span>plyr<span class="p">)</span>
+cdf <span class="o">&lt;-</span> ddply<span class="p">(</span>df<span class="p">,</span> <span class="s">&quot;cond&quot;</span><span class="p">,</span> summarise<span class="p">,</span> rating.mean<span class="o">=</span><span class="kp">mean</span><span class="p">(</span>rating<span class="p">))</span>
+<span class="c1"># cond rating.mean</span>
+<span class="c1">#    A -0.05775928</span>
+<span class="c1">#    B  0.87324927</span>
+
+
+<span class="c1"># Overlaid histograms with means</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span>
+    geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> alpha<span class="o">=</span><span class="m">.5</span><span class="p">,</span> position<span class="o">=</span><span class="s">&quot;identity&quot;</span><span class="p">)</span> <span class="o">+</span>
+    geom_vline<span class="p">(</span>data<span class="o">=</span>cdf<span class="p">,</span> aes<span class="p">(</span>xintercept<span class="o">=</span>rating.mean<span class="p">,</span>  colour<span class="o">=</span>cond<span class="p">),</span>
+               linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+
+<span class="c1"># Density plots with means</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">,</span> colour<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_density<span class="p">()</span> <span class="o">+</span>
+    geom_vline<span class="p">(</span>data<span class="o">=</span>cdf<span class="p">,</span> aes<span class="p">(</span>xintercept<span class="o">=</span>rating.mean<span class="p">,</span>  colour<span class="o">=</span>cond<span class="p">),</span>
+               linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/multihist-means.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/multidensity-means.png" /></p>
+<p>Using facets:</p>
+<div class="codehilite"><pre>ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span> 
+    facet_grid<span class="p">(</span>cond <span class="o">~</span> <span class="m">.</span><span class="p">)</span>
+
+<span class="c1"># With mean lines, using cdf from above</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">.5</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span> <span class="o">+</span> 
+    facet_grid<span class="p">(</span>cond <span class="o">~</span> <span class="m">.</span><span class="p">)</span> <span class="o">+</span>
+    geom_vline<span class="p">(</span>data<span class="o">=</span>cdf<span class="p">,</span> aes<span class="p">(</span>xintercept<span class="o">=</span>rating.mean<span class="p">),</span>
+               linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">1</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/multihist-facet.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/multihist-facet-means.png" /></p>
+<p>See <a href="Facets_(ggplot2).html">Facets (ggplot2)</a> for more details.</p>
+<h3 id="box-plots">Box plots</h3>
+<div class="codehilite"><pre><span class="c1"># A basic box plot</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span>
+
+<span class="c1"># A basic box with the conditions colored</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span>
+
+<span class="c1"># The above adds a redundant legend. With the legend removed:</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span> <span class="o">+</span>
+    guides<span class="p">(</span>fill<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># With flipped axes</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>rating<span class="p">,</span> fill<span class="o">=</span>cond<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span> <span class="o">+</span> 
+    guides<span class="p">(</span>fill<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="o">+</span> coord_flip<span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/boxplot.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/boxplot-fill.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/boxplot-fill-nolegend.png" />
+<img alt="" src="Plotting_distributions_(ggplot2)/boxplot-fill-nolegend-flip.png" /></p>
+<p>It is also possible to add the mean by using <code>stat_summary</code>.</p>
+<div class="codehilite"><pre><span class="c1"># Add a diamond at the mean, and make it larger</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>cond<span class="p">,</span> y<span class="o">=</span>rating<span class="p">))</span> <span class="o">+</span> geom_boxplot<span class="p">()</span> <span class="o">+</span>
+    stat_summary<span class="p">(</span>fun.y<span class="o">=</span><span class="kp">mean</span><span class="p">,</span> geom<span class="o">=</span><span class="s">&quot;point&quot;</span><span class="p">,</span> shape<span class="o">=</span><span class="m">5</span><span class="p">,</span> size<span class="o">=</span><span class="m">4</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Plotting_distributions_(ggplot2)/boxplot-mean.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

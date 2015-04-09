@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Summarizing data
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Summarizing_data
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="summarizing-data">Summarizing data</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Summarizing_data.html#summarizing-data">Summarizing data</a><ul>
+<li><a href="Summarizing_data.html#problem">Problem</a></li>
+<li><a href="Summarizing_data.html#solution">Solution</a><ul>
+<li><a href="Summarizing_data.html#using-ddply">Using ddply</a><ul>
+<li><a href="Summarizing_data.html#handling-missing-data">Handling missing data</a></li>
+<li><a href="Summarizing_data.html#a-function-for-mean-count-standard-deviation-standard-error-of-the-mean-and-confidence-interval">A function for mean, count, standard deviation, standard error of the mean, and confidence interval</a></li>
+<li><a href="Summarizing_data.html#filling-empty-combinations-with-zeros">Filling empty combinations with zeros</a></li>
+</ul>
+</li>
+<li><a href="Summarizing_data.html#using-summaryby">Using summaryBy</a><ul>
+<li><a href="Summarizing_data.html#handling-missing-data_1">Handling missing data</a></li>
+<li><a href="Summarizing_data.html#a-function-for-mean-count-standard-deviation-standard-error-of-the-mean-and-confidence-interval_1">A function for mean, count, standard deviation, standard error of the mean, and confidence interval</a></li>
+<li><a href="Summarizing_data.html#filling-empty-combinations-with-zeros_1">Filling empty combinations with zeros</a></li>
+</ul>
+</li>
+<li><a href="Summarizing_data.html#using-aggregate">Using aggregate</a></li>
+<li><a href="Summarizing_data.html#note">Note</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do summarize your data (with mean, standard deviation, etc.), broken down by group.</p>
+<h2 id="solution">Solution</h2>
+<p>There are three ways described here to group data based on some specified variables, and apply a summary function (like mean, standard deviation, etc.) to each group.</p>
+<ul>
+<li>The <code>ddply()</code> function. It is the easiest to use, though it requires the <code>plyr</code> package. This is probably what you want to use.</li>
+<li>The <code>summarizeBy()</code> function. It is easier to use, though it requires the <code>doBy</code> package.</li>
+<li>The <code>aggregate()</code> function. It is more difficult to use but is included in the base install of R.</li>
+</ul>
+<p>Suppose you have this data and want to find the N, mean of <strong>change</strong>, standard deviation, and standard error of the mean for each group, where the groups are specified by each combination of sex and condition: <strong><em>F-placebo</em></strong>, <strong><em>F-aspirin</em></strong>, <strong><em>M-placebo</em></strong>, and <strong><em>M-aspirin</em></strong>.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject sex condition before after change</span>
+<span class="s">       1   F   placebo   10.1   6.9   -3.2</span>
+<span class="s">       2   F   placebo    6.3   4.2   -2.1</span>
+<span class="s">       3   M   aspirin   12.4   6.3   -6.1</span>
+<span class="s">       4   F   placebo    8.1   6.1   -2.0</span>
+<span class="s">       5   M   aspirin   15.2   9.9   -5.3</span>
+<span class="s">       6   F   aspirin   10.9   7.0   -3.9</span>
+<span class="s">       7   F   aspirin   11.6   8.5   -3.1</span>
+<span class="s">       8   M   aspirin    9.5   3.0   -6.5</span>
+<span class="s">       9   F   placebo   11.5   9.0   -2.5</span>
+<span class="s">      10   M   placebo   11.9  11.0   -0.9</span>
+<span class="s">      11   F   aspirin   11.4   8.0   -3.4</span>
+<span class="s">      12   M   aspirin   10.0   4.4   -5.6</span>
+<span class="s">      13   M   aspirin   12.5   5.4   -7.1</span>
+<span class="s">      14   M   placebo   10.6  10.6    0.0</span>
+<span class="s">      15   M   aspirin    9.1   4.3   -4.8</span>
+<span class="s">      16   F   placebo   12.1  10.2   -1.9</span>
+<span class="s">      17   F   placebo   11.0   8.8   -2.2</span>
+<span class="s">      18   F   placebo   11.9  10.2   -1.7</span>
+<span class="s">      19   M   aspirin    9.1   3.6   -5.5</span>
+<span class="s">      20   M   placebo   13.5  12.4   -1.1</span>
+<span class="s">      21   M   aspirin   12.0   7.5   -4.5</span>
+<span class="s">      22   F   placebo    9.1   7.6   -1.5</span>
+<span class="s">      23   M   placebo    9.9   8.0   -1.9</span>
+<span class="s">      24   F   placebo    7.6   5.2   -2.4</span>
+<span class="s">      25   F   placebo   11.8   9.7   -2.1</span>
+<span class="s">      26   F   placebo   11.8  10.7   -1.1</span>
+<span class="s">      27   F   aspirin   10.1   7.9   -2.2</span>
+<span class="s">      28   M   aspirin   11.6   8.3   -3.3</span>
+<span class="s">      29   F   aspirin   11.3   6.8   -4.5</span>
+<span class="s">      30   F   placebo   10.3   8.3   -2.0</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="using-ddply">Using ddply</h3>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>plyr<span class="p">)</span>
+
+<span class="c1"># Run the functions length, mean, and sd on the value of &quot;change&quot; for each group, </span>
+<span class="c1"># broken down by sex + condition</span>
+cdata <span class="o">&lt;-</span> ddply<span class="p">(</span>data<span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">),</span> summarise<span class="p">,</span>
+               N    <span class="o">=</span> <span class="kp">length</span><span class="p">(</span>change<span class="p">),</span>
+               mean <span class="o">=</span> <span class="kp">mean</span><span class="p">(</span>change<span class="p">),</span>
+               sd   <span class="o">=</span> sd<span class="p">(</span>change<span class="p">),</span>
+               se   <span class="o">=</span> sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>N<span class="p">)</span> <span class="p">)</span>
+<span class="c1"># sex condition  N      mean        sd        se</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190</span>
+<span class="c1">#   M   placebo  4 -0.975000 0.7804913 0.3902456</span>
+</pre></div>
+
+
+<h4 id="handling-missing-data">Handling missing data</h4>
+<p>If there are NA's in the data, you need to pass the flag <code>na.rm=TRUE</code> to each of the functions. <code>length()</code> doesn't take <code>na.rm</code> as an option, so one way to work around it is to use <code>sum(!is.na(...))</code> to count how many non-NA's there are.</p>
+<div class="codehilite"><pre><span class="c1"># Put some NA&#39;s in the data</span>
+dataNA <span class="o">&lt;-</span> data
+dataNA<span class="o">$</span>change<span class="p">[</span><span class="m">11</span><span class="o">:</span><span class="m">14</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">NA</span>
+
+cdata <span class="o">&lt;-</span> ddply<span class="p">(</span>dataNA<span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">),</span> summarise<span class="p">,</span>
+               N    <span class="o">=</span> <span class="kp">sum</span><span class="p">(</span><span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>change<span class="p">)),</span>
+               mean <span class="o">=</span> <span class="kp">mean</span><span class="p">(</span>change<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">),</span>
+               sd   <span class="o">=</span> sd<span class="p">(</span>change<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">),</span>
+               se   <span class="o">=</span> sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>N<span class="p">)</span> <span class="p">)</span>
+<span class="c1"># sex condition  N      mean        sd        se</span>
+<span class="c1">#   F   aspirin  4 -3.425000 0.9979145 0.4989572</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867</span>
+<span class="c1">#   M   aspirin  7 -5.142857 1.0674848 0.4034713</span>
+<span class="c1">#   M   placebo  3 -1.300000 0.5291503 0.3055050</span>
+</pre></div>
+
+
+<h4 id="a-function-for-mean-count-standard-deviation-standard-error-of-the-mean-and-confidence-interval">A function for mean, count, standard deviation, standard error of the mean, and confidence interval</h4>
+<p>Instead of manually specifying all the values you want and then calculating the standard error, as shown above, this function will handle all of those details. It will do all the things described here:</p>
+<ul>
+<li>Find the mean, standard deviation, and count (N)</li>
+<li>Find the standard error of the mean (<strong><em>again, this may not be what you want if you are collapsing over a within-subject variable.</em></strong>  See <a href="../Graphs/Plotting_means_and_error_bars_(ggplot2).html">../../Graphs/Plotting means and error bars (ggplot2)</a> for information on how to make error bars for graphs with within-subjects variables.)</li>
+<li>Find a 95% confidence interval (or other value, if desired)</li>
+<li>Rename the columns so that the resulting data frame is easier to work with</li>
+</ul>
+<p>To use, put this function in your code and call it as demonstrated below.</p>
+<div class="codehilite"><pre><span class="c1">## Summarizes data.</span>
+<span class="c1">## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).</span>
+<span class="c1">##   data: a data frame.</span>
+<span class="c1">##   measurevar: the name of a column that contains the variable to be summariezed</span>
+<span class="c1">##   groupvars: a vector containing names of columns that contain grouping variables</span>
+<span class="c1">##   na.rm: a boolean that indicates whether to ignore NA&#39;s</span>
+<span class="c1">##   conf.interval: the percent range of the confidence interval (default is 95%)</span>
+summarySE <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>data<span class="o">=</span><span class="kc">NULL</span><span class="p">,</span> measurevar<span class="p">,</span> groupvars<span class="o">=</span><span class="kc">NULL</span><span class="p">,</span> na.rm<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                      conf.interval<span class="o">=</span><span class="m">.95</span><span class="p">,</span> <span class="m">.</span>drop<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kn">require</span><span class="p">(</span>plyr<span class="p">)</span>
+
+    <span class="c1"># New version of length which can handle NA&#39;s: if na.rm==T, don&#39;t count them</span>
+    length2 <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>x<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">if</span> <span class="p">(</span>na.rm<span class="p">)</span> <span class="kp">sum</span><span class="p">(</span><span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>x<span class="p">))</span>
+        <span class="kr">else</span>       <span class="kp">length</span><span class="p">(</span>x<span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1"># This does the summary. For each group&#39;s data frame, return a vector with</span>
+    <span class="c1"># N, mean, and sd</span>
+    datac <span class="o">&lt;-</span> ddply<span class="p">(</span>data<span class="p">,</span> groupvars<span class="p">,</span> <span class="m">.</span>drop<span class="o">=</span><span class="m">.</span><span class="kp">drop</span><span class="p">,</span>
+      <span class="m">.</span>fun <span class="o">=</span> <span class="kr">function</span><span class="p">(</span>xx<span class="p">,</span> <span class="kp">col</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">c</span><span class="p">(</span>N    <span class="o">=</span> length2<span class="p">(</span>xx<span class="p">[[</span><span class="kp">col</span><span class="p">]],</span> na.rm<span class="o">=</span>na.rm<span class="p">),</span>
+          mean <span class="o">=</span> mean   <span class="p">(</span>xx<span class="p">[[</span><span class="kp">col</span><span class="p">]],</span> na.rm<span class="o">=</span>na.rm<span class="p">),</span>
+          sd   <span class="o">=</span> sd     <span class="p">(</span>xx<span class="p">[[</span><span class="kp">col</span><span class="p">]],</span> na.rm<span class="o">=</span>na.rm<span class="p">)</span>
+        <span class="p">)</span>
+      <span class="p">},</span>
+      measurevar
+    <span class="p">)</span>
+
+    <span class="c1"># Rename the &quot;mean&quot; column    </span>
+    datac <span class="o">&lt;-</span> rename<span class="p">(</span>datac<span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;mean&quot;</span> <span class="o">=</span> measurevar<span class="p">))</span>
+
+    datac<span class="o">$</span>se <span class="o">&lt;-</span> datac<span class="o">$</span>sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>datac<span class="o">$</span>N<span class="p">)</span>  <span class="c1"># Calculate standard error of the mean</span>
+
+    <span class="c1"># Confidence interval multiplier for standard error</span>
+    <span class="c1"># Calculate t-statistic for confidence interval: </span>
+    <span class="c1"># e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1</span>
+    ciMult <span class="o">&lt;-</span> qt<span class="p">(</span>conf.interval<span class="o">/</span><span class="m">2</span> <span class="o">+</span> <span class="m">.5</span><span class="p">,</span> datac<span class="o">$</span>N<span class="m">-1</span><span class="p">)</span>
+    datac<span class="o">$</span>ci <span class="o">&lt;-</span> datac<span class="o">$</span>se <span class="o">*</span> ciMult
+
+    <span class="kr">return</span><span class="p">(</span>datac<span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Example usage (with 95% confidence interval). Instead of doing all the steps manually, as done previously, the <code>summarySE</code> function does it all in one step:</p>
+<div class="codehilite"><pre>summarySE<span class="p">(</span>data<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">))</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+<span class="c1">#   M   placebo  4 -0.975000 0.7804913 0.3902456 1.2419358</span>
+
+<span class="c1"># With a data set with NA&#39;s, use na.rm=TRUE</span>
+summarySE<span class="p">(</span>dataNA<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">),</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  4 -3.425000 0.9979145 0.4989572 1.5879046</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  7 -5.142857 1.0674848 0.4034713 0.9872588</span>
+<span class="c1">#   M   placebo  3 -1.300000 0.5291503 0.3055050 1.3144821</span>
+</pre></div>
+
+
+<h4 id="filling-empty-combinations-with-zeros">Filling empty combinations with zeros</h4>
+<p>Sometimes there will be empty combinations of factors in the summary data frame -- that is, combinations of factors that are possible, but don't actually occur in the original data frame. It is often useful to automatically fill in those combinations in the summary data frame with NA's. To do this, set <code>.drop=FALSE</code> in the call to <code>ddply</code> or <code>summarySE</code>.</p>
+<p>Example usage:</p>
+<div class="codehilite"><pre><span class="c1"># First remove some all Male+Placebo entries from the data</span>
+dataSub <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>data<span class="p">,</span> <span class="o">!</span><span class="p">(</span>sex<span class="o">==</span><span class="s">&quot;M&quot;</span> <span class="o">&amp;</span> condition<span class="o">==</span><span class="s">&quot;placebo&quot;</span><span class="p">))</span>
+
+<span class="c1"># If we summarize the data, there will be a missing row for Male+Placebo,</span>
+<span class="c1"># since there were no cases with this combination.</span>
+summarySE<span class="p">(</span>dataSub<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">))</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+
+<span class="c1"># Set .drop=FALSE to NOT drop those combinations</span>
+summarySE<span class="p">(</span>dataSub<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">),</span> <span class="m">.</span>drop<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+<span class="c1">#   M   placebo  0       NaN        NA        NA        NA</span>
+<span class="c1"># Warning message:</span>
+<span class="c1"># In qt(p, df, lower.tail, log.p) : NaNs produced</span>
+</pre></div>
+
+
+<h3 id="using-summaryby">Using summaryBy</h3>
+<p>To collapse the data using the <code>summarizeBy()</code> function:</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>doBy<span class="p">)</span>
+
+<span class="c1"># Run the functions length, mean, and sd on the value of &quot;change&quot; for each group, </span>
+<span class="c1"># broken down by sex + condition</span>
+cdata <span class="o">&lt;-</span> summaryBy<span class="p">(</span>change <span class="o">~</span> sex <span class="o">+</span> condition<span class="p">,</span> data<span class="o">=</span>data<span class="p">,</span> FUN<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="kp">length</span><span class="p">,</span><span class="kp">mean</span><span class="p">,</span>sd<span class="p">))</span>
+<span class="c1"># sex condition change.length change.mean change.sd</span>
+<span class="c1">#   F   aspirin             5   -3.420000 0.8642916</span>
+<span class="c1">#   F   placebo            12   -2.058333 0.5247655</span>
+<span class="c1">#   M   aspirin             9   -5.411111 1.1307569</span>
+<span class="c1">#   M   placebo             4   -0.975000 0.7804913</span>
+
+<span class="c1"># Rename column change.length to just N</span>
+<span class="kp">names</span><span class="p">(</span>cdata<span class="p">)[</span><span class="kp">names</span><span class="p">(</span>cdata<span class="p">)</span><span class="o">==</span><span class="s">&quot;change.length&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;N&quot;</span>
+
+<span class="c1"># Calculate standard error of the mean</span>
+cdata<span class="o">$</span>change.se <span class="o">&lt;-</span> cdata<span class="o">$</span>change.sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>cdata<span class="o">$</span>N<span class="p">)</span>
+<span class="c1"># sex condition  N change.mean change.sd change.se</span>
+<span class="c1">#   F   aspirin  5   -3.420000 0.8642916 0.3865230</span>
+<span class="c1">#   F   placebo 12   -2.058333 0.5247655 0.1514867</span>
+<span class="c1">#   M   aspirin  9   -5.411111 1.1307569 0.3769190</span>
+<span class="c1">#   M   placebo  4   -0.975000 0.7804913 0.3902456</span>
+</pre></div>
+
+
+<p><strong><em>Note that if you have any within-subjects variables, these standard error values may not be useful for comparing groups.</em></strong> See <a href="../Graphs/Plotting_means_and_error_bars_(ggplot2).html">../../Graphs/Plotting means and error bars (ggplot2)</a> for information on how to make error bars for graphs with within-subjects variables.</p>
+<h4 id="handling-missing-data_1">Handling missing data</h4>
+<p>If there are NA's in the data, you need to pass the flag <code>na.rm=TRUE</code> to the functions. Normally you could pass it to <code>summaryBy()</code> and it would get passed to each of the functions called, but <code>length()</code> does not recognize it and so it won't work. One way around it is to define a new length function that handles the NA's.</p>
+<div class="codehilite"><pre><span class="c1"># New version of length which can handle NA&#39;s: if na.rm==T, don&#39;t count them</span>
+length2 <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>x<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kr">if</span> <span class="p">(</span>na.rm<span class="p">)</span> <span class="kp">sum</span><span class="p">(</span><span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>x<span class="p">))</span>
+    <span class="kr">else</span>       <span class="kp">length</span><span class="p">(</span>x<span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># Put some NA&#39;s in the data</span>
+dataNA <span class="o">&lt;-</span> data
+dataNA<span class="o">$</span>change<span class="p">[</span><span class="m">11</span><span class="o">:</span><span class="m">14</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">NA</span>
+
+cdataNA <span class="o">&lt;-</span> summaryBy<span class="p">(</span>change <span class="o">~</span> sex <span class="o">+</span> condition<span class="p">,</span> data<span class="o">=</span>dataNA<span class="p">,</span> FUN<span class="o">=</span><span class="kt">c</span><span class="p">(</span>length2<span class="p">,</span><span class="kp">mean</span><span class="p">,</span>sd<span class="p">),</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># sex condition change.length2 change.mean change.sd</span>
+<span class="c1">#   F   aspirin              4   -3.425000 0.9979145</span>
+<span class="c1">#   F   placebo             12   -2.058333 0.5247655</span>
+<span class="c1">#   M   aspirin              7   -5.142857 1.0674848</span>
+<span class="c1">#   M   placebo              3   -1.300000 0.5291503</span>
+
+<span class="c1"># Now, do the same as before</span>
+</pre></div>
+
+
+<h4 id="a-function-for-mean-count-standard-deviation-standard-error-of-the-mean-and-confidence-interval_1">A function for mean, count, standard deviation, standard error of the mean, and confidence interval</h4>
+<p>Instead of manually specifying all the values you want and then calculating the standard error, as shown above, this function will handle all of those details. It will do all the things described here:</p>
+<ul>
+<li>Find the mean, standard deviation, and count (N)</li>
+<li>Find the standard error of the mean (<strong><em>again, this may not be what you want if you are collapsing over a within-subject variable.</em></strong>  See <a href="../Graphs/Plotting_means_and_error_bars_(ggplot2).html">../../Graphs/Plotting means and error bars (ggplot2)</a> for information on how to make error bars for graphs with within-subjects variables.)</li>
+<li>Find a 95% confidence interval (or other value, if desired)</li>
+<li>Rename the columns so that the resulting data frame is easier to work with</li>
+</ul>
+<p>To use, put this function in your code and call it as demonstrated below.</p>
+<div class="codehilite"><pre><span class="c1">## Summarizes data.</span>
+<span class="c1">## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).</span>
+<span class="c1">##   data: a data frame.</span>
+<span class="c1">##   measurevar: the name of a column that contains the variable to be summariezed</span>
+<span class="c1">##   groupvars: a vector containing names of columns that contain grouping variables</span>
+<span class="c1">##   na.rm: a boolean that indicates whether to ignore NA&#39;s</span>
+<span class="c1">##   conf.interval: the percent range of the confidence interval (default is 95%)</span>
+summarySE <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>data<span class="o">=</span><span class="kc">NULL</span><span class="p">,</span> measurevar<span class="p">,</span> groupvars<span class="o">=</span><span class="kc">NULL</span><span class="p">,</span> na.rm<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span> conf.interval<span class="o">=</span><span class="m">.95</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kn">require</span><span class="p">(</span>doBy<span class="p">)</span>
+
+    <span class="c1"># New version of length which can handle NA&#39;s: if na.rm==T, don&#39;t count them</span>
+    length2 <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>x<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">if</span> <span class="p">(</span>na.rm<span class="p">)</span> <span class="kp">sum</span><span class="p">(</span><span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>x<span class="p">))</span>
+        <span class="kr">else</span>       <span class="kp">length</span><span class="p">(</span>x<span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Collapse the data</span>
+    formula <span class="o">&lt;-</span> as.formula<span class="p">(</span><span class="kp">paste</span><span class="p">(</span>measurevar<span class="p">,</span> <span class="kp">paste</span><span class="p">(</span>groupvars<span class="p">,</span> collapse<span class="o">=</span><span class="s">&quot; + &quot;</span><span class="p">),</span> sep<span class="o">=</span><span class="s">&quot; ~ &quot;</span><span class="p">))</span>
+    datac <span class="o">&lt;-</span> summaryBy<span class="p">(</span>formula<span class="p">,</span> data<span class="o">=</span>data<span class="p">,</span> FUN<span class="o">=</span><span class="kt">c</span><span class="p">(</span>length2<span class="p">,</span><span class="kp">mean</span><span class="p">,</span>sd<span class="p">),</span> na.rm<span class="o">=</span>na.rm<span class="p">)</span>
+
+    <span class="c1"># Rename columns</span>
+    <span class="kp">names</span><span class="p">(</span>datac<span class="p">)[</span> <span class="kp">names</span><span class="p">(</span>datac<span class="p">)</span> <span class="o">==</span> <span class="kp">paste</span><span class="p">(</span>measurevar<span class="p">,</span> <span class="s">&quot;.mean&quot;</span><span class="p">,</span>    sep<span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">]</span> <span class="o">&lt;-</span> measurevar
+    <span class="kp">names</span><span class="p">(</span>datac<span class="p">)[</span> <span class="kp">names</span><span class="p">(</span>datac<span class="p">)</span> <span class="o">==</span> <span class="kp">paste</span><span class="p">(</span>measurevar<span class="p">,</span> <span class="s">&quot;.sd&quot;</span><span class="p">,</span>      sep<span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;sd&quot;</span>
+    <span class="kp">names</span><span class="p">(</span>datac<span class="p">)[</span> <span class="kp">names</span><span class="p">(</span>datac<span class="p">)</span> <span class="o">==</span> <span class="kp">paste</span><span class="p">(</span>measurevar<span class="p">,</span> <span class="s">&quot;.length2&quot;</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;N&quot;</span>
+
+    datac<span class="o">$</span>se <span class="o">&lt;-</span> datac<span class="o">$</span>sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>datac<span class="o">$</span>N<span class="p">)</span>  <span class="c1"># Calculate standard error of the mean</span>
+
+    <span class="c1"># Confidence interval multiplier for standard error</span>
+    <span class="c1"># Calculate t-statistic for confidence interval: </span>
+    <span class="c1"># e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1</span>
+    ciMult <span class="o">&lt;-</span> qt<span class="p">(</span>conf.interval<span class="o">/</span><span class="m">2</span> <span class="o">+</span> <span class="m">.5</span><span class="p">,</span> datac<span class="o">$</span>N<span class="m">-1</span><span class="p">)</span>
+    datac<span class="o">$</span>ci <span class="o">&lt;-</span> datac<span class="o">$</span>se <span class="o">*</span> ciMult
+
+    <span class="kr">return</span><span class="p">(</span>datac<span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Example usage (with 95% confidence interval). Instead of doing all the steps manually, as done previously, the <code>summarySE</code> function does it all in one step:</p>
+<div class="codehilite"><pre>summarySE<span class="p">(</span>data<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">))</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+<span class="c1">#   M   placebo  4 -0.975000 0.7804913 0.3902456 1.2419358</span>
+
+<span class="c1"># With a data set with NA&#39;s, use na.rm=TRUE</span>
+summarySE<span class="p">(</span>dataNA<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">),</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  4 -3.425000 0.9979145 0.4989572 1.5879046</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  7 -5.142857 1.0674848 0.4034713 0.9872588</span>
+<span class="c1">#   M   placebo  3 -1.300000 0.5291503 0.3055050 1.3144821</span>
+</pre></div>
+
+
+<h4 id="filling-empty-combinations-with-zeros_1">Filling empty combinations with zeros</h4>
+<p>Sometimes there will be empty combinations of factors in the summary data frame -- that is, combinations of factors that are possible, but don't actually occur in the original data frame. It is often useful to automatically fill in those combinations in the summary data frame with zeros.</p>
+<p>This function will fill in those missing combinations with zeros:</p>
+<div class="codehilite"><pre>fillMissingCombs <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>df<span class="p">,</span> factors<span class="p">,</span> measures<span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1"># Make a list of the combinations of factor levels</span>
+    levelList <span class="o">&lt;-</span> <span class="kt">list</span><span class="p">()</span>
+    <span class="kr">for</span> <span class="p">(</span>f <span class="kr">in</span> factors<span class="p">)</span> <span class="p">{</span>  levelList<span class="p">[[</span>f<span class="p">]]</span> <span class="o">&lt;-</span> <span class="kp">levels</span><span class="p">(</span>df<span class="p">[,</span>f<span class="p">])</span>  <span class="p">}</span>
+
+    fullFactors <span class="o">&lt;-</span> <span class="kp">expand.grid</span><span class="p">(</span>levelList<span class="p">)</span>
+
+    dfFull <span class="o">&lt;-</span> <span class="kp">merge</span><span class="p">(</span>fullFactors<span class="p">,</span> df<span class="p">,</span> all.x<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+
+    <span class="c1"># Wherever there is an NA in the measure vars, replace with 0</span>
+    <span class="kr">for</span> <span class="p">(</span>m <span class="kr">in</span> measures<span class="p">)</span> <span class="p">{</span>  dfFull<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>dfFull<span class="p">[,</span>m<span class="p">]),</span> m<span class="p">]</span> <span class="o">&lt;-</span> <span class="m">0</span>  <span class="p">}</span>
+
+    <span class="kr">return</span><span class="p">(</span>dfFull<span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Example usage:</p>
+<div class="codehilite"><pre><span class="c1"># First remove some all Male+Placebo entries from the data</span>
+dataSub <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>data<span class="p">,</span> <span class="o">!</span><span class="p">(</span>sex<span class="o">==</span><span class="s">&quot;M&quot;</span> <span class="o">&amp;</span> condition<span class="o">==</span><span class="s">&quot;placebo&quot;</span><span class="p">))</span>
+
+<span class="c1"># If we summarize the data, there will be a missing row for Male+Placebo,</span>
+<span class="c1"># since there were no cases with this combination.</span>
+cdataSub <span class="o">&lt;-</span> summarySE<span class="p">(</span>dataSub<span class="p">,</span> measurevar<span class="o">=</span><span class="s">&quot;change&quot;</span><span class="p">,</span> groupvars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span> <span class="s">&quot;condition&quot;</span><span class="p">))</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+
+<span class="c1"># This will fill in the missing combinations with zeros</span>
+fillMissingCombs<span class="p">(</span>cdataSub<span class="p">,</span> factors<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">),</span> measures<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;N&quot;</span><span class="p">,</span><span class="s">&quot;change&quot;</span><span class="p">,</span><span class="s">&quot;sd&quot;</span><span class="p">,</span><span class="s">&quot;se&quot;</span><span class="p">,</span><span class="s">&quot;ci&quot;</span><span class="p">))</span>
+<span class="c1"># sex condition  N    change        sd        se        ci</span>
+<span class="c1">#   F   aspirin  5 -3.420000 0.8642916 0.3865230 1.0731598</span>
+<span class="c1">#   F   placebo 12 -2.058333 0.5247655 0.1514867 0.3334201</span>
+<span class="c1">#   M   aspirin  9 -5.411111 1.1307569 0.3769190 0.8691767</span>
+<span class="c1">#   M   placebo  0  0.000000 0.0000000 0.0000000 0.0000000</span>
+</pre></div>
+
+
+<h3 id="using-aggregate">Using aggregate</h3>
+<p>The <code>aggregate</code> function is more difficult to use, but it is included in the base R installation and does not require the installation of another package.</p>
+<div class="codehilite"><pre><span class="c1"># Get a count of number of subjects in each category (sex*condition)</span>
+cdata <span class="o">&lt;-</span> aggregate<span class="p">(</span>data<span class="p">[</span><span class="s">&quot;subject&quot;</span><span class="p">],</span> by<span class="o">=</span>data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">)],</span> FUN<span class="o">=</span><span class="kp">length</span><span class="p">)</span>
+<span class="c1"># sex condition subject</span>
+<span class="c1">#   F   aspirin       5</span>
+<span class="c1">#   M   aspirin       9</span>
+<span class="c1">#   F   placebo      12</span>
+<span class="c1">#   M   placebo       4</span>
+
+
+<span class="c1"># Rename &quot;subject&quot; column to &quot;N&quot;</span>
+<span class="kp">names</span><span class="p">(</span>cdata<span class="p">)[</span><span class="kp">names</span><span class="p">(</span>cdata<span class="p">)</span><span class="o">==</span><span class="s">&quot;subject&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;N&quot;</span>
+<span class="c1"># sex condition  N</span>
+<span class="c1">#   F   placebo 12</span>
+<span class="c1">#   M   placebo  4</span>
+<span class="c1">#   F   aspirin  5</span>
+<span class="c1">#   M   aspirin  9</span>
+
+<span class="c1"># Sort by sex first</span>
+cdata <span class="o">&lt;-</span> cdata<span class="p">[</span><span class="kp">order</span><span class="p">(</span>cdata<span class="o">$</span>sex<span class="p">),]</span>
+<span class="c1"># sex condition  N</span>
+<span class="c1">#   F   placebo 12</span>
+<span class="c1">#   F   aspirin  5</span>
+<span class="c1">#   M   placebo  4</span>
+<span class="c1">#   M   aspirin  9</span>
+
+
+<span class="c1"># We also keep the __before__ and __after__ columns:</span>
+<span class="c1"># Get the average effect size by sex and condition</span>
+cdata.means <span class="o">&lt;-</span> aggregate<span class="p">(</span>data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;before&quot;</span><span class="p">,</span><span class="s">&quot;after&quot;</span><span class="p">,</span><span class="s">&quot;change&quot;</span><span class="p">)],</span> 
+                         by <span class="o">=</span> data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">)],</span> FUN<span class="o">=</span><span class="kp">mean</span><span class="p">)</span>
+<span class="c1"># sex condition   before     after    change</span>
+<span class="c1">#   F   placebo 10.13333  8.075000 -2.058333</span>
+<span class="c1">#   M   placebo 11.47500 10.500000 -0.975000</span>
+<span class="c1">#   F   aspirin 11.06000  7.640000 -3.420000</span>
+<span class="c1">#   M   aspirin 11.26667  5.855556 -5.411111</span>
+
+<span class="c1"># Merge the data frames</span>
+cdata <span class="o">&lt;-</span> <span class="kp">merge</span><span class="p">(</span>cdata<span class="p">,</span> cdata.means<span class="p">)</span>
+<span class="c1"># sex condition  N   before     after    change</span>
+<span class="c1">#   F   aspirin  5 11.06000  7.640000 -3.420000</span>
+<span class="c1">#   F   placebo 12 10.13333  8.075000 -2.058333</span>
+<span class="c1">#   M   aspirin  9 11.26667  5.855556 -5.411111</span>
+<span class="c1">#   M   placebo  4 11.47500 10.500000 -0.975000</span>
+
+<span class="c1"># Get the sample (n-1) standard deviation for &quot;change&quot;</span>
+cdata.sd <span class="o">&lt;-</span> aggregate<span class="p">(</span>data<span class="p">[</span><span class="s">&quot;change&quot;</span><span class="p">],</span>
+                      by <span class="o">=</span> data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">)],</span> FUN<span class="o">=</span>sd<span class="p">)</span>
+<span class="c1"># Rename the column to change.sd</span>
+<span class="kp">names</span><span class="p">(</span>cdata.sd<span class="p">)[</span><span class="kp">names</span><span class="p">(</span>cdata.sd<span class="p">)</span><span class="o">==</span><span class="s">&quot;change&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;change.sd&quot;</span>
+<span class="c1"># sex condition change.sd</span>
+<span class="c1">#   F   placebo 0.5247655</span>
+<span class="c1">#   M   placebo 0.7804913</span>
+<span class="c1">#   F   aspirin 0.8642916</span>
+<span class="c1">#   M   aspirin 1.1307569</span>
+
+
+<span class="c1"># Merge</span>
+cdata <span class="o">&lt;-</span> <span class="kp">merge</span><span class="p">(</span>cdata<span class="p">,</span> cdata.sd<span class="p">)</span>
+<span class="c1"># sex condition  N   before     after    change change.sd</span>
+<span class="c1">#   F   aspirin  5 11.06000  7.640000 -3.420000 0.8642916</span>
+<span class="c1">#   F   placebo 12 10.13333  8.075000 -2.058333 0.5247655</span>
+<span class="c1">#   M   aspirin  9 11.26667  5.855556 -5.411111 1.1307569</span>
+<span class="c1">#   M   placebo  4 11.47500 10.500000 -0.975000 0.7804913</span>
+
+<span class="c1"># Calculate standard error of the mean</span>
+cdata<span class="o">$</span>change.se <span class="o">&lt;-</span> cdata<span class="o">$</span>change.sd <span class="o">/</span> <span class="kp">sqrt</span><span class="p">(</span>cdata<span class="o">$</span>N<span class="p">)</span>
+<span class="c1"># sex condition  N   before     after    change change.sd change.se</span>
+<span class="c1">#   F   aspirin  5 11.06000  7.640000 -3.420000 0.8642916 0.3865230</span>
+<span class="c1">#   F   placebo 12 10.13333  8.075000 -2.058333 0.5247655 0.1514867</span>
+<span class="c1">#   M   aspirin  9 11.26667  5.855556 -5.411111 1.1307569 0.3769190</span>
+<span class="c1">#   M   placebo  4 11.47500 10.500000 -0.975000 0.7804913 0.3902456</span>
+</pre></div>
+
+
+<p>If you have <code>NA</code>'s in your data and wish to skip them, use <code>na.rm=TRUE</code>:</p>
+<div class="codehilite"><pre>cdata.means <span class="o">&lt;-</span> aggregate<span class="p">(</span>data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;before&quot;</span><span class="p">,</span><span class="s">&quot;after&quot;</span><span class="p">,</span><span class="s">&quot;change&quot;</span><span class="p">)],</span> 
+                         by <span class="o">=</span> data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;condition&quot;</span><span class="p">)],</span>
+                         FUN<span class="o">=</span><span class="kp">mean</span><span class="p">,</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="note">Note</h3>
+<p>This is the code used to generate the data above. It is here for safe keeping.</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">103</span><span class="p">)</span>
+
+N <span class="o">&lt;-</span> <span class="m">30</span>
+subject        <span class="o">&lt;-</span> <span class="m">1</span><span class="o">:</span>N
+data           <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>subject<span class="p">)</span>
+data<span class="o">$</span>sex       <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">vector</span><span class="p">(</span>length<span class="o">=</span>N<span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;F&quot;</span><span class="p">,</span><span class="s">&quot;M&quot;</span><span class="p">))</span>
+data<span class="o">$</span>condition <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">vector</span><span class="p">(</span>length<span class="o">=</span>N<span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;placebo&quot;</span><span class="p">,</span><span class="s">&quot;aspirin&quot;</span><span class="p">))</span>
+data<span class="o">$</span>before    <span class="o">&lt;-</span> <span class="kt">vector</span><span class="p">(</span><span class="s">&quot;numeric&quot;</span><span class="p">,</span> length<span class="o">=</span>N<span class="p">)</span>
+data<span class="o">$</span>after     <span class="o">&lt;-</span> <span class="kt">vector</span><span class="p">(</span><span class="s">&quot;numeric&quot;</span><span class="p">,</span> length<span class="o">=</span>N<span class="p">)</span>
+data<span class="o">$</span>change    <span class="o">&lt;-</span> <span class="kt">vector</span><span class="p">(</span><span class="s">&quot;numeric&quot;</span><span class="p">,</span> length<span class="o">=</span>N<span class="p">)</span>
+
+<span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span>N<span class="p">)</span> <span class="p">{</span>
+    <span class="kr">if</span> <span class="p">(</span>runif<span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="m">.5</span><span class="p">)</span>  data<span class="o">$</span>sex<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;F&quot;</span>
+    <span class="kr">else</span>                data<span class="o">$</span>sex<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;M&quot;</span>
+
+    <span class="kr">if</span> <span class="p">(</span>runif<span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="m">.5</span><span class="p">)</span>  data<span class="o">$</span>condition<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;placebo&quot;</span>
+    <span class="kr">else</span>                data<span class="o">$</span>condition<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;aspirin&quot;</span>
+
+
+    <span class="c1"># Set different effects based on sex and condition</span>
+    <span class="kr">if</span> <span class="p">(</span>data<span class="o">$</span>sex<span class="p">[</span>i<span class="p">]</span> <span class="o">==</span> <span class="s">&quot;F&quot;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kr">if</span> <span class="p">(</span>data<span class="o">$</span>condition<span class="p">[</span>i<span class="p">]</span> <span class="o">==</span> <span class="s">&quot;placebo&quot;</span><span class="p">)</span>  change.mean <span class="o">&lt;-</span> <span class="m">-2</span>
+        <span class="kr">else</span>                                 change.mean <span class="o">&lt;-</span> <span class="m">-4</span> 
+    <span class="p">}</span>
+    <span class="kr">else</span> <span class="p">{</span>
+        <span class="kr">if</span> <span class="p">(</span>data<span class="o">$</span>condition<span class="p">[</span>i<span class="p">]</span> <span class="o">==</span> <span class="s">&quot;placebo&quot;</span><span class="p">)</span>  change.mean <span class="o">&lt;-</span> <span class="m">-1</span>
+        <span class="kr">else</span>                                 change.mean <span class="o">&lt;-</span> <span class="m">-5</span> 
+    <span class="p">}</span>
+
+
+    data<span class="o">$</span>before<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span>rnorm<span class="p">(</span><span class="m">1</span><span class="p">,</span> mean<span class="o">=</span><span class="m">10</span><span class="p">,</span> sd<span class="o">=</span><span class="m">2</span><span class="p">),</span> digits<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+    data<span class="o">$</span>change<span class="p">[</span>i<span class="p">]</span> <span class="o">&lt;-</span> <span class="kp">round</span><span class="p">(</span>rnorm<span class="p">(</span><span class="m">1</span><span class="p">,</span> mean<span class="o">=</span>change.mean<span class="p">,</span> sd<span class="o">=</span><span class="m">1</span><span class="p">),</span> digits<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+    data<span class="o">$</span>after<span class="p">[</span>i<span class="p">]</span>  <span class="o">&lt;-</span> data<span class="o">$</span>before<span class="p">[</span>i<span class="p">]</span> <span class="o">+</span> data<span class="o">$</span>change<span class="p">[</span>i<span class="p">]</span>
+
+<span class="p">}</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Adding and removing columns from a data frame
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Adding_and_removing_columns_from_a_data_frame
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="adding-and-removing-columns-from-a-data-frame">Adding and removing columns from a data frame</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to add or remove columns from a data frame.</p>
+<h2 id="solution">Solution</h2>
+<p>There are many different ways of adding and removing columns from a data frame.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> <span class="kt">data.frame</span> <span class="p">(</span>id<span class="o">=</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">,</span> weight<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">20</span><span class="p">,</span><span class="m">27</span><span class="p">,</span><span class="m">24</span><span class="p">))</span>
+<span class="c1"># id weight</span>
+<span class="c1">#  1     20</span>
+<span class="c1">#  2     27</span>
+<span class="c1">#  3     24</span>
+
+
+<span class="c1"># Ways to add a column</span>
+data<span class="o">$</span>size      <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">)</span>
+data<span class="p">[[</span><span class="s">&quot;size&quot;</span><span class="p">]]</span> <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">)</span>
+data<span class="p">[</span><span class="s">&quot;size&quot;</span><span class="p">]</span>   <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">)</span>
+data<span class="p">[,</span><span class="s">&quot;size&quot;</span><span class="p">]</span>  <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">)</span>
+data<span class="o">$</span>size      <span class="o">&lt;-</span> <span class="m">0</span>
+
+
+<span class="c1"># Ways to remove the column</span>
+data<span class="o">$</span>size      <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data<span class="p">[[</span><span class="s">&quot;size&quot;</span><span class="p">]]</span> <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data<span class="p">[</span><span class="s">&quot;size&quot;</span><span class="p">]</span>   <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data<span class="p">[,</span><span class="s">&quot;size&quot;</span><span class="p">]</span>  <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data<span class="p">[</span><span class="m">3</span><span class="p">]</span>        <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data<span class="p">[,</span><span class="m">3</span><span class="p">]</span>       <span class="o">&lt;-</span> <span class="kc">NULL</span>
+data           <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>data<span class="p">,</span> select<span class="o">=-</span>size<span class="p">)</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

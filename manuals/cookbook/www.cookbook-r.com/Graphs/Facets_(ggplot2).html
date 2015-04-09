@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Facets (ggplot2)
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Facets_(ggplot2)
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="facets-ggplot2">Facets (ggplot2)</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Facets_(ggplot2).html#facets-ggplot2">Facets (ggplot2)</a><ul>
+<li><a href="Facets_(ggplot2).html#problem">Problem</a></li>
+<li><a href="Facets_(ggplot2).html#solution">Solution</a><ul>
+<li><a href="Facets_(ggplot2).html#sample-data">Sample data</a></li>
+<li><a href="Facets_(ggplot2).html#facet_grid">facet_grid</a></li>
+<li><a href="Facets_(ggplot2).html#facet_wrap">facet_wrap</a></li>
+<li><a href="Facets_(ggplot2).html#modifying-facet-label-appearance">Modifying facet label appearance</a></li>
+<li><a href="Facets_(ggplot2).html#modifying-facet-label-text">Modifying facet label text</a></li>
+<li><a href="Facets_(ggplot2).html#free-scales">Free scales</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to do split up your data by one or more variables and plot the subsets of data together.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="sample-data">Sample data</h3>
+<p>We will use the <code>tips</code> dataset from the <code>reshape2</code> package.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+tips
+<span class="c1"># total_bill   tip    sex smoker  day   time size</span>
+<span class="c1">#      16.99  1.01 Female     No  Sun Dinner    2</span>
+<span class="c1">#      10.34  1.66   Male     No  Sun Dinner    3</span>
+<span class="c1">#      21.01  3.50   Male     No  Sun Dinner    3</span>
+<span class="c1">#        ...</span>
+<span class="c1">#      22.67  2.00   Male    Yes  Sat Dinner    2</span>
+<span class="c1">#      17.82  1.75   Male     No  Sat Dinner    2</span>
+<span class="c1">#      18.78  3.00 Female     No Thur Dinner    2</span>
+</pre></div>
+
+
+<p>This is a scatterplot of the tip percentage by total bill size. </p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+sp <span class="o">&lt;-</span> ggplot<span class="p">(</span>tips<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>total_bill<span class="p">,</span> y<span class="o">=</span>tip<span class="o">/</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+sp
+</pre></div>
+
+
+<p><img alt="" src="Facets_(ggplot2)/sp.png" /></p>
+<h3 id="facet_grid">facet_grid</h3>
+<p>The data can be split up by one or two variables that vary on the horizontal and/or vertical direction.</p>
+<p>This is done by giving a formula to <code>facet_grid()</code>, of the form <code>vertical ~ horizontal</code>.</p>
+<div class="codehilite"><pre><span class="c1"># Divide by levels of &quot;sex&quot;, in the vertical direction</span>
+sp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> <span class="m">.</span><span class="p">)</span>
+
+<span class="c1"># Divide by levels of &quot;sex&quot;, in the horizontal direction</span>
+sp <span class="o">+</span> facet_grid<span class="p">(</span><span class="m">.</span> <span class="o">~</span> sex<span class="p">)</span>
+
+<span class="c1"># Divide with &quot;sex&quot; vertical, &quot;day&quot; horizontal</span>
+sp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> day<span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Facets_(ggplot2)/sp_sexv.png" />
+<img alt="" src="Facets_(ggplot2)/sp_sexh.png" />
+<img alt="" src="Facets_(ggplot2)/sp_sex_day.png" /></p>
+<h3 id="facet_wrap">facet_wrap</h3>
+<p>Instead of faceting with a variable in the horizontal or vertical direction, facets can be placed next to each other, wrapping with a certain number of columns or rows. The label for each plot will be at the top of the plot.</p>
+<div class="codehilite"><pre><span class="c1"># Divide by day, going horizontally and wrapping with 2 columns</span>
+sp <span class="o">+</span> facet_wrap<span class="p">(</span> <span class="o">~</span> day<span class="p">,</span> ncol<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Facets_(ggplot2)/sp_day_wrap.png" /></p>
+<h3 id="modifying-facet-label-appearance">Modifying facet label appearance</h3>
+<div class="codehilite"><pre>sp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> day<span class="p">)</span> <span class="o">+</span>
+    theme<span class="p">(</span>strip.text.x <span class="o">=</span> element_text<span class="p">(</span>size<span class="o">=</span><span class="m">8</span><span class="p">,</span> angle<span class="o">=</span><span class="m">75</span><span class="p">),</span>
+          strip.text.y <span class="o">=</span> element_text<span class="p">(</span>size<span class="o">=</span><span class="m">12</span><span class="p">,</span> face<span class="o">=</span><span class="s">&quot;bold&quot;</span><span class="p">),</span>
+          strip.background <span class="o">=</span> element_rect<span class="p">(</span>colour<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span> fill<span class="o">=</span><span class="s">&quot;#CCCCFF&quot;</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Facets_(ggplot2)/sp_sex_day_labels.png" /></p>
+<h3 id="modifying-facet-label-text">Modifying facet label text</h3>
+<p>Modifying the text of a facet label is somewhat complex. It is necessary to either (A) create a function which maps the original names to the new names, or (B) change the data frame.</p>
+<p>To create a function which maps the levels of <code>sex</code> from Female==&gt;Woman, and Male==&gt;Man:</p>
+<div class="codehilite"><pre>mf_labeller <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>var<span class="p">,</span> value<span class="p">){</span>
+    value <span class="o">&lt;-</span> <span class="kp">as.character</span><span class="p">(</span>value<span class="p">)</span>
+    <span class="kr">if</span> <span class="p">(</span>var<span class="o">==</span><span class="s">&quot;sex&quot;</span><span class="p">)</span> <span class="p">{</span> 
+        value<span class="p">[</span>value<span class="o">==</span><span class="s">&quot;Female&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;Woman&quot;</span>
+        value<span class="p">[</span>value<span class="o">==</span><span class="s">&quot;Male&quot;</span><span class="p">]</span>   <span class="o">&lt;-</span> <span class="s">&quot;Man&quot;</span>
+    <span class="p">}</span>
+    <span class="kr">return</span><span class="p">(</span>value<span class="p">)</span>
+<span class="p">}</span>
+
+sp <span class="o">+</span> facet_grid<span class="p">(</span><span class="m">.</span> <span class="o">~</span> sex<span class="p">,</span> labeller<span class="o">=</span>mf_labeller<span class="p">)</span>
+</pre></div>
+
+
+<p>To change the data frame:</p>
+<div class="codehilite"><pre>tips2 <span class="o">&lt;-</span> tips
+<span class="kp">levels</span><span class="p">(</span>tips2<span class="o">$</span>sex<span class="p">)[</span><span class="kp">levels</span><span class="p">(</span>tips2<span class="o">$</span>sex<span class="p">)</span><span class="o">==</span><span class="s">&quot;Female&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;Woman&quot;</span>
+<span class="kp">levels</span><span class="p">(</span>tips2<span class="o">$</span>sex<span class="p">)[</span><span class="kp">levels</span><span class="p">(</span>tips2<span class="o">$</span>sex<span class="p">)</span><span class="o">==</span><span class="s">&quot;Male&quot;</span><span class="p">]</span>   <span class="o">&lt;-</span> <span class="s">&quot;Man&quot;</span>
+<span class="c1"># total_bill  tip   sex smoker day   time size</span>
+<span class="c1">#      16.99 1.01 Woman     No Sun Dinner    2</span>
+<span class="c1">#      10.34 1.66   Man     No Sun Dinner    3</span>
+<span class="c1">#       ...</span>
+
+sp2 <span class="o">&lt;-</span> ggplot<span class="p">(</span>tips2<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>total_bill<span class="p">,</span> y<span class="o">=</span>tip<span class="o">/</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_point<span class="p">(</span>shape<span class="o">=</span><span class="m">1</span><span class="p">)</span>
+sp2 <span class="o">+</span> facet_grid<span class="p">(</span><span class="m">.</span> <span class="o">~</span> sex<span class="p">)</span>
+</pre></div>
+
+
+<p>Both of these will give the same result:</p>
+<p><img alt="" src="Facets_(ggplot2)/sp_sexh_labeltext.png" /></p>
+<h3 id="free-scales">Free scales</h3>
+<p>Normally, the axis scales on each graph are <strong>fixed</strong>, which means that they have the same size and range. They can be made independent, by setting <code>scales</code> to <code>free</code>, <code>free_x</code>, or <code>free_y</code>.</p>
+<div class="codehilite"><pre><span class="c1"># A histogram of bill sizes</span>
+hp <span class="o">&lt;-</span> ggplot<span class="p">(</span>tips<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>total_bill<span class="p">))</span> <span class="o">+</span> geom_histogram<span class="p">(</span>binwidth<span class="o">=</span><span class="m">2</span><span class="p">,</span>colour<span class="o">=</span><span class="s">&quot;white&quot;</span><span class="p">)</span>
+
+<span class="c1"># Histogram of total_bill, divided by sex and smoker</span>
+hp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> smoker<span class="p">)</span>
+
+<span class="c1"># Same as above, with scales=&quot;free_y&quot;</span>
+hp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> smoker<span class="p">,</span> scales<span class="o">=</span><span class="s">&quot;free_y&quot;</span><span class="p">)</span>
+
+<span class="c1"># With panels that have the same scaling, but different range (and therefore different physical sizes)</span>
+hp <span class="o">+</span> facet_grid<span class="p">(</span>sex <span class="o">~</span> smoker<span class="p">,</span> scales<span class="o">=</span><span class="s">&quot;free&quot;</span><span class="p">,</span> space<span class="o">=</span><span class="s">&quot;free&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Facets_(ggplot2)/hp_sex_smoker.png" />
+<img alt="" src="Facets_(ggplot2)/hp_sex_smoker_freey.png" />
+<img alt="" src="Facets_(ggplot2)/hp_sex_smoker_free_free.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

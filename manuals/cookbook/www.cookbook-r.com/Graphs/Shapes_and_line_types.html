@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Shapes and line types
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Shapes_and_line_types
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="shapes-and-line-types">Shapes and line types</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to use different shapes and line types in your graph.</p>
+<h2 id="solution">Solution</h2>
+<p><img alt="" src="Shapes_and_line_types/pch.png" />
+<img alt="" src="Shapes_and_line_types/linetypes.png" /></p>
+<p>Note that with bitmap output, the filled symbols 15-18 may render without proper anti-aliasing; they can appear jagged, pixelated, and not properly centered, though this varies among platforms. Symbols 19 and 21-25 have an outline around the filled area, and will render with smoothed edges on most platforms. For symbols 21-25 to appear solid, you will also need to specify a fill (bg) color that is the same as the outline color (col); otherwise they will be hollow.</p>
+<h3 id="standard-graphics">Standard graphics</h3>
+<p>Use the <code>pch</code> option to set the shape, and use <code>lty</code> and <code>lwd</code> to set the line type and width. The line type can be specified by name or by number.</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">331</span><span class="p">)</span>
+
+<span class="c1"># Plot some points with lines</span>
+<span class="c1"># Set up the plotting area</span>
+plot<span class="p">(</span><span class="kc">NA</span><span class="p">,</span> xlim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">4</span><span class="p">),</span> ylim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+
+<span class="c1"># Plot solid circles with solid lines</span>
+points<span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">,</span> runif<span class="p">(</span><span class="m">4</span><span class="p">),</span> type<span class="o">=</span><span class="s">&quot;b&quot;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">19</span><span class="p">)</span>
+<span class="c1"># Add open squares with dashed line, with heavier line width</span>
+points<span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">,</span> runif<span class="p">(</span><span class="m">4</span><span class="p">),</span> type<span class="o">=</span><span class="s">&quot;b&quot;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">0</span><span class="p">,</span>  lty<span class="o">=</span><span class="m">2</span><span class="p">,</span> lwd<span class="o">=</span><span class="m">3</span><span class="p">)</span>
+
+points<span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">,</span> runif<span class="p">(</span><span class="m">4</span><span class="p">),</span> type<span class="o">=</span><span class="s">&quot;b&quot;</span><span class="p">,</span> pch<span class="o">=</span><span class="m">23</span><span class="p">,</span>   <span class="c1"># Diamond shape</span>
+       lty<span class="o">=</span><span class="s">&quot;dotted&quot;</span><span class="p">,</span> cex<span class="o">=</span><span class="m">2</span><span class="p">,</span>               <span class="c1"># Dotted line, double-size shapes</span>
+       col<span class="o">=</span><span class="s">&quot;#000099&quot;</span><span class="p">,</span> bg<span class="o">=</span><span class="s">&quot;#FF6666&quot;</span><span class="p">)</span>       <span class="c1"># blue line, red fill</span>
+</pre></div>
+
+
+<p><img alt="" src="Shapes_and_line_types/shapes_graphics.png" /></p>
+<h3 id="ggplot2">ggplot2</h3>
+<p>With ggplot2, shapes and line types can be assigned overall (e.g., if you want all points to be squares, or all lines to be dashed), or they can be conditioned on a variable.</p>
+<div class="codehilite"><pre><span class="c1"># Sample data</span>
+df <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">  cond xval yval</span>
+<span class="s">     A    1  2.0</span>
+<span class="s">     A    2  2.5</span>
+<span class="s">     B    1  3.0</span>
+<span class="s">     B    2  2.0</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+
+<span class="c1"># Plot with standard lines and points</span>
+<span class="c1"># group = cond tells it which points to connect with lines</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">()</span> <span class="o">+</span>
+    geom_point<span class="p">()</span>
+
+<span class="c1"># Set overall shapes and line type</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">(</span>linetype<span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span>  <span class="c1"># Dashed line</span>
+              size <span class="o">=</span> <span class="m">1.5</span><span class="p">)</span> <span class="o">+</span>       <span class="c1"># Thicker line</span>
+    geom_point<span class="p">(</span>shape <span class="o">=</span> <span class="m">0</span><span class="p">,</span>         <span class="c1"># Hollow squares</span>
+               size <span class="o">=</span> <span class="m">4</span><span class="p">)</span>          <span class="c1"># Large points</span>
+
+<span class="c1"># Condition shapes and line type on variable cond</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">(</span>aes<span class="p">(</span>linetype<span class="o">=</span>cond<span class="p">),</span> <span class="c1"># Line type depends on cond</span>
+              size <span class="o">=</span> <span class="m">1.5</span><span class="p">)</span> <span class="o">+</span>       <span class="c1"># Thicker line</span>
+    geom_point<span class="p">(</span>aes<span class="p">(</span>shape<span class="o">=</span>cond<span class="p">),</span>   <span class="c1"># Shape depends on cond</span>
+               size <span class="o">=</span> <span class="m">4</span><span class="p">)</span>          <span class="c1"># Large points</span>
+
+
+<span class="c1"># Same as previous, but also change the specific linetypes and</span>
+<span class="c1"># shapes that are used</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">(</span>aes<span class="p">(</span>linetype<span class="o">=</span>cond<span class="p">),</span> <span class="c1"># Line type depends on cond</span>
+              size <span class="o">=</span> <span class="m">1.5</span><span class="p">)</span> <span class="o">+</span>       <span class="c1"># Thicker line</span>
+    geom_point<span class="p">(</span>aes<span class="p">(</span>shape<span class="o">=</span>cond<span class="p">),</span>   <span class="c1"># Shape depends on cond</span>
+               size <span class="o">=</span> <span class="m">4</span><span class="p">)</span> <span class="o">+</span>        <span class="c1"># Large points</span>
+    scale_shape_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">6</span><span class="p">,</span><span class="m">5</span><span class="p">))</span> <span class="o">+</span>                  <span class="c1"># Change shapes</span>
+    scale_linetype_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;dotdash&quot;</span><span class="p">,</span> <span class="s">&quot;dotted&quot;</span><span class="p">))</span> <span class="c1"># Change linetypes</span>
+</pre></div>
+
+
+<p><img alt="" src="Shapes_and_line_types/shape_line_standard_ggplot2.png" />
+<img alt="" src="Shapes_and_line_types/shape_line_custom_ggplot2.png" />
+<img alt="" src="Shapes_and_line_types/shape_line_cond_ggplot2.png" />
+<img alt="" src="Shapes_and_line_types/shape_line_cond_custom_ggplot2.png" /></p>
+<p>By default, ggplot2 uses solid shapes. If you want to use hollow shapes, without manually declaring each shape, you can use <code>scale_shape(solid=FALSE)</code>. Note, however, that the lines will visible inside the shape. To avoid this, you can use shapes 21-25 and specify a white fill.</p>
+<div class="codehilite"><pre><span class="c1"># Hollow shapes</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">(</span>aes<span class="p">(</span>linetype<span class="o">=</span>cond<span class="p">),</span> <span class="c1"># Line type depends on cond</span>
+              size <span class="o">=</span> <span class="m">1.5</span><span class="p">)</span> <span class="o">+</span>       <span class="c1"># Thicker line</span>
+    geom_point<span class="p">(</span>aes<span class="p">(</span>shape<span class="o">=</span>cond<span class="p">),</span>   <span class="c1"># Shape depends on cond</span>
+               size <span class="o">=</span> <span class="m">4</span><span class="p">)</span>  <span class="o">+</span>       <span class="c1"># Large points</span>
+    scale_shape<span class="p">(</span>solid<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># Shapes with white fill</span>
+ggplot<span class="p">(</span>df<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>xval<span class="p">,</span> y<span class="o">=</span>yval<span class="p">,</span> group <span class="o">=</span> cond<span class="p">))</span> <span class="o">+</span>
+    geom_line<span class="p">(</span>aes<span class="p">(</span>linetype<span class="o">=</span>cond<span class="p">),</span> <span class="c1"># Line type depends on cond</span>
+              size <span class="o">=</span> <span class="m">1.5</span><span class="p">)</span> <span class="o">+</span>       <span class="c1"># Thicker line</span>
+    geom_point<span class="p">(</span>aes<span class="p">(</span>shape<span class="o">=</span>cond<span class="p">),</span>   <span class="c1"># Shape depends on cond</span>
+               fill <span class="o">=</span> <span class="s">&quot;white&quot;</span><span class="p">,</span>    <span class="c1"># White fill</span>
+               size <span class="o">=</span> <span class="m">4</span><span class="p">)</span>  <span class="o">+</span>       <span class="c1"># Large points</span>
+    scale_shape_manual<span class="p">(</span>values<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">21</span><span class="p">,</span><span class="m">24</span><span class="p">))</span>  <span class="c1"># Shapes: Filled circle, triangle</span>
+</pre></div>
+
+
+<p><img alt="" src="Shapes_and_line_types/shape_line_hollow_ggplot2.png" />
+<img alt="" src="Shapes_and_line_types/shape_line_whitefill_ggplot2.png" /></p>
+<h3 id="note">Note</h3>
+<p>This code will generate the chart of line types seen at the top.</p>
+<div class="codehilite"><pre><span class="c1"># Set up the plotting area</span>
+plot<span class="p">(</span><span class="kc">NA</span><span class="p">,</span> xlim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">),</span> ylim<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">6.5</span><span class="p">,</span> <span class="m">-0.5</span><span class="p">),</span>
+    xaxt<span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">,</span> yaxt<span class="o">=</span><span class="s">&quot;n&quot;</span><span class="p">,</span>
+    xlab<span class="o">=</span><span class="kc">NA</span><span class="p">,</span> ylab<span class="o">=</span><span class="kc">NA</span> <span class="p">)</span>
+
+<span class="c1"># Draw the lines</span>
+<span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">0</span><span class="o">:</span><span class="m">6</span><span class="p">)</span> <span class="p">{</span>
+    points<span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="m">0.25</span><span class="p">,</span><span class="m">1</span><span class="p">),</span> <span class="kt">c</span><span class="p">(</span>i<span class="p">,</span>i<span class="p">),</span> lty<span class="o">=</span>i<span class="p">,</span> lwd<span class="o">=</span><span class="m">2</span><span class="p">,</span> type<span class="o">=</span><span class="s">&quot;l&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="c1"># Add labels</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="s">&quot;0. &#39;blank&#39;&quot;</span>   <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="s">&quot;1. &#39;solid&#39;&quot;</span>   <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="s">&quot;2. &#39;dashed&#39;&quot;</span>  <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="s">&quot;3. &#39;dotted&#39;&quot;</span>  <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="s">&quot;4. &#39;dotdash&#39;&quot;</span> <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">5</span><span class="p">,</span> <span class="s">&quot;5. &#39;longdash&#39;&quot;</span><span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+text<span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">6</span><span class="p">,</span> <span class="s">&quot;6. &#39;twodash&#39;&quot;</span> <span class="p">,</span>  adj<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">.5</span><span class="p">))</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

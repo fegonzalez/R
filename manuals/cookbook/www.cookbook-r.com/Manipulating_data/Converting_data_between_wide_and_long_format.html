@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Converting data between wide and long format
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Converting_data_between_wide_and_long_format
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="converting-data-between-wide-and-long-format">Converting data between wide and long format</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Converting_data_between_wide_and_long_format.html#converting-data-between-wide-and-long-format">Converting data between wide and long format</a><ul>
+<li><a href="Converting_data_between_wide_and_long_format.html#problem">Problem</a></li>
+<li><a href="Converting_data_between_wide_and_long_format.html#solution">Solution</a><ul>
+<li><a href="Converting_data_between_wide_and_long_format.html#sample-data">Sample data</a></li>
+<li><a href="Converting_data_between_wide_and_long_format.html#from-wide-to-long">From wide to long</a></li>
+<li><a href="Converting_data_between_wide_and_long_format.html#from-long-to-wide">From long to wide</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do convert data from a wide format to a long format.</p>
+<p>Many functions in R expect data to be in a long format rather than a wide format. Programs like SPSS, however, often use wide-formatted data.</p>
+<h2 id="solution">Solution</h2>
+<p>There are two methods for this. One uses the functions <code>melt()</code> and <code>dcast()</code> from a package called <code>reshape2</code>. The other uses a <strong>function</strong> called <code>reshape()</code>, which is confusingly not part of the reshape2 package; it is part of the base install of R. The melt and cast methods are very powerful and simpler to use, so only they will be covered here.</p>
+<p><strong>You may run into some problems with the code below if you have a version of ggplot2 prior to 0.9.0. Make sure you have the latest version by running <code>update.packages()</code>.</strong></p>
+<h3 id="sample-data">Sample data</h3>
+<p>These data frames hold the same data, but in wide and long formats. They will each be converted to the other format below.</p>
+<div class="codehilite"><pre>origdata.wide <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject sex control cond1 cond2</span>
+<span class="s">       1   M     7.9  12.3  10.7</span>
+<span class="s">       2   F     6.3  10.6  11.1</span>
+<span class="s">       3   F     9.5  13.1  13.8</span>
+<span class="s">       4   M    11.5  13.4  12.9</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+<span class="c1"># Make sure the subject column is a factor</span>
+origdata.wide<span class="o">$</span>subject <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>origdata.wide<span class="o">$</span>subject<span class="p">)</span>
+</pre></div>
+
+
+<div class="codehilite"><pre>origdata.long <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject sex condition measurement</span>
+<span class="s">       1   M   control         7.9</span>
+<span class="s">       1   M     cond1        12.3</span>
+<span class="s">       1   M     cond2        10.7</span>
+<span class="s">       2   F   control         6.3</span>
+<span class="s">       2   F     cond1        10.6</span>
+<span class="s">       2   F     cond2        11.1</span>
+<span class="s">       3   F   control         9.5</span>
+<span class="s">       3   F     cond1        13.1</span>
+<span class="s">       3   F     cond2        13.8</span>
+<span class="s">       4   M   control        11.5</span>
+<span class="s">       4   M     cond1        13.4</span>
+<span class="s">       4   M     cond2        12.9</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+<span class="c1"># Make sure the subject column is a factor</span>
+origdata.long<span class="o">$</span>subject <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>origdata.long<span class="o">$</span>subject<span class="p">)</span>
+</pre></div>
+
+
+<h3 id="from-wide-to-long">From wide to long</h3>
+<p>Use <code>melt</code> from the reshape2 package:</p>
+<div class="codehilite"><pre>origdata.wide
+<span class="c1"># subject sex control cond1 cond2</span>
+<span class="c1">#       1   M     7.9  12.3  10.7</span>
+<span class="c1">#       2   F     6.3  10.6  11.1</span>
+<span class="c1">#       3   F     9.5  13.1  13.8</span>
+<span class="c1">#       4   M    11.5  13.4  12.9</span>
+
+<span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+
+<span class="c1"># Specify id.vars: the variables to keep but not split apart on</span>
+melt<span class="p">(</span>origdata.wide<span class="p">,</span> id.vars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;subject&quot;</span><span class="p">,</span><span class="s">&quot;sex&quot;</span><span class="p">))</span>
+<span class="c1"># subject sex variable value</span>
+<span class="c1">#       1   M  control   7.9</span>
+<span class="c1">#       2   F  control   6.3</span>
+<span class="c1">#       3   F  control   9.5</span>
+<span class="c1">#       4   M  control  11.5</span>
+<span class="c1">#       1   M    cond1  12.3</span>
+<span class="c1">#       2   F    cond1  10.6</span>
+<span class="c1">#       3   F    cond1  13.1</span>
+<span class="c1">#       4   M    cond1  13.4</span>
+<span class="c1">#       1   M    cond2  10.7</span>
+<span class="c1">#       2   F    cond2  11.1</span>
+<span class="c1">#       3   F    cond2  13.8</span>
+<span class="c1">#       4   M    cond2  12.9</span>
+</pre></div>
+
+
+<p>There are options for <code>melt</code> that can make the output a little easier to work with:</p>
+<div class="codehilite"><pre>data.long <span class="o">&lt;-</span> melt<span class="p">(</span>origdata.wide<span class="p">,</span>
+        <span class="c1"># ID variables - all the variables to keep but not split apart on</span>
+    id.vars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;subject&quot;</span><span class="p">,</span><span class="s">&quot;sex&quot;</span><span class="p">),</span>
+        <span class="c1"># The source columns</span>
+    measure.vars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;control&quot;</span><span class="p">,</span> <span class="s">&quot;cond1&quot;</span><span class="p">,</span> <span class="s">&quot;cond2&quot;</span> <span class="p">),</span>
+        <span class="c1"># Name of the destination column that will identify the original</span>
+        <span class="c1"># column that the measurement came from</span>
+    variable.name<span class="o">=</span><span class="s">&quot;condition&quot;</span><span class="p">,</span>
+    value.name<span class="o">=</span><span class="s">&quot;measurement&quot;</span>
+    <span class="p">)</span>
+<span class="c1"># subject sex condition measurement</span>
+<span class="c1">#       1   M   control         7.9</span>
+<span class="c1">#       2   F   control         6.3</span>
+<span class="c1">#       3   F   control         9.5</span>
+<span class="c1">#       4   M   control        11.5</span>
+<span class="c1">#       1   M     cond1        12.3</span>
+<span class="c1">#       2   F     cond1        10.6</span>
+<span class="c1">#       3   F     cond1        13.1</span>
+<span class="c1">#       4   M     cond1        13.4</span>
+<span class="c1">#       1   M     cond2        10.7</span>
+<span class="c1">#       2   F     cond2        11.1</span>
+<span class="c1">#       3   F     cond2        13.8</span>
+<span class="c1">#       4   M     cond2        12.9</span>
+</pre></div>
+
+
+<p>If you leave out the <code>measure.vars</code>, <code>melt</code> will automatically use all the other variables as the <code>id.vars</code>. The reverse is true if you leave out <code>id.vars</code>.</p>
+<p>If you don't specify <code>variable.name</code>, it will name that column <code>"variable"</code>, and if you leave out <code>value.name</code>, it will name that column <code>"measurement"</code>.</p>
+<p>Optional: Rename the factor levels of the <em>variable</em> column.</p>
+<div class="codehilite"><pre><span class="c1"># Rename factor names from &quot;cond1&quot; and &quot;cond2&quot; to &quot;first&quot; and &quot;second&quot;</span>
+<span class="kp">levels</span><span class="p">(</span>data.long<span class="o">$</span>condition<span class="p">)[</span><span class="kp">levels</span><span class="p">(</span>data.long<span class="o">$</span>condition<span class="p">)</span><span class="o">==</span><span class="s">&quot;cond1&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;first&quot;</span>
+<span class="kp">levels</span><span class="p">(</span>data.long<span class="o">$</span>condition<span class="p">)[</span><span class="kp">levels</span><span class="p">(</span>data.long<span class="o">$</span>condition<span class="p">)</span><span class="o">==</span><span class="s">&quot;cond2&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;second&quot;</span>
+
+<span class="c1"># Sort by subject first, then by condition</span>
+data.long <span class="o">&lt;-</span> data.long<span class="p">[</span> <span class="kp">order</span><span class="p">(</span>data.long<span class="o">$</span>subject<span class="p">,</span> data.long<span class="o">$</span>condition<span class="p">),</span> <span class="p">]</span>
+<span class="c1"># subject sex condition measurement</span>
+<span class="c1">#       1   M   control         7.9</span>
+<span class="c1">#       1   M     first        12.3</span>
+<span class="c1">#       1   M    second        10.7</span>
+<span class="c1">#       2   F   control         6.3</span>
+<span class="c1">#       2   F     first        10.6</span>
+<span class="c1">#       2   F    second        11.1</span>
+<span class="c1">#       3   F   control         9.5</span>
+<span class="c1">#       3   F     first        13.1</span>
+<span class="c1">#       3   F    second        13.8</span>
+<span class="c1">#       4   M   control        11.5</span>
+<span class="c1">#       4   M     first        13.4</span>
+<span class="c1">#       4   M    second        12.9</span>
+</pre></div>
+
+
+<h3 id="from-long-to-wide">From long to wide</h3>
+<p>The following code uses <code>dcast</code> to reshape the data. This function is meant for data frames; if you are working with arrays or matrices, use <code>acast</code> instead.</p>
+<div class="codehilite"><pre>origdata.long
+<span class="c1"># subject sex condition measurement</span>
+<span class="c1">#       1   M   control         7.9</span>
+<span class="c1">#       1   M     cond1        12.3</span>
+<span class="c1">#       1   M     cond2        10.7</span>
+<span class="c1">#       2   F   control         6.3</span>
+<span class="c1">#       2   F     cond1        10.6</span>
+<span class="c1">#       2   F     cond2        11.1</span>
+<span class="c1">#       3   F   control         9.5</span>
+<span class="c1">#       3   F     cond1        13.1</span>
+<span class="c1">#       3   F     cond2        13.8</span>
+<span class="c1">#       4   M   control        11.5</span>
+<span class="c1">#       4   M     cond1        13.4</span>
+<span class="c1">#       4   M     cond2        12.9</span>
+
+<span class="c1"># From the source:</span>
+<span class="c1"># &quot;subject&quot; and &quot;sex&quot; are columns we want to keep the same</span>
+<span class="c1"># &quot;condition&quot; is the column that contains the names of the new column to put things in</span>
+<span class="c1"># &quot;measurement&quot; holds the measurements</span>
+<span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+
+data.wide <span class="o">&lt;-</span> dcast<span class="p">(</span>origdata.long<span class="p">,</span> subject <span class="o">+</span> sex <span class="o">~</span> condition<span class="p">,</span> value.var<span class="o">=</span><span class="s">&quot;measurement&quot;</span><span class="p">)</span>
+<span class="c1"># subject sex cond1 cond2 control</span>
+<span class="c1">#       1   M  12.3  10.7     7.9</span>
+<span class="c1">#       2   F  10.6  11.1     6.3</span>
+<span class="c1">#       3   F  13.1  13.8     9.5</span>
+<span class="c1">#       4   M  13.4  12.9    11.5</span>
+</pre></div>
+
+
+<p>Optional: A few things to make the data look nicer.</p>
+<div class="codehilite"><pre><span class="c1"># Rename cond1 to first, and cond2 to second</span>
+<span class="kp">names</span><span class="p">(</span>data.wide<span class="p">)[</span><span class="kp">names</span><span class="p">(</span>data.wide<span class="p">)</span><span class="o">==</span><span class="s">&quot;cond1&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;first&quot;</span>
+<span class="kp">names</span><span class="p">(</span>data.wide<span class="p">)[</span><span class="kp">names</span><span class="p">(</span>data.wide<span class="p">)</span><span class="o">==</span><span class="s">&quot;cond2&quot;</span><span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;second&quot;</span>
+
+<span class="c1"># Reorder the columns</span>
+data.wide <span class="o">&lt;-</span> data.wide<span class="p">[,</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">)]</span>
+<span class="c1"># subject sex control first second</span>
+<span class="c1">#       1   M     7.9  12.3   10.7</span>
+<span class="c1">#       2   F     6.3  10.6   11.1</span>
+<span class="c1">#       3   F     9.5  13.1   13.8</span>
+<span class="c1">#       4   M    11.5  13.4   12.9</span>
+</pre></div>
+
+
+<p>The order of factor levels determines the order of the columns. The level order can be <a href="Changing_the_order_of_levels_of_a_factor.html">changed</a> before reshaping, or the columns can be <a href="Reordering_the_columns_in_a_data_frame.html">re-ordered</a>afterward.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

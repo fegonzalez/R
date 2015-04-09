@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Changing the order of levels of a factor
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Changing_the_order_of_levels_of_a_factor
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="changing-the-order-of-levels-of-a-factor">Changing the order of levels of a factor</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to change the order in which the levels of a factor appear.</p>
+<h2 id="solution">Solution</h2>
+<p>Factors in R come in two varieties: <strong>ordered</strong> and <strong>unordered</strong>, e.g., {small, medium, large} and {pen, brush, pencil}. For many analyses, it will not matter whether a factor is ordered or unordered. If the factor is <strong>ordered</strong>, then the specific order of the levels matters (small &lt; medium &lt; large). If the factor is <strong>unordered</strong>, then the levels will still appear in some order, but the specific order of the levels matters only for convenience (pen,  pencil, brush) -- it will determine, for example, how output will be printed, or the arrangement of items on a graph.</p>
+<p>One way to change the level order is to use <code>factor()</code> on the factor and specify the order directly. In this example, the function <code>ordered()</code> could be used instead of <code>factor()</code>.</p>
+<p>Here's the sample data:</p>
+<div class="codehilite"><pre><span class="c1"># Create a factor with the wrong order of levels</span>
+sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: large medium small</span>
+</pre></div>
+
+
+<p>The levels can be specified explicitly:</p>
+<div class="codehilite"><pre>sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>sizes<span class="p">,</span> levels <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: small medium large</span>
+</pre></div>
+
+
+<p>We can do the same with an ordered factor:</p>
+<div class="codehilite"><pre>sizes <span class="o">&lt;-</span> <span class="kp">ordered</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">))</span>
+sizes <span class="o">&lt;-</span> <span class="kp">ordered</span><span class="p">(</span>sizes<span class="p">,</span> levels <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: small &lt; medium &lt; large</span>
+</pre></div>
+
+
+<p>Another way to change the order is to use <code>relevel()</code> to make a particular level first in the list. (This will not work for ordered factors.)</p>
+<div class="codehilite"><pre><span class="c1"># Create a factor with the wrong order of levels</span>
+sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: large medium small</span>
+
+<span class="c1"># Make medium first</span>
+sizes <span class="o">&lt;-</span> relevel<span class="p">(</span>sizes<span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">)</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: medium large small</span>
+
+<span class="c1"># Make small first</span>
+sizes <span class="o">&lt;-</span> relevel<span class="p">(</span>sizes<span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">)</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: small medium large</span>
+</pre></div>
+
+
+<p>You can also specify the proper order when the factor is created.</p>
+<div class="codehilite"><pre>sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">),</span>
+                 levels <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: small medium large</span>
+</pre></div>
+
+
+<p>To <strong>reverse</strong> the order of levels in a factor:</p>
+<div class="codehilite"><pre><span class="c1"># Create a factor with the wrong order of levels</span>
+sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span> <span class="kt">c</span><span class="p">(</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;large&quot;</span><span class="p">,</span> <span class="s">&quot;small&quot;</span><span class="p">,</span> <span class="s">&quot;medium&quot;</span><span class="p">))</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: large medium small</span>
+
+sizes <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>sizes<span class="p">,</span> levels<span class="o">=</span><span class="kp">rev</span><span class="p">(</span><span class="kp">levels</span><span class="p">(</span>sizes<span class="p">))</span> <span class="p">)</span>
+<span class="c1"># small  large  large  small  medium</span>
+<span class="c1"># Levels: small medium large</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

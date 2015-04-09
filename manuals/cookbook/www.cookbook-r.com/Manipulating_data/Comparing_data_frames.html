@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Comparing data frames
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Comparing_data_frames
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="comparing-data-frames">Comparing data frames</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Comparing_data_frames.html#comparing-data-frames">Comparing data frames</a><ul>
+<li><a href="Comparing_data_frames.html#problem">Problem</a></li>
+<li><a href="Comparing_data_frames.html#solution">Solution</a><ul>
+<li><a href="Comparing_data_frames.html#an-example">An example</a><ul>
+<li><a href="Comparing_data_frames.html#joining-the-data-frames">Joining the data frames</a></li>
+<li><a href="Comparing_data_frames.html#finding-duplicated-rows">Finding duplicated rows</a></li>
+<li><a href="Comparing_data_frames.html#finding-unique-rows">Finding unique rows</a></li>
+<li><a href="Comparing_data_frames.html#splitting-apart-the-data-frame">Splitting apart the data frame</a></li>
+<li><a href="Comparing_data_frames.html#ignoring-columns">Ignoring columns</a></li>
+</ul>
+</li>
+<li><a href="Comparing_data_frames.html#dupsbetweengroups-function">dupsBetweenGroups function</a></li>
+<li><a href="Comparing_data_frames.html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do compare two or more data frames and find rows that appear in more than one data frame, or rows that appear only in one data frame.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="an-example">An example</h3>
+<p>Suppose you have the following three data frames, and you want to know whether each row from each data frame appears in at least one of the other data frames.</p>
+<div class="codehilite"><pre>dfA <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>Subject<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> Response<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;X&quot;</span><span class="p">,</span><span class="s">&quot;X&quot;</span><span class="p">,</span><span class="s">&quot;X&quot;</span><span class="p">,</span><span class="s">&quot;X&quot;</span><span class="p">))</span>
+<span class="c1"># Subject Response</span>
+<span class="c1">#       1        X</span>
+<span class="c1">#       1        X</span>
+<span class="c1">#       2        X</span>
+<span class="c1">#       2        X</span>
+
+dfB <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>Subject<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">),</span> Response<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;X&quot;</span><span class="p">,</span><span class="s">&quot;Y&quot;</span><span class="p">,</span><span class="s">&quot;X&quot;</span><span class="p">))</span>
+<span class="c1"># Subject Response</span>
+<span class="c1">#       1        X</span>
+<span class="c1">#       2        Y</span>
+<span class="c1">#       3        X</span>
+
+dfC <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>Subject<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">),</span> Response<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Z&quot;</span><span class="p">,</span><span class="s">&quot;Y&quot;</span><span class="p">,</span><span class="s">&quot;Z&quot;</span><span class="p">))</span>
+<span class="c1"># Subject Response</span>
+<span class="c1">#       1        Z</span>
+<span class="c1">#       2        Y</span>
+<span class="c1">#       3        Z</span>
+</pre></div>
+
+
+<p>In dfA, the rows containing (1,X) also appear in dfB, but the rows containing (2,X) do not appear in any of the other data frames.  Similarly, dfB contains (1,X) which appears in dfA, and (2,Y), which appears in dfC, but (3,X) does not appear in any other data frame.</p>
+<p>You might wish to mark the rows which are duplicated in another data frame, or which are unique to each data frame.</p>
+<h4 id="joining-the-data-frames">Joining the data frames</h4>
+<p>To proceed, first join the three data frames, with a column identifying which source each row came from. It's called <code>Coder</code> here because this could be data coded by three different people. In this case, you might wish to find where the coders agreed, or where they disagreed.</p>
+<div class="codehilite"><pre>dfA<span class="o">$</span>Coder <span class="o">&lt;-</span> <span class="s">&quot;A&quot;</span>
+dfB<span class="o">$</span>Coder <span class="o">&lt;-</span> <span class="s">&quot;B&quot;</span>
+dfC<span class="o">$</span>Coder <span class="o">&lt;-</span> <span class="s">&quot;C&quot;</span>
+
+df <span class="o">&lt;-</span> <span class="kp">rbind</span><span class="p">(</span>dfA<span class="p">,</span> dfB<span class="p">,</span> dfC<span class="p">)</span>  <span class="c1"># Stick them together</span>
+df <span class="o">&lt;-</span> df<span class="p">[,</span><span class="kt">c</span><span class="p">(</span><span class="m">3</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">)]</span>         <span class="c1"># Reorder the columns to look nice</span>
+<span class="c1"># Coder Subject Response</span>
+<span class="c1">#     A       1        X</span>
+<span class="c1">#     A       1        X</span>
+<span class="c1">#     A       2        X</span>
+<span class="c1">#     A       2        X</span>
+<span class="c1">#     B       1        X</span>
+<span class="c1">#     B       2        Y</span>
+<span class="c1">#     B       3        X</span>
+<span class="c1">#     C       1        Z</span>
+<span class="c1">#     C       2        Y</span>
+<span class="c1">#     C       3        Z</span>
+</pre></div>
+
+
+<p>If your data starts out in this format, then there's obviously no need to join it together.</p>
+<h4 id="finding-duplicated-rows">Finding duplicated rows</h4>
+<p>Using the function <code>dupsBetweenGroups</code> (defined below), we can find which rows are duplicated between different groups:</p>
+<div class="codehilite"><pre><span class="c1"># Find the rows which have duplicates in a different group.</span>
+dupRows <span class="o">&lt;-</span> dupsBetweenGroups<span class="p">(</span>df<span class="p">,</span><span class="s">&quot;Coder&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print it alongside the data frame</span>
+<span class="kp">cbind</span><span class="p">(</span>df<span class="p">,</span> dup<span class="o">=</span>dupRows<span class="p">)</span>
+<span class="c1"># Coder Subject Response   dup</span>
+<span class="c1">#     A       1        X  TRUE</span>
+<span class="c1">#     A       1        X  TRUE</span>
+<span class="c1">#     A       2        X FALSE</span>
+<span class="c1">#     A       2        X FALSE</span>
+<span class="c1">#     B       1        X  TRUE</span>
+<span class="c1">#     B       2        Y  TRUE</span>
+<span class="c1">#     B       3        X FALSE</span>
+<span class="c1">#     C       1        Z FALSE</span>
+<span class="c1">#     C       2        Y  TRUE</span>
+<span class="c1">#     C       3        Z FALSE</span>
+</pre></div>
+
+
+<p>Note that this does not mark duplicated rows <strong>within</strong> a group. With Coder=A, there are two rows with Subject=1 and Response=X, but these are not marked as duplicates.</p>
+<h4 id="finding-unique-rows">Finding unique rows</h4>
+<p>It's also possible to find the rows that are unique within each group:</p>
+<div class="codehilite"><pre><span class="kp">cbind</span><span class="p">(</span>df<span class="p">,</span> unique<span class="o">=!</span>dupRows<span class="p">)</span>
+<span class="c1"># Coder Subject Response unique</span>
+<span class="c1">#     A       1        X  FALSE</span>
+<span class="c1">#     A       1        X  FALSE</span>
+<span class="c1">#     A       2        X   TRUE</span>
+<span class="c1">#     A       2        X   TRUE</span>
+<span class="c1">#     B       1        X  FALSE</span>
+<span class="c1">#     B       2        Y  FALSE</span>
+<span class="c1">#     B       3        X   TRUE</span>
+<span class="c1">#     C       1        Z   TRUE</span>
+<span class="c1">#     C       2        Y  FALSE</span>
+<span class="c1">#     C       3        Z   TRUE</span>
+</pre></div>
+
+
+<h4 id="splitting-apart-the-data-frame">Splitting apart the data frame</h4>
+<p>If you wish to split the joined data frame into the three original data frames</p>
+<div class="codehilite"><pre><span class="c1"># Store the results in df</span>
+dfDup <span class="o">&lt;-</span> <span class="kp">cbind</span><span class="p">(</span>df<span class="p">,</span> dup<span class="o">=</span>dupRows<span class="p">)</span>
+
+dfA <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>dfDup<span class="p">,</span> Coder<span class="o">==</span><span class="s">&quot;A&quot;</span><span class="p">,</span> select<span class="o">=-</span>Coder<span class="p">)</span>
+<span class="c1"># Subject Response   dup</span>
+<span class="c1">#       1        X  TRUE</span>
+<span class="c1">#       1        X  TRUE</span>
+<span class="c1">#       2        X FALSE</span>
+<span class="c1">#       2        X FALSE</span>
+
+dfB <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>dfDup<span class="p">,</span> Coder<span class="o">==</span><span class="s">&quot;B&quot;</span><span class="p">,</span> select<span class="o">=-</span>Coder<span class="p">)</span>
+<span class="c1"># Subject Response   dup</span>
+<span class="c1">#       1        X  TRUE</span>
+<span class="c1">#       2        Y  TRUE</span>
+<span class="c1">#       3        X FALSE</span>
+
+dfC <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>dfDup<span class="p">,</span> Coder<span class="o">==</span><span class="s">&quot;C&quot;</span><span class="p">,</span> select<span class="o">=-</span>Coder<span class="p">)</span>
+<span class="c1"># Subject Response   dup</span>
+<span class="c1">#       1        Z FALSE</span>
+<span class="c1">#       2        Y  TRUE</span>
+<span class="c1">#       3        Z FALSE</span>
+</pre></div>
+
+
+<h4 id="ignoring-columns">Ignoring columns</h4>
+<p>It is also possible to ignore one or more columns, by removing that column from the data frame that is passed to the function. The results can be joined to the original complete data frame if desired.</p>
+<div class="codehilite"><pre><span class="c1"># Ignore the Subject column -- only use Response</span>
+dfNoSub <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span>df<span class="p">,</span> select<span class="o">=-</span>Subject<span class="p">)</span>
+<span class="c1"># Coder Response</span>
+<span class="c1">#     A        X</span>
+<span class="c1">#     A        X</span>
+<span class="c1">#     A        X</span>
+<span class="c1">#     A        X</span>
+<span class="c1">#     B        X</span>
+<span class="c1">#     B        Y</span>
+<span class="c1">#     B        X</span>
+<span class="c1">#     C        Z</span>
+<span class="c1">#     C        Y</span>
+<span class="c1">#     C        Z</span>
+
+<span class="c1"># Check for duplicates</span>
+dupRows <span class="o">&lt;-</span> dupsBetweenGroups<span class="p">(</span>dfNoSub<span class="p">,</span> <span class="s">&quot;Coder&quot;</span><span class="p">)</span>
+
+<span class="c1"># Join the result to the original data frame</span>
+<span class="kp">cbind</span><span class="p">(</span>df<span class="p">,</span> dup<span class="o">=</span>dupRows<span class="p">)</span>
+<span class="c1"># Coder Subject Response   dup</span>
+<span class="c1">#     A       1        X  TRUE</span>
+<span class="c1">#     A       1        X  TRUE</span>
+<span class="c1">#     A       2        X  TRUE</span>
+<span class="c1">#     A       2        X  TRUE</span>
+<span class="c1">#     B       1        X  TRUE</span>
+<span class="c1">#     B       2        Y  TRUE</span>
+<span class="c1">#     B       3        X  TRUE</span>
+<span class="c1">#     C       1        Z FALSE</span>
+<span class="c1">#     C       2        Y  TRUE</span>
+<span class="c1">#     C       3        Z FALSE</span>
+</pre></div>
+
+
+<h3 id="dupsbetweengroups-function">dupsBetweenGroups function</h3>
+<p>This is the function that does all the work:</p>
+<div class="codehilite"><pre>dupsBetweenGroups <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>df<span class="p">,</span> idcol<span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># df: the data frame</span>
+    <span class="c1"># idcol: the column which identifies the group each row belongs to</span>
+
+    <span class="c1"># Get the data columns to use for finding matches</span>
+    datacols <span class="o">&lt;-</span> <span class="kp">setdiff</span><span class="p">(</span><span class="kp">names</span><span class="p">(</span>df<span class="p">),</span> idcol<span class="p">)</span>
+
+    <span class="c1"># Sort by idcol, then datacols. Save order so we can undo the sorting later.</span>
+    sortorder <span class="o">&lt;-</span> <span class="kp">do.call</span><span class="p">(</span><span class="kp">order</span><span class="p">,</span> df<span class="p">)</span>
+    df <span class="o">&lt;-</span> df<span class="p">[</span>sortorder<span class="p">,]</span>
+
+    <span class="c1"># Find duplicates within each id group (first copy not marked)</span>
+    dupWithin <span class="o">&lt;-</span> <span class="kp">duplicated</span><span class="p">(</span>df<span class="p">)</span>
+
+    <span class="c1"># With duplicates within each group filtered out, find duplicates between groups. </span>
+    <span class="c1"># Need to scan up and down with duplicated() because first copy is not marked.</span>
+    dupBetween <span class="o">=</span> <span class="kp">rep</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> <span class="kp">nrow</span><span class="p">(</span>df<span class="p">))</span>
+    dupBetween<span class="p">[</span><span class="o">!</span>dupWithin<span class="p">]</span> <span class="o">&lt;-</span> <span class="kp">duplicated</span><span class="p">(</span>df<span class="p">[</span><span class="o">!</span>dupWithin<span class="p">,</span>datacols<span class="p">])</span>
+    dupBetween<span class="p">[</span><span class="o">!</span>dupWithin<span class="p">]</span> <span class="o">&lt;-</span> <span class="kp">duplicated</span><span class="p">(</span>df<span class="p">[</span><span class="o">!</span>dupWithin<span class="p">,</span>datacols<span class="p">],</span> fromLast<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span> <span class="o">|</span> dupBetween<span class="p">[</span><span class="o">!</span>dupWithin<span class="p">]</span>
+
+
+    <span class="c1"># =================== Replace NA&#39;s with previous non-NA value =====================</span>
+    <span class="c1"># This is why we sorted earlier - it was necessary to do this part efficiently</span>
+
+    <span class="c1"># Get indexes of non-NA&#39;s</span>
+    goodIdx <span class="o">&lt;-</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>dupBetween<span class="p">)</span>
+
+    <span class="c1"># These are the non-NA values from x only</span>
+    <span class="c1"># Add a leading NA for later use when we index into this vector</span>
+    goodVals <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> dupBetween<span class="p">[</span>goodIdx<span class="p">])</span>
+
+    <span class="c1"># Fill the indices of the output vector with the indices pulled from</span>
+    <span class="c1"># these offsets of goodVals. Add 1 to avoid indexing to zero.</span>
+    fillIdx <span class="o">&lt;-</span> <span class="kp">cumsum</span><span class="p">(</span>goodIdx<span class="p">)</span><span class="m">+1</span>
+
+    <span class="c1"># The original vector, now with gaps filled</span>
+    dupBetween <span class="o">&lt;-</span> goodVals<span class="p">[</span>fillIdx<span class="p">]</span>
+
+    <span class="c1"># Undo the original sort</span>
+    dupBetween<span class="p">[</span>sortorder<span class="p">]</span> <span class="o">&lt;-</span> dupBetween
+
+    <span class="c1"># Return the vector of which entries are duplicated across groups</span>
+    <span class="kr">return</span><span class="p">(</span>dupBetween<span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p>To find exact duplicate rows within a single dataframe, see <a href="Finding_and_removing_duplicate_records.html">../Finding and removing duplicate records</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

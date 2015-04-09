@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Fonts
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Fonts
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="fonts">Fonts</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Fonts.html#fonts">Fonts</a><ul>
+<li><a href="Fonts.html#problem">Problem</a></li>
+<li><a href="Fonts.html#solution">Solution</a><ul>
+<li><a href="Fonts.html#geom_text">geom_text</a></li>
+<li><a href="Fonts.html#themes-and-element_text">themes and element_text</a></li>
+<li><a href="Fonts.html#table-of-fonts">Table of fonts</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>This page was recently updated to reflect changes in the new version of ggplot2, 0.9.3. See <a href="../Basics/Installing_and_using_packages.html">Installing and using packages</a> to make sure you have the latest version of ggplot2.</strong></p>
+<h2 id="problem">Problem</h2>
+<p>You want to use different fonts in your graphs.</p>
+<h2 id="solution">Solution</h2>
+<p><strong>Update: Also see the <a href="https://github.com/wch/extrafont">extrafont</a> package for much better support of fonts for PDF and Windows bitmap output.</strong></p>
+<p>Font support in R is generally not very good. It varies between systems, and between output formats. </p>
+<h3 id="geom_text">geom_text</h3>
+<p>With <code>geom_text</code> or <code>annotate</code> in ggplot2, you can set a number of properties of the text. <code>geom_text</code> is used to add text from the data frame, and <code>annotate</code> is used to add a single text element.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Default value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>family</code></td>
+<td><code>""</code> (sans)</td>
+</tr>
+<tr>
+<td><code>fontface</code></td>
+<td><code>plain</code></td>
+</tr>
+<tr>
+<td><code>lineheight</code></td>
+<td>1.2</td>
+</tr>
+<tr>
+<td><code>angle</code></td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>hjust</code></td>
+<td>0.5</td>
+</tr>
+<tr>
+<td><code>vjust</code></td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table>
+<p>Note that <code>size</code> is in mm, not points.</p>
+<div class="codehilite"><pre>dat <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>
+    y <span class="o">=</span> <span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">,</span>
+    text <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;This is text&quot;</span><span class="p">,</span> <span class="s">&quot;Text with\nmultiple lines&quot;</span><span class="p">,</span> <span class="s">&quot;Some more text&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+p <span class="o">&lt;-</span> ggplot<span class="p">(</span>dat<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span><span class="m">1</span><span class="p">,</span> y<span class="o">=</span>y<span class="p">))</span> <span class="o">+</span> 
+       scale_y_continuous<span class="p">(</span>limits<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="m">0.5</span><span class="p">,</span> <span class="m">3.5</span><span class="p">),</span> breaks<span class="o">=</span><span class="kc">NULL</span><span class="p">)</span> <span class="o">+</span>
+       scale_x_continuous<span class="p">(</span>breaks<span class="o">=</span><span class="kc">NULL</span><span class="p">)</span>
+
+p <span class="o">+</span> geom_text<span class="p">(</span>aes<span class="p">(</span>label<span class="o">=</span>text<span class="p">))</span>
+
+p <span class="o">+</span> geom_text<span class="p">(</span>aes<span class="p">(</span>label<span class="o">=</span>text<span class="p">),</span> family<span class="o">=</span><span class="s">&quot;Times&quot;</span><span class="p">,</span> fontface<span class="o">=</span><span class="s">&quot;italic&quot;</span><span class="p">,</span> lineheight<span class="o">=</span><span class="m">.8</span><span class="p">)</span> <span class="o">+</span>
+    annotate<span class="p">(</span>geom<span class="o">=</span><span class="s">&quot;text&quot;</span><span class="p">,</span> x<span class="o">=</span><span class="m">1</span><span class="p">,</span> y<span class="o">=</span><span class="m">1.5</span><span class="p">,</span> label<span class="o">=</span><span class="s">&quot;Annotation text&quot;</span><span class="p">,</span> colour<span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
+             size<span class="o">=</span><span class="m">7</span><span class="p">,</span> family<span class="o">=</span><span class="s">&quot;Courier&quot;</span><span class="p">,</span> fontface<span class="o">=</span><span class="s">&quot;bold&quot;</span><span class="p">,</span> angle<span class="o">=</span><span class="m">30</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="" src="Fonts/text.png" />
+<img alt="" src="Fonts/text-modified.png" /></p>
+<h3 id="themes-and-element_text">themes and element_text</h3>
+<p>When controlling elements such as the title, legend, axis labels, and so on, you use <code>element_text</code>, which has the same parameters, except that <code>size</code> is <strong>points</strong> (not mm), and instead of <code>fontface</code>, it uses <code>face</code>. The default value of <code>size</code> depends on the element; for example, titles are larger than tick labels.</p>
+<div class="codehilite"><pre>p <span class="o">+</span> geom_point<span class="p">()</span> <span class="o">+</span>
+    ggtitle<span class="p">(</span><span class="s">&quot;This is a Title&quot;</span><span class="p">)</span> <span class="o">+</span>
+    theme<span class="p">(</span>plot.title<span class="o">=</span>element_text<span class="p">(</span>family<span class="o">=</span><span class="s">&quot;Times&quot;</span><span class="p">,</span> face<span class="o">=</span><span class="s">&quot;bold&quot;</span><span class="p">,</span> size<span class="o">=</span><span class="m">20</span><span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Fonts/text-title.png" /></p>
+<h3 id="table-of-fonts">Table of fonts</h3>
+<p>You can use this code to generate a graphical table of fonts. Fonts have <em>short</em> names and <em>canonical</em> family names. You can use either one when specifying the family.</p>
+<div class="codehilite"><pre>fonttable <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> sep<span class="o">=</span><span class="s">&quot;,&quot;</span><span class="p">,</span> stringsAsFactors<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                        text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">Short,Canonical</span>
+<span class="s">mono,Courier</span>
+<span class="s">sans,Helvetica</span>
+<span class="s">serif,Times</span>
+<span class="s">,AvantGarde</span>
+<span class="s">,Bookman</span>
+<span class="s">,Helvetica-Narrow</span>
+<span class="s">,NewCenturySchoolbook</span>
+<span class="s">,Palatino</span>
+<span class="s">,URWGothic</span>
+<span class="s">,URWBookman</span>
+<span class="s">,NimbusMon</span>
+<span class="s">URWHelvetica,NimbusSan</span>
+<span class="s">,NimbusSanCond</span>
+<span class="s">,CenturySch</span>
+<span class="s">,URWPalladio</span>
+<span class="s">URWTimes,NimbusRom</span>
+<span class="s">&#39;</span><span class="p">)</span>
+
+fonttable<span class="o">$</span>pos <span class="o">&lt;-</span> <span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>fonttable<span class="p">)</span>
+
+<span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+fonttable <span class="o">&lt;-</span> melt<span class="p">(</span>fonttable<span class="p">,</span> id.vars<span class="o">=</span><span class="s">&quot;pos&quot;</span><span class="p">,</span> measure.vars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Short&quot;</span><span class="p">,</span><span class="s">&quot;Canonical&quot;</span><span class="p">),</span>
+                  variable.name<span class="o">=</span><span class="s">&quot;NameType&quot;</span><span class="p">,</span> value.name<span class="o">=</span><span class="s">&quot;Font&quot;</span><span class="p">)</span>
+
+<span class="c1"># Make a table of faces. Make sure factors are ordered correctly</span>
+facetable <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>Face <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;plain&quot;</span><span class="p">,</span><span class="s">&quot;bold&quot;</span><span class="p">,</span><span class="s">&quot;italic&quot;</span><span class="p">,</span><span class="s">&quot;bold.italic&quot;</span><span class="p">),</span>
+                                      levels <span class="o">=</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;plain&quot;</span><span class="p">,</span><span class="s">&quot;bold&quot;</span><span class="p">,</span><span class="s">&quot;italic&quot;</span><span class="p">,</span><span class="s">&quot;bold.italic&quot;</span><span class="p">)))</span>
+
+fullfonts <span class="o">&lt;-</span> <span class="kp">merge</span><span class="p">(</span>fonttable<span class="p">,</span> facetable<span class="p">)</span>
+
+
+<span class="kn">library</span><span class="p">(</span>ggplot2<span class="p">)</span>
+pf <span class="o">&lt;-</span> ggplot<span class="p">(</span>fullfonts<span class="p">,</span> aes<span class="p">(</span>x<span class="o">=</span>NameType<span class="p">,</span> y<span class="o">=</span>pos<span class="p">))</span> <span class="o">+</span> 
+             geom_text<span class="p">(</span>aes<span class="p">(</span>label<span class="o">=</span>Font<span class="p">,</span> family<span class="o">=</span>Font<span class="p">,</span> fontface<span class="o">=</span>Face<span class="p">))</span> <span class="o">+</span>
+             facet_wrap<span class="p">(</span><span class="o">~</span> Face<span class="p">,</span> ncol<span class="o">=</span><span class="m">2</span><span class="p">)</span>
+
+pf
+</pre></div>
+
+
+<p>What you see on the screen isn't necessarily the same as what you get when you output to PNG or PDF. To see PNG output:</p>
+<div class="codehilite"><pre>png<span class="p">(</span><span class="s">&#39;fonttable.png&#39;</span><span class="p">,</span> width<span class="o">=</span><span class="m">720</span><span class="p">,</span> height<span class="o">=</span><span class="m">720</span><span class="p">,</span> res<span class="o">=</span><span class="m">72</span><span class="p">)</span>
+<span class="kp">print</span><span class="p">(</span>pf<span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>Notice that on the system that generated this picture, most of the fonts (at the top) don't really work. Only the basic fonts (at the bottom) work.</p>
+<p><img alt="" src="Fonts/fonttable.png" /></p>
+<hr />
+<p>And PDF output (the image below has been converted from PDF to PNG):</p>
+<div class="codehilite"><pre>pdf<span class="p">(</span><span class="s">&#39;fonttable.pdf&#39;</span><span class="p">,</span> width<span class="o">=</span><span class="m">10</span><span class="p">,</span> height<span class="o">=</span><span class="m">10</span><span class="p">)</span>
+<span class="kp">print</span><span class="p">(</span>pf<span class="p">)</span>
+dev.off<span class="p">()</span>
+
+<span class="c1"># Convert to PNG using ImageMagick:</span>
+<span class="c1">#   convert -resize 720x720 -background white fonttable.pdf fonttable-pdf.png</span>
+</pre></div>
+
+
+<p>The PDF device has better font support than the PNG device. All the fonts work (though they're not necessarily pretty):</p>
+<p><img alt="" src="Fonts/fonttable-pdf.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Converting between data frames and contingency tables
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Converting_between_data_frames_and_contingency_tables
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="converting-between-data-frames-and-contingency-tables">Converting between data frames and contingency tables</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Converting_between_data_frames_and_contingency_tables.html#converting-between-data-frames-and-contingency-tables">Converting between data frames and contingency tables</a><ul>
+<li><a href="Converting_between_data_frames_and_contingency_tables.html#problem">Problem</a></li>
+<li><a href="Converting_between_data_frames_and_contingency_tables.html#solution">Solution</a><ul>
+<li><a href="Converting_between_data_frames_and_contingency_tables.html#expanddft-function">expand.dft() function</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to do convert between a data frame of cases, a data frame of counts of each <strong>type</strong> of case, and a contingency table.</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose we start with this data frame, in which each row represents one <strong><em>case</em></strong>:</p>
+<div class="codehilite"><pre>cases <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>Sex<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;M&quot;</span><span class="p">,</span> <span class="s">&quot;M&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">,</span> <span class="s">&quot;F&quot;</span><span class="p">),</span> 
+                    Color<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;brown&quot;</span><span class="p">,</span> <span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="s">&quot;brown&quot;</span><span class="p">,</span> <span class="s">&quot;brown&quot;</span><span class="p">,</span> <span class="s">&quot;brown&quot;</span><span class="p">))</span>
+<span class="c1"># Sex Color</span>
+<span class="c1">#   M brown</span>
+<span class="c1">#   M  blue</span>
+<span class="c1">#   F brown</span>
+<span class="c1">#   F brown</span>
+<span class="c1">#   F brown</span>
+</pre></div>
+
+
+<p>It can also be represented as a <strong><em>contingency table</em></strong>. Note that it's converted here and stored in <code>ctable</code>:</p>
+<div class="codehilite"><pre><span class="c1"># Cases to Table</span>
+ctable  <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>cases<span class="p">)</span>
+<span class="c1">#    Color</span>
+<span class="c1"># Sex blue brown</span>
+<span class="c1">#   F    0     3</span>
+<span class="c1">#   M    1     1</span>
+
+
+<span class="c1"># If you call table using two vectors, it will not add names (Sex and Color) to the dimensions</span>
+<span class="kp">table</span><span class="p">(</span>cases<span class="o">$</span>Sex<span class="p">,</span> cases<span class="o">$</span>Color<span class="p">)</span>
+<span class="c1">#    blue brown</span>
+<span class="c1">#  F    0     3</span>
+<span class="c1">#  M    1     1</span>
+
+<span class="c1"># The dimension names can be specified manually, or by using a subset of the data frame that</span>
+<span class="c1"># contains only the desired columns</span>
+<span class="kp">table</span><span class="p">(</span>cases<span class="o">$</span>Sex<span class="p">,</span> cases<span class="o">$</span>Color<span class="p">,</span> dnn<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Sex&quot;</span><span class="p">,</span><span class="s">&quot;Color&quot;</span><span class="p">))</span>
+<span class="kp">table</span><span class="p">(</span>cases<span class="p">[,</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Sex&quot;</span><span class="p">,</span><span class="s">&quot;Color&quot;</span><span class="p">)])</span>
+<span class="c1">#    Color</span>
+<span class="c1"># Sex blue brown</span>
+<span class="c1">#   F    0     3</span>
+<span class="c1">#   M    1     1</span>
+</pre></div>
+
+
+<p>It can also be represented as a data frame of <strong><em>counts</em></strong> of each combination. Note that it's converted here and stored in <code>countdf</code>:</p>
+<div class="codehilite"><pre><span class="c1"># Cases to Counts</span>
+countdf <span class="o">&lt;-</span> <span class="kp">as.data.frame</span><span class="p">(</span><span class="kp">table</span><span class="p">(</span>cases<span class="p">),</span> stringsAsFactors<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># Sex Color Freq</span>
+<span class="c1">#   F  blue    0</span>
+<span class="c1">#   M  blue    1</span>
+<span class="c1">#   F brown    3</span>
+<span class="c1">#   M brown    1</span>
+</pre></div>
+
+
+<p>These three data structures represent the same information, but in different ways. Here are other ways of converting between them. Some of these require a function <code>expand.dft()</code>, which is defined below.</p>
+<p>Converting from a contingency table to the other two formats:</p>
+<div class="codehilite"><pre><span class="c1"># Table to Counts</span>
+<span class="kp">as.data.frame</span><span class="p">(</span>ctable<span class="p">,</span> stringsAsFactors<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+
+<span class="c1"># Table to Cases</span>
+expand.dft<span class="p">(</span><span class="kp">as.data.frame</span><span class="p">(</span>ctable<span class="p">,</span> stringsAsFactors<span class="o">=</span><span class="bp">T</span><span class="p">))</span>
+</pre></div>
+
+
+<p>Converting from a data frame of counts to the other two formats:</p>
+<div class="codehilite"><pre><span class="c1"># Counts to Cases</span>
+expand.dft<span class="p">(</span>countdf<span class="p">)</span>
+
+<span class="c1"># Counts to Table</span>
+xtabs<span class="p">(</span>Freq <span class="o">~</span> x<span class="o">+</span>y<span class="p">,</span> data<span class="o">=</span>countdf<span class="p">)</span>
+</pre></div>
+
+
+<h3 id="expanddft-function">expand.dft() function</h3>
+<div class="codehilite"><pre>expand.dft <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>x<span class="p">,</span> na.strings <span class="o">=</span> <span class="s">&quot;NA&quot;</span><span class="p">,</span> as.is <span class="o">=</span> <span class="kc">FALSE</span><span class="p">,</span> dec <span class="o">=</span> <span class="s">&quot;.&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># Take each row in the source data frame table and replicate it</span>
+    <span class="c1"># using the Freq value</span>
+    DF <span class="o">&lt;-</span> <span class="kp">sapply</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="kp">nrow</span><span class="p">(</span>x<span class="p">),</span> 
+                 <span class="kr">function</span><span class="p">(</span>i<span class="p">)</span> x<span class="p">[</span><span class="kp">rep</span><span class="p">(</span>i<span class="p">,</span> each <span class="o">=</span> x<span class="o">$</span>Freq<span class="p">[</span>i<span class="p">]),</span> <span class="p">],</span>
+                 simplify <span class="o">=</span> <span class="kc">FALSE</span><span class="p">)</span>
+
+    <span class="c1"># Take the above list and rbind it to create a single DF</span>
+    <span class="c1"># Also subset the result to eliminate the Freq column</span>
+    DF <span class="o">&lt;-</span> <span class="kp">subset</span><span class="p">(</span><span class="kp">do.call</span><span class="p">(</span><span class="s">&quot;rbind&quot;</span><span class="p">,</span> DF<span class="p">),</span> select <span class="o">=</span> <span class="o">-</span>Freq<span class="p">)</span>
+
+    <span class="c1"># Now apply type.convert to the character coerced factor columns  </span>
+    <span class="c1"># to facilitate data type selection for each column </span>
+    <span class="kr">for</span> <span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">ncol</span><span class="p">(</span>DF<span class="p">))</span> <span class="p">{</span>
+        DF<span class="p">[[</span>i<span class="p">]]</span> <span class="o">&lt;-</span> type.convert<span class="p">(</span><span class="kp">as.character</span><span class="p">(</span>DF<span class="p">[[</span>i<span class="p">]]),</span>
+                                na.strings <span class="o">=</span> na.strings<span class="p">,</span>
+                                as.is <span class="o">=</span> as.is<span class="p">,</span> dec <span class="o">=</span> dec<span class="p">)</span>
+    <span class="p">}</span>
+
+    DF
+<span class="p">}</span>
+</pre></div>
+
+
+<p>This function was written by <a href="https://stat.ethz.ch/pipermail/r-help/2006-October/115290.html">Marc Schwartz</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

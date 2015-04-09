@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Indexing into a data structure
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Basics.html">Basics</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Indexing_into_a_data_structure
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="indexing-into-a-data-structure">Indexing into a data structure</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Indexing_into_a_data_structure.html#indexing-into-a-data-structure">Indexing into a data structure</a><ul>
+<li><a href="Indexing_into_a_data_structure.html#problem">Problem</a></li>
+<li><a href="Indexing_into_a_data_structure.html#solution">Solution</a><ul>
+<li><a href="Indexing_into_a_data_structure.html#indexing-with-numbers-and-names">Indexing with numbers and names</a></li>
+<li><a href="Indexing_into_a_data_structure.html#indexing-with-a-boolean-vector">Indexing with a boolean vector</a></li>
+<li><a href="Indexing_into_a_data_structure.html#negative-indexing">Negative indexing</a></li>
+<li><a href="Indexing_into_a_data_structure.html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to get part of a data structure.</p>
+<h2 id="solution">Solution</h2>
+<p>Elements from a vector, matrix, or data frame can be extracted using numeric indexing, or by using a boolean vector of the appropriate length.</p>
+<p>In many of the examples, below, there are multiple ways of doing the same thing.</p>
+<h3 id="indexing-with-numbers-and-names">Indexing with numbers and names</h3>
+<p>With a vector:</p>
+<div class="codehilite"><pre><span class="c1"># A sample vector</span>
+v <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">)</span>
+
+v<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">)]</span>
+v<span class="p">[</span><span class="m">2</span><span class="o">:</span><span class="m">4</span><span class="p">]</span>
+<span class="c1"># 4 4 3</span>
+
+v<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">4</span><span class="p">,</span><span class="m">3</span><span class="p">)]</span>
+<span class="c1"># 4 3 4</span>
+</pre></div>
+
+
+<p>With a data frame:</p>
+<div class="codehilite"><pre><span class="c1"># Create a sample data frame</span>
+data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="bp">T</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject sex size</span>
+<span class="s">       1   M    7</span>
+<span class="s">       2   F    6</span>
+<span class="s">       3   F    9</span>
+<span class="s">       4   M   11</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+
+<span class="c1"># Get the element at row 1, column 3</span>
+data<span class="p">[</span><span class="m">1</span><span class="p">,</span><span class="m">3</span><span class="p">]</span>
+data<span class="p">[</span><span class="m">1</span><span class="p">,</span><span class="s">&quot;size&quot;</span><span class="p">]</span>
+<span class="c1"># 7</span>
+
+
+<span class="c1"># Get rows 1 and 2, and all columns</span>
+data<span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">,</span> <span class="p">]</span>   
+data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> <span class="p">]</span>
+<span class="c1"># subject sex size</span>
+<span class="c1">#       1   M    7</span>
+<span class="c1">#       2   F    6</span>
+
+
+<span class="c1"># Get rows 1 and 2, and only column 2</span>
+data<span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">,</span> <span class="m">2</span><span class="p">]</span>
+data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> <span class="m">2</span><span class="p">]</span>
+<span class="c1"># [1] M F</span>
+<span class="c1"># Levels: F M</span>
+
+<span class="c1"># Get rows 1 and 2, and only the columns named &quot;sex&quot; and &quot;size&quot;</span>
+data<span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;size&quot;</span><span class="p">)]</span>
+data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">),</span> <span class="kt">c</span><span class="p">(</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">)]</span>
+<span class="c1"># sex size</span>
+<span class="c1">#   M    7</span>
+<span class="c1">#   F    6</span>
+</pre></div>
+
+
+<h3 id="indexing-with-a-boolean-vector">Indexing with a boolean vector</h3>
+<p>With the vector <code>v</code> from above:</p>
+<div class="codehilite"><pre>v <span class="o">&gt;</span> <span class="m">2</span>
+<span class="c1"># FALSE  TRUE  TRUE  TRUE FALSE FALSE  TRUE</span>
+
+v<span class="p">[</span>v<span class="o">&gt;</span><span class="m">2</span><span class="p">]</span>
+v<span class="p">[</span> <span class="kt">c</span><span class="p">(</span><span class="bp">F</span><span class="p">,</span><span class="bp">T</span><span class="p">,</span><span class="bp">T</span><span class="p">,</span><span class="bp">T</span><span class="p">,</span><span class="bp">F</span><span class="p">,</span><span class="bp">F</span><span class="p">,</span><span class="bp">T</span><span class="p">)]</span>
+<span class="c1"># 4 4 3 3</span>
+</pre></div>
+
+
+<p>With the data frame from above:</p>
+<div class="codehilite"><pre><span class="c1"># A boolean vector   </span>
+data<span class="o">$</span>subject <span class="o">&lt;</span> <span class="m">3</span>
+<span class="c1"># TRUE  TRUE FALSE FALSE</span>
+
+data<span class="p">[</span>data<span class="o">$</span>subject <span class="o">&lt;</span> <span class="m">3</span><span class="p">,</span> <span class="p">]</span>
+data<span class="p">[</span><span class="kt">c</span><span class="p">(</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">),</span> <span class="p">]</span>
+<span class="c1"># subject sex size</span>
+<span class="c1">#       1   M    7</span>
+<span class="c1">#       2   F    6    </span>
+
+<span class="c1"># It is also possible to get the numeric indices of the TRUEs</span>
+<span class="kp">which</span><span class="p">(</span>data<span class="o">$</span>subject <span class="o">&lt;</span> <span class="m">3</span><span class="p">)</span>
+<span class="c1"># 1 2</span>
+</pre></div>
+
+
+<h3 id="negative-indexing">Negative indexing</h3>
+<p>Unlike in some other programming languages, when you use negative numbers for indexing in R, it doesn't mean to index backward from the end. Instead, it means to <strong>drop</strong> the element at that index, counting the usual way, from the beginning.</p>
+<div class="codehilite"><pre><span class="c1"># Here&#39;s the vector again.</span>
+v
+<span class="c1"># 1 4 4 3 2 2 3</span>
+
+<span class="c1"># Drop the first element</span>
+v<span class="p">[</span><span class="m">-1</span><span class="p">]</span>
+<span class="c1"># 4 4 3 2 2 3</span>
+
+<span class="c1"># Drop first three</span>
+v<span class="p">[</span><span class="m">-1</span><span class="o">:</span><span class="m">-3</span><span class="p">]</span>
+<span class="c1"># 3 2 2 3</span>
+
+<span class="c1"># Drop just the last element</span>
+v<span class="p">[</span><span class="o">-</span><span class="kp">length</span><span class="p">(</span>v<span class="p">)]</span>
+<span class="c1"># 1 4 4 3 2 2</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p>Also see <a href="Getting_a_subset_of_a_data_structure.html">../Getting a subset of a data structure</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

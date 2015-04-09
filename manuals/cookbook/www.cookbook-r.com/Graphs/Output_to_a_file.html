@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Output to a file
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Output_to_a_file
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="output-to-a-file">Output to a file</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Output_to_a_file.html#output-to-a-file">Output to a file</a><ul>
+<li><a href="Output_to_a_file.html#problem">Problem</a></li>
+<li><a href="Output_to_a_file.html#solution">Solution</a><ul>
+<li><a href="Output_to_a_file.html#pdf">PDF</a></li>
+<li><a href="Output_to_a_file.html#svg">SVG</a></li>
+<li><a href="Output_to_a_file.html#pngtiff">PNG/TIFF</a></li>
+<li><a href="Output_to_a_file.html#for-import-into-pdf-incapable-programs-ms-office">For import into PDF-incapable programs (MS Office)</a></li>
+<li><a href="Output_to_a_file.html#ggplot2">ggplot2</a></li>
+<li><a href="Output_to_a_file.html#saving-a-graph-from-the-screen">Saving a graph from the screen</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to save your graph(s) to a file.</p>
+<h2 id="solution">Solution</h2>
+<p>There are several commands which will direct output to a file instead of the screen. You must use the <code>dev.off()</code> command to tell R that you are finished plotting; otherwise your graph will not show up.</p>
+<h3 id="pdf">PDF</h3>
+<p>PDF is a vector file format. Vector files are generally preferred for print output because the resulting output can be scaled to any size without pixelation. The size of a vector file is usually smaller than the corresponding bitmap file, except in cases where there are many objects. (For example, a scatter plot with thousands of points may result in a very large vector file, but a smaller bitmap file.)</p>
+<div class="codehilite"><pre>pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>PDF's are 7x7 inches by default, and each new plot is on a new page. The size can be changed:</p>
+<div class="codehilite"><pre><span class="c1"># 6x3 inches</span>
+pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">6</span><span class="p">,</span> height<span class="o">=</span><span class="m">3</span><span class="p">)</span>
+
+<span class="c1"># 10x6 cm</span>
+pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">10</span><span class="o">/</span><span class="m">2.54</span><span class="p">,</span> height<span class="o">=</span><span class="m">6</span><span class="o">/</span><span class="m">2.54</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If you want to edit your file in a vector editor like Inkscape or Illustrator, some of the plotting point objects might look like letters instead of circles, squares, etc. To avoid this problem:</p>
+<div class="codehilite"><pre>pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">,</span> useDingbats<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="svg">SVG</h3>
+<p>SVG is another vector format. The default settings for <code>svg()</code> doesn't allow for multiple pages in a single file, since most SVG viewers can't handle multi-page SVG files. See the PNG section below for outputting to multiple files.</p>
+<div class="codehilite"><pre>svg<span class="p">(</span><span class="s">&quot;plots.svg&quot;</span><span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>SVG files may work better with vector-editing programs than PDF files.</p>
+<h3 id="pngtiff">PNG/TIFF</h3>
+<p>PNG and TIFF are bitmap (or raster) formats. If they are magnified, the pixels may be visible.</p>
+<div class="codehilite"><pre>png<span class="p">(</span><span class="s">&quot;plot.png&quot;</span><span class="p">)</span>
+<span class="c1"># or tiff(&quot;plot.tiff&quot;)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>By default, the graphs are 480x480 pixels in size, at a resolution of 72 dpi (6.66x6.66 inches).</p>
+<p>Increasing the resolution will increase the size (in pixels) of the text and graph elements. This occurs because the size of these elements is relative to the physical dimension of the graph (e.g., 4x4 inches), not the pixel dimension of the graph. For example, a 12 point font is 12/72 = 1/6 inch tall; at 72 dpi, this is 12 pixels, but at 120dpi, it is 20 pixels.</p>
+<p>This would create a graph that is 480x240 pixels at 120dpi, equivalent to 4x2 inches.  </p>
+<div class="codehilite"><pre>png<span class="p">(</span><span class="s">&quot;plot.png&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">480</span><span class="p">,</span> height<span class="o">=</span><span class="m">240</span><span class="p">,</span> res<span class="o">=</span><span class="m">120</span><span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>If you want to make more than one graph, you must either execute a new <code>png()</code> command for each one, or put <code>%d</code> in the filename:</p>
+<div class="codehilite"><pre>png<span class="p">(</span><span class="s">&quot;plot-%d.png&quot;</span><span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>This will generate plot-1.png, plot2.png, and so on.</p>
+<h3 id="for-import-into-pdf-incapable-programs-ms-office">For import into PDF-incapable programs (MS Office)</h3>
+<p>Some programs which cannot import PDF files may work with high-resolution PNG or TIFF files. For example, Microsoft Office cannot import PDF files. For print publications, you may be required to use 300dpi images.</p>
+<div class="codehilite"><pre><span class="c1"># Make a 6x6 inch image at 300dpi</span>
+ppi <span class="o">&lt;-</span> <span class="m">300</span>
+png<span class="p">(</span><span class="s">&quot;plot.png&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">6</span><span class="o">*</span>ppi<span class="p">,</span> height<span class="o">=</span><span class="m">6</span><span class="o">*</span>ppi<span class="p">,</span> res<span class="o">=</span>ppi<span class="p">)</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<h3 id="ggplot2">ggplot2</h3>
+<p>If you make plots with ggplot2 in a script or function, you must use the <code>print()</code> command to make the graphs actually get rendered.</p>
+<div class="codehilite"><pre><span class="c1"># This will do nothing</span>
+pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">)</span>
+qplot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+
+<span class="c1"># This will do the right thing</span>
+pdf<span class="p">(</span><span class="s">&quot;plots.pdf&quot;</span><span class="p">)</span>
+<span class="kp">print</span><span class="p">(</span>qplot<span class="p">(</span><span class="kc">...</span><span class="p">))</span>
+dev.off<span class="p">()</span>
+</pre></div>
+
+
+<p>To save a ggplot2 graph from the screen to a file, you can use <code>ggsave()</code>.</p>
+<div class="codehilite"><pre>ggsave<span class="p">(</span><span class="s">&quot;plot.pdf&quot;</span><span class="p">)</span>
+
+ggsave<span class="p">(</span><span class="s">&quot;plot.pdf&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">4</span><span class="p">,</span> height<span class="o">=</span><span class="m">4</span><span class="p">)</span>
+
+<span class="c1"># This will save a 400x400 file at 100 ppi</span>
+ggsave<span class="p">(</span><span class="s">&quot;plot.png&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">4</span><span class="p">,</span> height<span class="o">=</span><span class="m">4</span><span class="p">,</span> dpi<span class="o">=</span><span class="m">100</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="saving-a-graph-from-the-screen">Saving a graph from the screen</h3>
+<p>If you have a graph on the screen, you can save it to a bitmap file.</p>
+<p>This will save an exact pixel-for-pixel copy of what's on screen, but it will probably only work in Linux and on Macs that use X11 for R graphing:</p>
+<div class="codehilite"><pre><span class="c1"># Make a plot on screen</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+
+savePlot<span class="p">(</span><span class="s">&quot;myplot.png&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>This will save the current graph from the screen, but it re-renders it for the device, which may have different dimensions, so it won't look exactly the same unless you specify the exact same size in pixels.</p>
+<div class="codehilite"><pre><span class="c1"># Make a plot on screen</span>
+plot<span class="p">(</span><span class="kc">...</span><span class="p">)</span>
+
+dev.copy<span class="p">(</span>pdf<span class="p">,</span><span class="s">&quot;myplot.pdf&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">4</span><span class="p">,</span> height<span class="o">=</span><span class="m">4</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+<span class="c1"># Same as doing:</span>
+<span class="c1"># pdf(&quot;myplot.pdf&quot;, width=4, height=4)</span>
+<span class="c1"># plot(...)</span>
+<span class="c1"># dev.off()</span>
+
+
+dev.copy<span class="p">(</span>png<span class="p">,</span><span class="s">&quot;myplot.png&quot;</span><span class="p">,</span> width<span class="o">=</span><span class="m">400</span><span class="p">,</span> height<span class="o">=</span><span class="m">400</span><span class="p">)</span>
+dev.off<span class="p">()</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

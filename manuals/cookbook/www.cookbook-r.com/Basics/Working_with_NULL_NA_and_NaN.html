@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Working with NULL, NA, and NaN
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Basics.html">Basics</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Working_with_NULL_NA_and_NaN
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="working-with-null-na-and-nan">Working with NULL, NA, and NaN</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Working_with_NULL_NA_and_NaN.html#working-with-null-na-and-nan">Working with NULL, NA, and NaN</a><ul>
+<li><a href="Working_with_NULL_NA_and_NaN.html#problem">Problem</a></li>
+<li><a href="Working_with_NULL_NA_and_NaN.html#solution">Solution</a><ul>
+<li><a href="Working_with_NULL_NA_and_NaN.html#ignoring-bad-values-in-vector-summary-functions">Ignoring "bad" values in vector summary functions</a></li>
+<li><a href="Working_with_NULL_NA_and_NaN.html#removing-bad-values-from-a-vector">Removing bad values from a vector</a></li>
+<li><a href="Working_with_NULL_NA_and_NaN.html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to properly handle <code>NULL</code>, <code>NA</code>, or <code>NaN</code> values.</p>
+<h2 id="solution">Solution</h2>
+<p>Sometimes your data will include <code>NULL</code>, <code>NA</code>, or <code>NaN</code>. These work somewhat differently from "normal" values, and may require explicit testing.</p>
+<p>Here are some examples of comparisons with these values:</p>
+<div class="codehilite"><pre>x <span class="o">&lt;-</span> <span class="kc">NULL</span>
+x <span class="o">&gt;</span> <span class="m">5</span>
+<span class="c1"># logical(0)</span>
+
+
+y <span class="o">&lt;-</span> <span class="kc">NA</span>
+y <span class="o">&gt;</span> <span class="m">5</span>
+<span class="c1"># NA</span>
+
+
+z <span class="o">&lt;-</span> <span class="kc">NaN</span>
+z <span class="o">&gt;</span> <span class="m">5</span>
+<span class="c1"># NA</span>
+</pre></div>
+
+
+<p>Here's how to test whether a variable has one of these values:</p>
+<div class="codehilite"><pre><span class="kp">is.null</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># TRUE</span>
+
+<span class="kp">is.na</span><span class="p">(</span>y<span class="p">)</span>
+<span class="c1"># TRUE</span>
+
+<span class="kp">is.nan</span><span class="p">(</span>z<span class="p">)</span>
+<span class="c1"># TRUE</span>
+</pre></div>
+
+
+<p>Note that <code>NULL</code> is different from the other two. <code>NULL</code> means that there is no value, while <code>NA</code> and <code>NaN</code> mean that there is some value, although one that is perhaps not usable. Here's an illustration of the difference:</p>
+<div class="codehilite"><pre><span class="c1"># Is y null?</span>
+<span class="kp">is.null</span><span class="p">(</span>y<span class="p">)</span>
+<span class="c1"># FALSE</span>
+
+<span class="c1"># Is x NA?</span>
+<span class="kp">is.na</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># logical(0)</span>
+<span class="c1"># Warning message:</span>
+<span class="c1"># In is.na(x) : is.na() applied to non-(list or vector) of type &#39;NULL&#39;</span>
+</pre></div>
+
+
+<p>In the first case, it checks if <code>y</code> is <code>NULL</code>, and the answer is no. In the second case, it tries to check if <code>x</code> is `NA, but there is no value to be checked.</p>
+<h3 id="ignoring-bad-values-in-vector-summary-functions">Ignoring "bad" values in vector summary functions</h3>
+<p>If you run functions like <code>mean()</code> or <code>sum()</code> on a vector containing <code>NA</code> or <code>NaN</code>, they will return <code>NA</code> and <code>NaN</code>, which is generally unhelpful, though this will alert you to the presence of the bad value. Many of these functions take the flag <code>na.rm</code>, which tells them to ignore these values.</p>
+<div class="codehilite"><pre>vy <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span> <span class="m">5</span><span class="p">)</span>
+<span class="c1"># 1  2  3 NA  5</span>
+<span class="kp">mean</span><span class="p">(</span>vy<span class="p">)</span>
+<span class="c1"># NA</span>
+<span class="kp">mean</span><span class="p">(</span>vy<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># 2.75</span>
+
+
+vz <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="kc">NaN</span><span class="p">,</span> <span class="m">5</span><span class="p">)</span>
+<span class="c1"># 1   2   3 NaN   5</span>
+<span class="kp">sum</span><span class="p">(</span>vz<span class="p">)</span>
+<span class="c1"># NaN</span>
+<span class="kp">sum</span><span class="p">(</span>vz<span class="p">,</span> na.rm<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># 11</span>
+
+
+<span class="c1"># NULL isn&#39;t a problem, because it doesn&#39;t exist</span>
+vx <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="kc">NULL</span><span class="p">,</span> <span class="m">5</span><span class="p">)</span>
+<span class="c1"># 1 2 3 5</span>
+<span class="kp">sum</span><span class="p">(</span>vx<span class="p">)</span>
+<span class="c1"># 11</span>
+</pre></div>
+
+
+<h3 id="removing-bad-values-from-a-vector">Removing bad values from a vector</h3>
+<p>These values can be removed from a vector by filtering using <code>is.na()</code> or <code>is.nan()</code>.</p>
+<div class="codehilite"><pre>vy
+<span class="c1"># 1  2  3 NA  5</span>
+vy<span class="p">[</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>vy<span class="p">)</span> <span class="p">]</span>
+<span class="c1"># 1  2  3  5</span>
+
+vz
+<span class="c1"># 1   2   3 NaN   5</span>
+vz<span class="p">[</span> <span class="o">!</span><span class="kp">is.nan</span><span class="p">(</span>vz<span class="p">)</span> <span class="p">]</span>
+<span class="c1"># 1  2  3  5</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p>There are also the infinite numerical values <code>Inf</code> and <code>-Inf</code>, and the associated functions <code>is.finite()</code> and <code>is.infinite()</code>.</p>
+<p>Also see <a href="../Manipulating_data/Comparing_vectors_or_factors_with_NA.html">/Manipulating data/Comparing vectors or factors with NA</a></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

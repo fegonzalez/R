@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Filling in NAs with last non-NA value
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Filling_in_NAs_with_last_non-NA_value
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="filling-in-nas-with-last-non-na-value">Filling in NAs with last non-NA value</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to replace NA's in a vector or factor with the last non-NA value.</p>
+<h2 id="solution">Solution</h2>
+<p>This code shows how to fill gaps in a vector. If you need to do this repeatedly, see the function below. The function also can fill in leading NA's with the first good value and handle factors properly.</p>
+<div class="codehilite"><pre><span class="c1"># Sample data</span>
+x <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">)</span>
+<span class="c1"># NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; NA  NA  &quot;C&quot; NA  NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; NA  NA </span>
+
+goodIdx <span class="o">&lt;-</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE  TRUE  TRUE FALSE FALSE</span>
+
+<span class="c1"># These are the non-NA values from x only</span>
+<span class="c1"># Add a leading NA for later use when we index into this vector</span>
+goodVals <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span> x<span class="p">[</span>goodIdx<span class="p">])</span>
+<span class="c1"># NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;C&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot;</span>
+
+<span class="c1"># Fill the indices of the output vector with the indices pulled from</span>
+<span class="c1"># these offsets of goodVals. Add 1 to avoid indexing to zero.</span>
+fillIdx <span class="o">&lt;-</span> <span class="kp">cumsum</span><span class="p">(</span>goodIdx<span class="p">)</span><span class="m">+1</span>
+<span class="c1"># 1  1  2  3  4  5  6  6  6  7  7  7  7  8  9 10 10 10</span>
+
+<span class="c1"># The original vector with gaps filled</span>
+goodVals<span class="p">[</span>fillIdx<span class="p">]</span>
+<span class="c1"># NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot;</span>
+</pre></div>
+
+
+<h3 id="a-function-for-filling-gaps">A function for filling gaps</h3>
+<p>This function does the same as the code above. It can also fill leading NA's with the first good value, and handle factors properly.</p>
+<div class="codehilite"><pre>fillNAgaps <span class="o">&lt;-</span> <span class="kr">function</span> <span class="p">(</span>x<span class="p">,</span> firstBack<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">## NA&#39;s in a vector or factor are replaced with last non-NA values</span>
+    <span class="c1">## If firstBack is TRUE, it will fill in leading NA&#39;s with the first</span>
+    <span class="c1">## non-NA value. If FALSE, it will not change leading NA&#39;s.</span>
+
+    <span class="c1"># If it&#39;s a factor, store the level labels and convert to integer</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">is.factor</span><span class="p">(</span>x<span class="p">))</span> <span class="p">{</span>
+        lvls <span class="o">&lt;-</span> <span class="kp">levels</span><span class="p">(</span>x<span class="p">)</span>
+        x    <span class="o">&lt;-</span> <span class="kp">as.integer</span><span class="p">(</span>x<span class="p">)</span>
+    <span class="p">}</span>
+
+    goodIdx <span class="o">&lt;-</span> <span class="o">!</span><span class="kp">is.na</span><span class="p">(</span>x<span class="p">)</span>
+
+    <span class="c1"># These are the non-NA values from x only</span>
+    <span class="c1"># Add a leading NA or take the first good value, depending on firstBack   </span>
+    <span class="kr">if</span> <span class="p">(</span>firstBack<span class="p">)</span>   goodVals <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span>x<span class="p">[</span>goodIdx<span class="p">][</span><span class="m">1</span><span class="p">],</span> x<span class="p">[</span>goodIdx<span class="p">])</span>
+    <span class="kr">else</span>             goodVals <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span>            x<span class="p">[</span>goodIdx<span class="p">])</span>
+
+    <span class="c1"># Fill the indices of the output vector with the indices pulled from</span>
+    <span class="c1"># these offsets of goodVals. Add 1 to avoid indexing to zero.</span>
+    fillIdx <span class="o">&lt;-</span> <span class="kp">cumsum</span><span class="p">(</span>goodIdx<span class="p">)</span><span class="m">+1</span>
+
+    x <span class="o">&lt;-</span> goodVals<span class="p">[</span>fillIdx<span class="p">]</span>
+
+    <span class="c1"># If it was originally a factor, convert it back</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;lvls&quot;</span><span class="p">))</span>   x <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>x<span class="p">,</span> levels<span class="o">=</span><span class="m">1</span><span class="o">:</span><span class="kp">length</span><span class="p">(</span>lvls<span class="p">),</span> labels<span class="o">=</span>lvls<span class="p">)</span>
+
+    x
+<span class="p">}</span>
+
+
+
+<span class="c1"># Sample data</span>
+x <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">)</span>
+<span class="c1"># NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; NA  NA  &quot;C&quot; NA  NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; NA  NA </span>
+fillNAgaps<span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># NA  NA  &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot;</span>
+
+<span class="c1"># Fill the leading NA&#39;s with the first good value</span>
+fillNAgaps<span class="p">(</span>x<span class="p">,</span> firstBack<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot;</span>
+
+
+<span class="c1"># It also works on factors</span>
+y <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># &lt;NA&gt; &lt;NA&gt; A    A    B    B    B    &lt;NA&gt; &lt;NA&gt; C    &lt;NA&gt; &lt;NA&gt; &lt;NA&gt; A    A    B    &lt;NA&gt; &lt;NA&gt;</span>
+<span class="c1"># Levels: A B C</span>
+fillNAgaps<span class="p">(</span>y<span class="p">)</span>
+<span class="c1"># &lt;NA&gt; &lt;NA&gt; A    A    B    B    B    B    B    C    C    C    C    A    A    B    B    B   </span>
+<span class="c1"># Levels: A B C</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p>Adapted from <code>na.locf()</code> in the <strong>zoo</strong> library.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Histogram and density plot
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Graphs.html">Graphs</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Histogram_and_density_plot
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="histogram-and-density-plot">Histogram and density plot</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to make a histogram or density plot.</p>
+<h2 id="solution">Solution</h2>
+<p>Some sample data: these two vectors contain 200 data points each:</p>
+<div class="codehilite"><pre><span class="kp">set.seed</span><span class="p">(</span><span class="m">1234</span><span class="p">)</span>
+rating  <span class="o">&lt;-</span> rnorm<span class="p">(</span><span class="m">200</span><span class="p">)</span>
+<span class="c1"># -1.207065749  0.277429242  ...  0.162654708 -2.078237542</span>
+
+rating2 <span class="o">&lt;-</span> rnorm<span class="p">(</span><span class="m">200</span><span class="p">,</span> mean<span class="o">=</span><span class="m">.8</span><span class="p">)</span>
+<span class="c1"># 1.28522682  1.49676878  ...  0.81464312 -0.11648914</span>
+</pre></div>
+
+
+<p>When plotting multiple groups of data, some graphing routines require a data frame with one column for the grouping variable and one for the measure variable.</p>
+<div class="codehilite"><pre><span class="c1"># Make a column to indicate which group each value is in</span>
+cond <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span> <span class="kp">rep</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">),</span> each<span class="o">=</span><span class="m">200</span><span class="p">)</span> <span class="p">)</span>
+
+data <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>cond<span class="p">,</span> rating <span class="o">=</span> <span class="kt">c</span><span class="p">(</span>rating<span class="p">,</span>rating2<span class="p">))</span>
+<span class="c1"># cond     rating</span>
+<span class="c1">#    A -1.2070657</span>
+<span class="c1">#    A  0.2774292</span>
+<span class="c1">#    A  1.0844412</span>
+<span class="c1">#   ...</span>
+<span class="c1">#    B  1.3388331</span>
+<span class="c1">#    B  0.8146431</span>
+<span class="c1">#    B -0.1164891</span>
+</pre></div>
+
+
+<div class="codehilite"><pre><span class="c1"># Histogram</span>
+hist<span class="p">(</span>rating<span class="p">)</span>
+
+<span class="c1"># Use 8 bins (this is only approximate - it places boundaries on nice round numbers)</span>
+<span class="c1"># Make it light blue #CCCCFF</span>
+<span class="c1"># Instead of showing count, make area sum to 1, (freq=FALSE)</span>
+hist<span class="p">(</span>rating<span class="p">,</span> breaks<span class="o">=</span><span class="m">8</span><span class="p">,</span> col<span class="o">=</span><span class="s">&quot;#CCCCFF&quot;</span><span class="p">,</span> freq<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># Put breaks at every 0.6</span>
+boundaries <span class="o">&lt;-</span> <span class="kp">seq</span><span class="p">(</span><span class="m">-3</span><span class="p">,</span> <span class="m">3.6</span><span class="p">,</span> by<span class="o">=</span><span class="m">.6</span><span class="p">);</span>
+<span class="c1"># -3.0 -2.4 -1.8 -1.2 -0.6  0.0  0.6  1.2  1.8  2.4  3.0  3.6</span>
+hist<span class="p">(</span>rating<span class="p">,</span> breaks<span class="o">=</span>boundaries<span class="p">)</span>
+
+
+<span class="c1"># Kernel density plot</span>
+plot<span class="p">(</span>density<span class="p">(</span>rating<span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Histogram_and_density_plot/hist.png" />
+<img alt="" src="Histogram_and_density_plot/hist_nbreaks.png" />
+<img alt="" src="Histogram_and_density_plot/hist_breaks.png" />
+<img alt="" src="Histogram_and_density_plot/density.png" /></p>
+<p>Multiple groups with kernel density plots.</p>
+<p>This code is from: <a href="http://onertipaday.blogspot.com/2007/09/plotting-two-or-more-overlapping.html">http://onertipaday.blogspot.com/2007/09/plotting-two-or-more-overlapping.html</a></p>
+<div class="codehilite"><pre>plot.multi.dens <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>s<span class="p">)</span>
+<span class="p">{</span>
+    junk.x <span class="o">=</span> <span class="kc">NULL</span>
+    junk.y <span class="o">=</span> <span class="kc">NULL</span>
+    <span class="kr">for</span><span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">length</span><span class="p">(</span>s<span class="p">))</span> <span class="p">{</span>
+        junk.x <span class="o">=</span> <span class="kt">c</span><span class="p">(</span>junk.x<span class="p">,</span> density<span class="p">(</span>s<span class="p">[[</span>i<span class="p">]])</span><span class="o">$</span>x<span class="p">)</span>
+        junk.y <span class="o">=</span> <span class="kt">c</span><span class="p">(</span>junk.y<span class="p">,</span> density<span class="p">(</span>s<span class="p">[[</span>i<span class="p">]])</span><span class="o">$</span>y<span class="p">)</span>
+    <span class="p">}</span>
+    xr <span class="o">&lt;-</span> <span class="kp">range</span><span class="p">(</span>junk.x<span class="p">)</span>
+    yr <span class="o">&lt;-</span> <span class="kp">range</span><span class="p">(</span>junk.y<span class="p">)</span>
+    plot<span class="p">(</span>density<span class="p">(</span>s<span class="p">[[</span><span class="m">1</span><span class="p">]]),</span> xlim <span class="o">=</span> xr<span class="p">,</span> ylim <span class="o">=</span> yr<span class="p">,</span> main <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="kr">for</span><span class="p">(</span>i <span class="kr">in</span> <span class="m">1</span><span class="o">:</span><span class="kp">length</span><span class="p">(</span>s<span class="p">))</span> <span class="p">{</span>
+        lines<span class="p">(</span>density<span class="p">(</span>s<span class="p">[[</span>i<span class="p">]]),</span> xlim <span class="o">=</span> xr<span class="p">,</span> ylim <span class="o">=</span> yr<span class="p">,</span> col <span class="o">=</span> i<span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1"># the input of the following function MUST be a numeric list</span>
+plot.multi.dens<span class="p">(</span> <span class="kt">list</span><span class="p">(</span>rating<span class="p">,</span> rating2<span class="p">))</span>
+</pre></div>
+
+
+<p><img alt="" src="Histogram_and_density_plot/multi_density.png" /></p>
+<p>The <code>sm</code> package also includes a way of doing multiple density plots. The data must be in a data frame.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>sm<span class="p">)</span>
+sm.density.compare<span class="p">(</span>data<span class="o">$</span>rating<span class="p">,</span> data<span class="o">$</span>cond<span class="p">)</span>
+<span class="c1"># Add a legend (the color numbers start from 2 and go up)</span>
+legend<span class="p">(</span><span class="s">&quot;topright&quot;</span><span class="p">,</span> <span class="kp">levels</span><span class="p">(</span>data<span class="o">$</span>cond<span class="p">),</span> fill<span class="o">=</span><span class="m">2</span><span class="o">+</span><span class="p">(</span><span class="m">0</span><span class="o">:</span><span class="kp">nlevels</span><span class="p">(</span>data<span class="o">$</span>cond<span class="p">)))</span>
+</pre></div>
+
+
+<p><img alt="" src="Histogram_and_density_plot/multi_density_sm.png" /></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

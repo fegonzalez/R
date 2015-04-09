@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Frequency tests
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Statistical_analysis.html">Statistical_analysis</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Frequency_tests
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="frequency-tests">Frequency tests</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Frequency_tests.html#frequency-tests">Frequency tests</a><ul>
+<li><a href="Frequency_tests.html#problem">Problem</a></li>
+<li><a href="Frequency_tests.html#solution">Solution</a><ul>
+<li><a href="Frequency_tests.html#tests-of-goodness-of-fit-expected-frequency">Tests of goodness-of-fit (expected frequency)</a><ul>
+<li><a href="Frequency_tests.html#chi-square-test">Chi-square test</a></li>
+<li><a href="Frequency_tests.html#exact-binomial-test">Exact binomial test</a></li>
+</ul>
+</li>
+<li><a href="Frequency_tests.html#tests-of-independence-comparing-groups">Tests of independence (comparing groups)</a><ul>
+<li><a href="Frequency_tests.html#chi-square-test_1">Chi-square test</a></li>
+<li><a href="Frequency_tests.html#fishers-exact-test">Fisher's exact test</a></li>
+<li><a href="Frequency_tests.html#cochran-mantel-haenszel-test">Cochran-Mantel-Haenszel test</a></li>
+</ul>
+</li>
+<li><a href="Frequency_tests.html#mcnemars-test">McNemar's test</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You have categorical data and want test whether the frequency distribution of values differs from an expected frequency, or if the distribution differs between groups.</p>
+<h2 id="solution">Solution</h2>
+<p>There are two general questions that frequency tests address:</p>
+<ol>
+<li>Does the frequency distribution differ from an expected, or theoretical, distribution (e.g., expect 50% yes, 50% no)? (Goodness-of-fit test)</li>
+<li>Does the frequency distribution differ between two or more groups? (Independence test)</li>
+</ol>
+<p>Of the statistical tests commonly used to address these questions, there are <strong>exact</strong> tests and <strong>approximate</strong> tests. </p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong><em>Expected distribution</em></strong></th>
+<th><strong><em>Comparing groups</em></strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><em>Exact</em></strong></td>
+<td>Exact binomial</td>
+<td>Fisher's exact</td>
+</tr>
+<tr>
+<td><strong><em>Approximate</em></strong></td>
+<td>Chi-square goodness of fit</td>
+<td>Chi-square test of independence</td>
+</tr>
+</tbody>
+</table>
+<p>Note: The exact binomial test can only be used on one variable that has two levels. Fisher's exact test can only be used with two-dimensional contingency tables (for example, it can be used when there is one independent variable and one dependent variable, but not when there are 2 IVs and 1 DV).</p>
+<p>To test for paired or within-subjects effects, McNemar's test can be used. To use it, there must be one IV with two levels, and one DV with two levels.</p>
+<p>To test for the independence of two variables with repeated measurements, the Cochran-Mantel-Haenszel test can be used.</p>
+<p>Suppose this is your data, where each row represents one case:</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> condition result</span>
+<span class="s">   control      0</span>
+<span class="s">   control      0</span>
+<span class="s">   control      0</span>
+<span class="s">   control      0</span>
+<span class="s"> treatment      1</span>
+<span class="s">   control      0</span>
+<span class="s">   control      0</span>
+<span class="s"> treatment      0</span>
+<span class="s"> treatment      1</span>
+<span class="s">   control      1</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      0</span>
+<span class="s">   control      0</span>
+<span class="s">   control      1</span>
+<span class="s">   control      0</span>
+<span class="s">   control      1</span>
+<span class="s"> treatment      0</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      0</span>
+<span class="s"> treatment      0</span>
+<span class="s">   control      0</span>
+<span class="s"> treatment      1</span>
+<span class="s">   control      0</span>
+<span class="s">   control      0</span>
+<span class="s"> treatment      1</span>
+<span class="s"> treatment      0</span>
+<span class="s"> treatment      1</span>
+<span class="s"> &#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Instead of a data frame of <strong>cases</strong>, your data might be stored as a data frame of <strong>counts</strong>, or as a contingency table. For the analyses here, your data must be in a contingency table. See <a href="../Manipulating_data/Converting_between_data_frames_and_contingency_tables.html">this page</a> for more information.</p>
+<h3 id="tests-of-goodness-of-fit-expected-frequency">Tests of goodness-of-fit (expected frequency)</h3>
+<h4 id="chi-square-test">Chi-square test</h4>
+<p>To test whether the two values in the result column (ignoring sex and condition) are equally likely (50%-50%) in the population:</p>
+<div class="codehilite"><pre><span class="c1"># Create contingency table for result, which contains values 0 and 1</span>
+<span class="c1"># The column names are &quot;0&quot; and &quot;1&quot; (they&#39;re not actually values in the table)</span>
+ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>data<span class="o">$</span>result<span class="p">)</span>
+<span class="c1">#  0  1 </span>
+<span class="c1"># 17 13 </span>
+
+<span class="c1"># An alternative is to manually create the table</span>
+<span class="c1">#ct &lt;- matrix(c(17,13), ncol=2)</span>
+<span class="c1">#colnames(ct1) &lt;- c(&quot;0&quot;, &quot;1&quot;)</span>
+
+<span class="c1"># Perform Chi-square test</span>
+chisq.test<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#         Chi-squared test for given probabilities</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># X-squared = 0.5333, df = 1, p-value = 0.4652</span>
+</pre></div>
+
+
+<p>To compare the sample against different expected frequencies (in this case 0.75 and 0.25):</p>
+<div class="codehilite"><pre>ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>data<span class="o">$</span>result<span class="p">)</span>
+<span class="c1">#  0  1 </span>
+<span class="c1"># 17 13 </span>
+
+<span class="c1"># Probability table - must sum to 1</span>
+pt <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">.75</span><span class="p">,</span> <span class="m">.25</span><span class="p">)</span>
+chisq.test<span class="p">(</span>ct<span class="p">,</span> p<span class="o">=</span>pt<span class="p">)</span>
+<span class="c1">#         Chi-squared test for given probabilities</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># X-squared = 5.3778, df = 1, p-value = 0.02039</span>
+</pre></div>
+
+
+<h4 id="exact-binomial-test">Exact binomial test</h4>
+<p>The exact binomial test is used only with data where there is one variable with two possible values.</p>
+<div class="codehilite"><pre>ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>data<span class="o">$</span>result<span class="p">)</span>
+<span class="c1">#  0  1 </span>
+<span class="c1"># 17 13 </span>
+
+binom.test<span class="p">(</span>ct<span class="p">,</span> p<span class="o">=</span><span class="m">.5</span><span class="p">)</span>
+<span class="c1">#     Exact binomial test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># number of successes = 17, number of trials = 30, p-value = 0.5847</span>
+<span class="c1"># alternative hypothesis: true probability of success is not equal to 0.5 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1"># 0.3742735 0.7453925 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># probability of success </span>
+<span class="c1">#              0.5666667 </span>
+
+
+<span class="c1"># Using expected probability of 75% -- notice that 1 is in the second column</span>
+<span class="c1"># so need to use p=.25</span>
+binom.test<span class="p">(</span>ct<span class="p">,</span> p<span class="o">=</span><span class="m">.25</span><span class="p">)</span>
+<span class="c1">#     Exact binomial test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># number of successes = 17, number of trials = 30, p-value = 0.0002157</span>
+<span class="c1"># alternative hypothesis: true probability of success is not equal to 0.25 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  0.3742735 0.7453925 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># probability of success </span>
+<span class="c1">#              0.5666667 </span>
+</pre></div>
+
+
+<h3 id="tests-of-independence-comparing-groups">Tests of independence (comparing groups)</h3>
+<h4 id="chi-square-test_1">Chi-square test</h4>
+<p>To test whether the control and treatment conditions result in different frequencies, use a 2D contingency table. </p>
+<div class="codehilite"><pre>ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>data<span class="o">$</span>condition<span class="p">,</span> data<span class="o">$</span>result<span class="p">)</span>
+<span class="c1">#             0  1</span>
+<span class="c1">#  control   11  3</span>
+<span class="c1">#  treatment  6 10</span>
+
+chisq.test<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#    Pearson&#39;s Chi-squared test with Yates&#39; continuity correction</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># X-squared = 3.593, df = 1, p-value = 0.05802</span>
+
+
+chisq.test<span class="p">(</span>ct<span class="p">,</span> correct<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+<span class="c1">#         Pearson&#39;s Chi-squared test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># X-squared = 5.1293, df = 1, p-value = 0.02353</span>
+</pre></div>
+
+
+<p>For 2x2 tables, it uses <a href="http://en.wikipedia.org/wiki/Yates's_correction_for_continuity">Yates's continuity correction</a> by default. This test is more conservative for small sample sizes.
+The flag <code>correct=FALSE</code>, tells it to use Pearson's chi-square test without the correction.</p>
+<h4 id="fishers-exact-test">Fisher's exact test</h4>
+<p>For small sample sizes, Fisher's exact test may be more appropriate. It is typically used for 2x2 tables with relatively small sample sizes because it is computationally intensive for more complicated (e.g., 2x3) tables, and those with larger sample sizes. However, the implementation in R seems to handle larger cases without trouble.</p>
+<div class="codehilite"><pre>ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span>data<span class="o">$</span>condition<span class="p">,</span> data<span class="o">$</span>result<span class="p">)</span>
+<span class="c1">#             0  1</span>
+<span class="c1">#  control   11  3</span>
+<span class="c1">#  treatment  6 10</span>
+
+fisher.test<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#         Fisher&#39;s Exact Test for Count Data</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># p-value = 0.03293</span>
+<span class="c1"># alternative hypothesis: true odds ratio is not equal to 1 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#   0.966861 45.555016 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># odds ratio </span>
+<span class="c1">#   5.714369 </span>
+</pre></div>
+
+
+<h4 id="cochran-mantel-haenszel-test">Cochran-Mantel-Haenszel test</h4>
+<p>The Cochran-Mantel-Haenszel test (or Mantel-Haenszel test) is used for testing the independence of two dichotomous variables with repeated measurements. It is most commonly used with 2x2xK tables, where K is the number of measurement conditions. For example, you may want to know whether a treatment (C vs. D) affects the likelihood of recovery (yes or no). Suppose, though, that the treatments were administered at three different times of day, morning, afternoon, and night -- and that you want your test to control for this. The CMH test would then operate on a 2x2x3 contingency table, where the third variable is the one you wish to control for.</p>
+<p>The implementation of the CMH test in R can handle dimensions greater than 2x2xK. For example, you could use it for a 3x3xK contingency table.</p>
+<p>In the following example (borrowed from McDonald's <a href="http://udel.edu/~mcdonald/statcmh.html">Handbook of Biological Statistics</a>), there are three variables: Location, Allele, and Habitat. The question is whether Allele (94 or non-94) and Habitat (marine or estuarine) are independent, when location is controlled for.</p>
+<div class="codehilite"><pre>fish <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s">  Location Allele   Habitat Count</span>
+<span class="s"> tillamook     94    marine    56</span>
+<span class="s"> tillamook     94 estuarine    69</span>
+<span class="s"> tillamook non-94    marine    40</span>
+<span class="s"> tillamook non-94 estuarine    77</span>
+<span class="s">   yaquina     94    marine    61</span>
+<span class="s">   yaquina     94 estuarine   257</span>
+<span class="s">   yaquina non-94    marine    57</span>
+<span class="s">   yaquina non-94 estuarine   301</span>
+<span class="s">     alsea     94    marine    73</span>
+<span class="s">     alsea     94 estuarine    65</span>
+<span class="s">     alsea non-94    marine    71</span>
+<span class="s">     alsea non-94 estuarine    79</span>
+<span class="s">    umpqua     94    marine    71</span>
+<span class="s">    umpqua     94 estuarine    48</span>
+<span class="s">    umpqua non-94    marine    55</span>
+<span class="s">    umpqua non-94 estuarine    48</span>
+<span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Note that the data above is entered as a data frame of <strong>counts</strong>, instead of a data frame of <strong>cases</strong> as in previous examples. Instead of using <code>table()</code> to convert it to a contingency table, use <code>xtabs()</code> instead. For more information, see <a href="../Manipulating_data/Converting_between_data_frames_and_contingency_tables.html">this page</a>.</p>
+<div class="codehilite"><pre><span class="c1"># Make a 3D contingency table, where the last variable, Location, is the one to control for.</span>
+<span class="c1"># If you use table() for case data, the last variable is also the one to control for.</span>
+ct <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Allele <span class="o">+</span> Habitat <span class="o">+</span> Location<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+<span class="c1">#, , Location = alsea</span>
+<span class="c1">#        Habitat</span>
+<span class="c1">#Allele   estuarine marine</span>
+<span class="c1">#  94            65     73</span>
+<span class="c1">#  non-94        79     71</span>
+<span class="c1">#</span>
+<span class="c1">#, , Location = tillamook</span>
+<span class="c1">#        Habitat</span>
+<span class="c1">#Allele   estuarine marine</span>
+<span class="c1">#  94            69     56</span>
+<span class="c1">#  non-94        77     40</span>
+<span class="c1">#</span>
+<span class="c1">#, , Location = umpqua</span>
+<span class="c1">#        Habitat</span>
+<span class="c1">#Allele   estuarine marine</span>
+<span class="c1">#  94            48     71</span>
+<span class="c1">#  non-94        48     55</span>
+<span class="c1">#</span>
+<span class="c1">#, , Location = yaquina</span>
+<span class="c1">#        Habitat</span>
+<span class="c1">#Allele   estuarine marine</span>
+<span class="c1">#  94           257     61</span>
+<span class="c1">#  non-94       301     57</span>
+
+
+<span class="c1"># This prints ct in a &quot;flat&quot; format</span>
+ftable<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#                  Location alsea tillamook umpqua yaquina</span>
+<span class="c1"># Allele Habitat                                          </span>
+<span class="c1"># 94     estuarine             65        69     48     257</span>
+<span class="c1">#        marine                73        56     71      61</span>
+<span class="c1"># non-94 estuarine             79        77     48     301</span>
+<span class="c1">#        marine                71        40     55      57</span>
+
+<span class="c1"># Print with different arrangement of variables</span>
+ftable<span class="p">(</span>ct<span class="p">,</span> row.vars<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;Location&quot;</span><span class="p">,</span><span class="s">&quot;Allele&quot;</span><span class="p">),</span> col.vars<span class="o">=</span><span class="s">&quot;Habitat&quot;</span><span class="p">)</span>
+<span class="c1">#                  Habitat estuarine marine</span>
+<span class="c1"># Location  Allele                         </span>
+<span class="c1"># alsea     94                    65     73</span>
+<span class="c1">#           non-94                79     71</span>
+<span class="c1"># tillamook 94                    69     56</span>
+<span class="c1">#           non-94                77     40</span>
+<span class="c1"># umpqua    94                    48     71</span>
+<span class="c1">#           non-94                48     55</span>
+<span class="c1"># yaquina   94                   257     61</span>
+<span class="c1">#           non-94               301     57</span>
+
+
+mantelhaen.test<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#        Mantel-Haenszel chi-squared test with continuity correction</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># Mantel-Haenszel X-squared = 5.0497, df = 1, p-value = 0.02463</span>
+<span class="c1"># alternative hypothesis: true common odds ratio is not equal to 1 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  0.6005522 0.9593077 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># common odds ratio </span>
+<span class="c1">#          0.759022 </span>
+</pre></div>
+
+
+<p>According to this test, there is a relationship between Allele and Habitat, controlling for Location, p=.025.</p>
+<p>Note that the first two dimensions of the contingency table are treated the same (so their order can be swapped without affecting the test result), the highest-order dimension in the contingency table is different. This is illustrated below.</p>
+<div class="codehilite"><pre><span class="c1"># The following two create different contingency tables, but have the same result</span>
+<span class="c1"># with the CMH test</span>
+ct.1 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Habitat <span class="o">+</span> Allele <span class="o">+</span> Location<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+ct.2 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Allele <span class="o">+</span> Habitat <span class="o">+</span> Location<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.1<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.2<span class="p">)</span>
+<span class="c1">#        Mantel-Haenszel chi-squared test with continuity correction</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct.1</span>
+<span class="c1"># Mantel-Haenszel X-squared = 5.0497, df = 1, p-value = 0.02463</span>
+<span class="c1"># alternative hypothesis: true common odds ratio is not equal to 1 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#  0.6005522 0.9593077 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># common odds ratio </span>
+<span class="c1">#          0.759022 </span>
+
+
+<span class="c1"># With Allele last, we get a different result</span>
+ct.3 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Location <span class="o">+</span> Habitat <span class="o">+</span> Allele<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+ct.4 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Habitat <span class="o">+</span> Location <span class="o">+</span> Allele<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.3<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.4<span class="p">)</span>
+<span class="c1">#        Cochran-Mantel-Haenszel test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct.3 </span>
+<span class="c1"># Cochran-Mantel-Haenszel M^2 = 168.4684, df = 3, p-value &lt; 2.2e-16</span>
+
+
+<span class="c1"># With Habitat last, we get a different result</span>
+ct.5 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Allele <span class="o">+</span> Location <span class="o">+</span> Habitat<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+ct.6 <span class="o">&lt;-</span> xtabs<span class="p">(</span>Count <span class="o">~</span> Location <span class="o">+</span> Allele <span class="o">+</span> Habitat<span class="p">,</span> data<span class="o">=</span>fish<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.5<span class="p">)</span>
+mantelhaen.test<span class="p">(</span>ct.6<span class="p">)</span>
+<span class="c1">#        Cochran-Mantel-Haenszel test</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct.5 </span>
+<span class="c1"># Cochran-Mantel-Haenszel M^2 = 2.0168, df = 3, p-value = 0.5689</span>
+</pre></div>
+
+
+<h3 id="mcnemars-test">McNemar's test</h3>
+<p>McNemar's test is conceptually like a within-subjects test for frequency data. For example, suppose you want to test whether a treatment increases the probability that a person will respond "yes" to a question, and that you get just one pre-treatment and one post-treatment response per person. A standard chi-square test would be inappropriate, because it assumes that the groups are independent. Instead, McNemar's test can be used. This test can only be used when there are two measurements of a dichotomous variable. The 2x2 contingency table used for McNemar's test bears a superficial resemblance to those used for "normal" chi-square tests, but it is different in structure.</p>
+<p>Suppose this is your data. Each subject has a pre-treatment and post-treatment response.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.table<span class="p">(</span>header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> text<span class="o">=</span><span class="s">&#39;</span>
+<span class="s"> subject time result</span>
+<span class="s">       1  pre      0</span>
+<span class="s">       1 post      1</span>
+<span class="s">       2  pre      1</span>
+<span class="s">       2 post      1</span>
+<span class="s">       3  pre      0</span>
+<span class="s">       3 post      1</span>
+<span class="s">       4  pre      1</span>
+<span class="s">       4 post      0</span>
+<span class="s">       5  pre      1</span>
+<span class="s">       5 post      1</span>
+<span class="s">       6  pre      0</span>
+<span class="s">       6 post      1</span>
+<span class="s">       7  pre      0</span>
+<span class="s">       7 post      1</span>
+<span class="s">       8  pre      0</span>
+<span class="s">       8 post      1</span>
+<span class="s">       9  pre      0</span>
+<span class="s">       9 post      1</span>
+<span class="s">      10  pre      1</span>
+<span class="s">      10 post      1</span>
+<span class="s">      11  pre      0</span>
+<span class="s">      11 post      0</span>
+<span class="s">      12  pre      1</span>
+<span class="s">      12 post      1</span>
+<span class="s">      13  pre      0</span>
+<span class="s">      13 post      1</span>
+<span class="s">      14  pre      0</span>
+<span class="s">      14 post      0</span>
+<span class="s">      15  pre      0</span>
+<span class="s">      15 post      1</span>
+<span class="s">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>If your data is not already in wide format, it must be converted (see <a href="../Manipulating_data/Converting_data_between_wide_and_long_format.html">this page</a> for more information):</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>reshape2<span class="p">)</span>
+
+data.wide <span class="o">&lt;-</span> dcast<span class="p">(</span>data<span class="p">,</span> subject <span class="o">~</span> time<span class="p">,</span> value_var<span class="o">=</span><span class="s">&quot;result&quot;</span><span class="p">)</span>
+<span class="c1"># subject post pre</span>
+<span class="c1">#       1    1   0</span>
+<span class="c1">#       2    1   1</span>
+<span class="c1">#       3    1   0</span>
+<span class="c1">#       4    0   1</span>
+<span class="c1">#       5    1   1</span>
+<span class="c1">#       6    1   0</span>
+<span class="c1">#       7    1   0</span>
+<span class="c1">#       8    1   0</span>
+<span class="c1">#       9    1   0</span>
+<span class="c1">#      10    1   1</span>
+<span class="c1">#      11    0   0</span>
+<span class="c1">#      12    1   1</span>
+<span class="c1">#      13    1   0</span>
+<span class="c1">#      14    0   0</span>
+<span class="c1">#      15    1   0</span>
+</pre></div>
+
+
+<p>Next, generate the contingency table from just the pre and post columns from the data frame:</p>
+<div class="codehilite"><pre>ct <span class="o">&lt;-</span> <span class="kp">table</span><span class="p">(</span> data.wide<span class="p">[,</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;pre&quot;</span><span class="p">,</span><span class="s">&quot;post&quot;</span><span class="p">)]</span> <span class="p">)</span>
+<span class="c1">#    post</span>
+<span class="c1"># pre 0 1</span>
+<span class="c1">#   0 2 8</span>
+<span class="c1">#   1 1 4</span>
+
+
+<span class="c1"># The contingency table above puts each subject into one of four cells, depending</span>
+<span class="c1"># on their pre- and post-treatment response. Note that it it is different from</span>
+<span class="c1"># the contingency table used for a &quot;normal&quot; chi-square test, shown below. The table</span>
+<span class="c1"># below does not account for repeated measurements, and so it is not useful for</span>
+<span class="c1"># the purposes here.</span>
+
+<span class="c1"># table(data[,c(&quot;time&quot;,&quot;result&quot;)])</span>
+<span class="c1">#       result</span>
+<span class="c1"># time    0  1</span>
+<span class="c1">#   post  3 12</span>
+<span class="c1">#   pre  10  5</span>
+</pre></div>
+
+
+<p>After creating the appropriate contingency table, run the test:</p>
+<div class="codehilite"><pre>mcnemar.test<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#         McNemar&#39;s Chi-squared test with continuity correction</span>
+<span class="c1"># </span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># McNemar&#39;s chi-squared = 4, df = 1, p-value = 0.0455</span>
+</pre></div>
+
+
+<p>For small sample sizes, it uses a continuity correction. Instead of using this correction, you can use an <strong>exact</strong> version of McNemar's test, which is more accurate. It is available in the package <code>exact2x2</code>.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>exact2x2<span class="p">)</span>
+mcnemar.exact<span class="p">(</span>ct<span class="p">)</span>
+<span class="c1">#</span>
+<span class="c1">#        Exact McNemar test (with central confidence intervals)</span>
+<span class="c1">#</span>
+<span class="c1"># data:  ct </span>
+<span class="c1"># b = 8, c = 1, p-value = 0.03906</span>
+<span class="c1"># alternative hypothesis: true odds ratio is not equal to 1 </span>
+<span class="c1"># 95 percent confidence interval:</span>
+<span class="c1">#    1.072554 354.981246 </span>
+<span class="c1"># sample estimates:</span>
+<span class="c1"># odds ratio </span>
+<span class="c1">#          8 </span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

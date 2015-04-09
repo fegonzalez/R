@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Loading data from a file
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Data_input_and_output.html">Data_input_and_output</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Loading_data_from_a_file
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="loading-data-from-a-file">Loading data from a file</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Loading_data_from_a_file.html#loading-data-from-a-file">Loading data from a file</a><ul>
+<li><a href="Loading_data_from_a_file.html#problem">Problem</a></li>
+<li><a href="Loading_data_from_a_file.html#solution">Solution</a><ul>
+<li><a href="Loading_data_from_a_file.html#delimited-text-files">Delimited text files</a></li>
+<li><a href="Loading_data_from_a_file.html#loading-a-file-with-a-file-chooser">Loading a file with a file chooser</a></li>
+<li><a href="Loading_data_from_a_file.html#treating-strings-as-factors-or-characters">Treating strings as factors or characters</a></li>
+<li><a href="Loading_data_from_a_file.html#loading-a-file-from-the-internet">Loading a file from the Internet</a></li>
+<li><a href="Loading_data_from_a_file.html#fixed-width-text-files">Fixed-width text files</a></li>
+<li><a href="Loading_data_from_a_file.html#excel-files">Excel files</a></li>
+<li><a href="Loading_data_from_a_file.html#spss-data-files">SPSS data files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to load data from a file.</p>
+<h2 id="solution">Solution</h2>
+<h3 id="delimited-text-files">Delimited text files</h3>
+<p>The simplest way to import data is to save it as a text file with delimiters such as tabs or commas (CSV).</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;datafile.csv&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Load a CSV file that doesn&#39;t have headers</span>
+data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;datafile-noheader.csv&quot;</span><span class="p">,</span> header<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The function <code>read.table()</code> is a more general function which allows you to set the delimiter, whether or not there are headers, whether strings are set off with quotes, and more. See <code>?read.table</code> for more information on the details.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.table<span class="p">(</span><span class="s">&quot;datafile-noheader.csv&quot;</span><span class="p">,</span>
+                   header<span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+                   sep<span class="o">=</span> <span class="s">&quot;,&quot;</span>         <span class="c1"># use &quot;\t&quot; for tab-delimited files</span>
+                   <span class="p">)</span>
+</pre></div>
+
+
+<h3 id="loading-a-file-with-a-file-chooser">Loading a file with a file chooser</h3>
+<p>On some platforms, using <code>file.choose()</code> will open a file chooser dialog window. On others, it will simply prompt the user to type in a filename.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="kp">file.choose</span><span class="p">())</span>
+</pre></div>
+
+
+<h3 id="treating-strings-as-factors-or-characters">Treating strings as factors or characters</h3>
+<p>By default, strings in the data are converted to factors. If you load the data below with <code>read.csv</code>, then all the text columns will be treated as factors, even though it might make more sense to treat some of them as strings. To do
+this, use <code>stringsAsFactors=FALSE</code>:</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;datafile.csv&quot;</span><span class="p">,</span> stringsAsFactors<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># You might have to convert some columns to factors</span>
+data<span class="o">$</span>Sex <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>data<span class="o">$</span>Sex<span class="p">)</span>
+</pre></div>
+
+
+<p>Another alternative is to load them as factors and convert some columns to 
+characters:</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;datafile.csv&quot;</span><span class="p">)</span>
+
+data<span class="o">$</span>First <span class="o">&lt;-</span> <span class="kp">as.character</span><span class="p">(</span>data<span class="o">$</span>First<span class="p">)</span>
+data<span class="o">$</span>Last  <span class="o">&lt;-</span> <span class="kp">as.character</span><span class="p">(</span>data<span class="o">$</span>Last<span class="p">)</span>
+
+<span class="c1"># Another method: convert columns named &quot;First&quot; and &quot;Last&quot;</span>
+stringcols <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;First&quot;</span><span class="p">,</span><span class="s">&quot;Last&quot;</span><span class="p">)</span>
+data<span class="p">[</span>stringcols<span class="p">]</span> <span class="o">&lt;-</span> <span class="kp">lapply</span><span class="p">(</span>data<span class="p">[</span>stringcols<span class="p">],</span> <span class="kp">as.character</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="loading-a-file-from-the-internet">Loading a file from the Internet</h3>
+<p>Data can also be loaded from a URL. These (very long) URLs will load the files linked to below.</p>
+<div class="codehilite"><pre>data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;http://wiki.stdout.org/rcookbook/Data%20input%20and%20output/Loading%20data%20from%20a%20file/datafile.csv&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Read in a CSV file without headers</span>
+data <span class="o">&lt;-</span> read.csv<span class="p">(</span><span class="s">&quot;http://wiki.stdout.org/rcookbook/Data%20input%20and%20output/Loading%20data%20from%20a%20file/datafile-noheader.csv&quot;</span><span class="p">,</span> header<span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
+
+<span class="c1"># Manually assign the header names</span>
+<span class="kp">names</span><span class="p">(</span>data<span class="p">)</span> <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;First&quot;</span><span class="p">,</span><span class="s">&quot;Last&quot;</span><span class="p">,</span><span class="s">&quot;Sex&quot;</span><span class="p">,</span><span class="s">&quot;Number&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>The data files used above:</p>
+<p><a href="Loading_data_from_a_file/datafile.csv">datafile.csv</a>:</p>
+<div class="codehilite"><pre>&quot;First&quot;,&quot;Last&quot;,&quot;Sex&quot;,&quot;Number&quot;
+&quot;Currer&quot;,&quot;Bell&quot;,&quot;F&quot;,2
+&quot;Dr.&quot;,&quot;Seuss&quot;,&quot;M&quot;,49
+&quot;&quot;,&quot;Student&quot;,NA,21
+</pre></div>
+
+
+<p><a href="Loading_data_from_a_file/datafile-noheader.csv">datafile-noheader.csv</a>:</p>
+<div class="codehilite"><pre>&quot;Currer&quot;,&quot;Bell&quot;,&quot;F&quot;,2
+&quot;Dr.&quot;,&quot;Seuss&quot;,&quot;M&quot;,49
+&quot;&quot;,&quot;Student&quot;,NA,21
+</pre></div>
+
+
+<h3 id="fixed-width-text-files">Fixed-width text files</h3>
+<p>Suppose your data has fixed-width columns, like this:</p>
+<div class="codehilite"><pre>  First     Last  Sex Number
+ Currer     Bell    F      2
+    Dr.    Seuss    M     49
+    &quot;&quot;   Student   NA     21
+</pre></div>
+
+
+<p>One way to read it in is to simply use <code>read.table()</code> with <code>strip.white=TRUE</code>, which will remove extra spaces.</p>
+<div class="codehilite"><pre>read.table<span class="p">(</span><span class="s">&quot;clipboard&quot;</span><span class="p">,</span> header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> strip.white<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+
+
+<p>However, your data file may have columns containing spaces, or columns with no spaces separating them, like this, where the scores column represents six different measurements, each from 0 to 3.</p>
+<div class="codehilite"><pre>subject  sex  scores
+   N  1    M  113311
+   NE 2    F  112231
+   S  3    F  111221
+   W  4    M  011002
+</pre></div>
+
+
+<p>In this case, you may need to use the <code>read.fwf()</code> function. If you read the column names from the file, it requires that they be separated with a delimiter like a single tab, space, or comma. If they are separated with multiple spaces, as in this example, you will have to assign the column names directly.</p>
+<div class="codehilite"><pre><span class="c1"># Assign the column names manually</span>
+read.fwf<span class="p">(</span><span class="s">&quot;myfile.txt&quot;</span><span class="p">,</span> 
+         <span class="kt">c</span><span class="p">(</span><span class="m">7</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">-2</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">),</span> <span class="c1"># Width of the columns. -2 means drop those columns</span>
+         skip<span class="o">=</span><span class="m">1</span><span class="p">,</span>                <span class="c1"># Skip the first line (contains header here)</span>
+         col.names<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;subject&quot;</span><span class="p">,</span><span class="s">&quot;sex&quot;</span><span class="p">,</span><span class="s">&quot;s1&quot;</span><span class="p">,</span><span class="s">&quot;s2&quot;</span><span class="p">,</span><span class="s">&quot;s3&quot;</span><span class="p">,</span><span class="s">&quot;s4&quot;</span><span class="p">,</span><span class="s">&quot;s5&quot;</span><span class="p">,</span><span class="s">&quot;s6&quot;</span><span class="p">),</span>
+         strip.white<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>      <span class="c1"># Strip out leading and trailing whitespace when reading each</span>
+<span class="c1"># subject sex s1 s2 s3 s4 s5 s6</span>
+<span class="c1">#    N  1   M  1  1  3  3  1  1</span>
+<span class="c1">#    NE 2   F  1  1  2  2  3  1</span>
+<span class="c1">#    S  3   F  1  1  1  2  2  1</span>
+<span class="c1">#    W  4   M  0  1  1  0  0  2</span>
+
+
+<span class="c1"># If the first row looked like this:</span>
+<span class="c1"># subject,sex,scores</span>
+<span class="c1"># Then we could use header=TRUE:</span>
+read.fwf<span class="p">(</span><span class="s">&quot;myfile.txt&quot;</span><span class="p">,</span> <span class="kt">c</span><span class="p">(</span><span class="m">7</span><span class="p">,</span><span class="m">5</span><span class="p">,</span><span class="m">-2</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">),</span> header<span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span> strip.white<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="excel-files">Excel files</h3>
+<p>The <code>read.xls</code> function in the <code>gdata</code> package can read in Excel files.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>gdata<span class="p">)</span>
+data <span class="o">&lt;-</span> read.xls<span class="p">(</span><span class="s">&quot;data.xls&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>See <a href="http://cran.r-project.org/doc/manuals/R-data.html#Reading-Excel-spreadsheets">http://cran.r-project.org/doc/manuals/R-data.html#Reading-Excel-spreadsheets</a>.</p>
+<h3 id="spss-data-files">SPSS data files</h3>
+<p>The <code>read.spss</code> function in the <code>foreign</code> package can read in SPSS files.</p>
+<div class="codehilite"><pre><span class="kn">library</span><span class="p">(</span>foreign<span class="p">)</span>
+data <span class="o">&lt;-</span> read.spss<span class="p">(</span><span class="s">&quot;data.sav&quot;</span><span class="p">,</span> to.data.frame<span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

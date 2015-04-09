@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Saving the state of the random number generator
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Numbers.html">Numbers</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Saving_the_state_of_the_random_number_generator
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="saving-the-state-of-the-random-number-generator">Saving the state of the random number generator</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Saving_the_state_of_the_random_number_generator.html#saving-the-state-of-the-random-number-generator">Saving the state of the random number generator</a><ul>
+<li><a href="Saving_the_state_of_the_random_number_generator.html#problem">Problem</a></li>
+<li><a href="Saving_the_state_of_the_random_number_generator.html#solution">Solution</a><ul>
+<li><a href="Saving_the_state_of_the_random_number_generator.html#saving-and-restoring-the-state-of-the-rng-in-functions">Saving and restoring the state of the RNG in functions</a></li>
+<li><a href="Saving_the_state_of_the_random_number_generator.html#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to save and restore the state of the random number generator</p>
+<h2 id="solution">Solution</h2>
+<p>Save <code>.Random.seed</code> to another variable.</p>
+<div class="codehilite"><pre><span class="c1"># For this example, set the random seed</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">423</span><span class="p">)</span>
+runif<span class="p">(</span><span class="m">3</span><span class="p">)</span>
+<span class="c1"># 0.1089715 0.5973455 0.9726307</span>
+
+<span class="c1"># Save the seed</span>
+oldseed <span class="o">&lt;-</span> <span class="m">.</span>Random.seed
+
+runif<span class="p">(</span><span class="m">3</span><span class="p">)</span>
+<span class="c1"># 0.7973768 0.2278427 0.5189830</span>
+
+<span class="c1"># Do some other stuff with RNG here, such as:</span>
+<span class="c1"># runif(30)</span>
+<span class="c1"># ...</span>
+
+
+<span class="c1"># Restore the seed</span>
+<span class="m">.</span>Random.seed <span class="o">&lt;-</span> oldseed
+
+<span class="c1"># Get the same random numbers as before, after saving the seed</span>
+runif<span class="p">(</span><span class="m">3</span><span class="p">)</span>
+<span class="c1"># 0.7973768 0.2278427 0.5189830</span>
+</pre></div>
+
+
+<p>If no random number generator has been used in your R session, the variable <code>.Random.seed</code> will not exist. If you cannot be certain that an RNG has been used before attempting to save, the seed, you should check for it before saving and restoring:</p>
+<div class="codehilite"><pre>oldseed <span class="o">&lt;-</span> <span class="kc">NULL</span>
+<span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">))</span>  oldseed <span class="o">&lt;-</span> <span class="m">.</span>Random.seed
+
+<span class="c1"># Do some other stuff with RNG here, such as:</span>
+<span class="c1"># runif(30)</span>
+<span class="c1"># ...</span>
+
+
+<span class="kr">if</span> <span class="p">(</span><span class="o">!</span><span class="kp">is.null</span><span class="p">(</span>oldseed<span class="p">))</span>
+    <span class="m">.</span>Random.seed <span class="o">&lt;-</span> oldseed
+</pre></div>
+
+
+<h3 id="saving-and-restoring-the-state-of-the-rng-in-functions">Saving and restoring the state of the RNG in functions</h3>
+<p>If you attempt to restore the state of the random number generator within a function by using <code>.Random.seed &lt;- x</code>, it will not work, because this operation changes a <em>local</em> variable named <code>.Random.seed</code>, instead of the variable in the <em>global</em> envrionment.</p>
+<p>Here are two examples. What these functions are supposed to do is generate some random numbers, while leaving the state of the RNG unchanged.</p>
+<div class="codehilite"><pre><span class="c1"># This is the bad version</span>
+bad_rand_restore <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">))</span>  oldseed <span class="o">&lt;-</span> <span class="m">.</span>Random.seed
+    <span class="kp">print</span><span class="p">(</span>runif<span class="p">(</span><span class="m">3</span><span class="p">))</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">))</span>  <span class="m">.</span>Random.seed <span class="o">&lt;-</span> oldseed
+<span class="p">}</span>
+
+
+<span class="c1"># This is the good version</span>
+rand_restore <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">))</span>  oldseed <span class="o">&lt;-</span> <span class="kp">get</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">,</span> <span class="m">.</span>GlobalEnv<span class="p">)</span>
+    <span class="kp">print</span><span class="p">(</span>runif<span class="p">(</span><span class="m">3</span><span class="p">))</span>
+    <span class="kr">if</span> <span class="p">(</span><span class="kp">exists</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">))</span>  <span class="kp">assign</span><span class="p">(</span><span class="s">&quot;.Random.seed&quot;</span><span class="p">,</span> oldseed<span class="p">,</span> <span class="m">.</span>GlobalEnv<span class="p">)</span>
+<span class="p">}</span>
+
+
+<span class="c1"># The bad version changes the RNG state, so random numbers keep changing</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">423</span><span class="p">)</span>
+bad_rand_restore<span class="p">()</span>
+<span class="c1"># 0.1089715 0.5973455 0.9726307</span>
+bad_rand_restore<span class="p">()</span>
+<span class="c1"># 0.7973768 0.2278427 0.5189830</span>
+bad_rand_restore<span class="p">()</span>
+<span class="c1"># 0.6929255 0.8104453 0.1019465</span>
+
+<span class="c1"># The good version doesn&#39;t alter the RNG state, so random numbers stay the same</span>
+<span class="kp">set.seed</span><span class="p">(</span><span class="m">423</span><span class="p">)</span>
+rand_restore<span class="p">()</span>
+<span class="c1"># 0.1089715 0.5973455 0.9726307</span>
+rand_restore<span class="p">()</span>
+<span class="c1"># 0.1089715 0.5973455 0.9726307</span>
+rand_restore<span class="p">()</span>
+<span class="c1"># 0.1089715 0.5973455 0.9726307</span>
+</pre></div>
+
+
+<h3 id="notes">Notes</h3>
+<p><code>.Random.seed</code> should not be modified by the user. </p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

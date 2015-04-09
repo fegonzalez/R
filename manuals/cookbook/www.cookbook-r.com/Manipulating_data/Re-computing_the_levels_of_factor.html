@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Re-computing the levels of factor
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Re-computing_the_levels_of_factor
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="re-computing-the-levels-of-factor">Re-computing the levels of factor</h1>
+<h2 id="problem">Problem</h2>
+<p>You want to do re-compute the levels of a factor. This is useful when a factor contains levels that aren't actually present in the data. This can happen during data import, or when you remove some rows.</p>
+<h2 id="solution">Solution</h2>
+<p>For a single factor object:</p>
+<div class="codehilite"><pre><span class="c1"># Create a factor with an extra level (gamma)</span>
+x <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span><span class="s">&quot;beta&quot;</span><span class="p">,</span><span class="s">&quot;alpha&quot;</span><span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span><span class="s">&quot;beta&quot;</span><span class="p">,</span><span class="s">&quot;gamma&quot;</span><span class="p">))</span>
+<span class="c1"># alpha beta  alpha</span>
+<span class="c1"># Levels: alpha beta gamma</span>
+
+
+<span class="c1"># Remove the extra level</span>
+x <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>x<span class="p">)</span>
+<span class="c1"># alpha beta  alpha</span>
+<span class="c1"># Levels: alpha beta</span>
+</pre></div>
+
+
+<p>After importing data, you may have a data frame with a mix of factors and other kinds vectors, and want to re-compute the levels of all the factors.</p>
+<div class="codehilite"><pre><span class="c1"># Create a data frame with some factors (with extra levels)</span>
+x <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span><span class="s">&quot;beta&quot;</span><span class="p">,</span><span class="s">&quot;alpha&quot;</span><span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;alpha&quot;</span><span class="p">,</span><span class="s">&quot;beta&quot;</span><span class="p">,</span><span class="s">&quot;gamma&quot;</span><span class="p">))</span>
+y <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="m">5</span><span class="p">,</span><span class="m">8</span><span class="p">,</span><span class="m">2</span><span class="p">)</span>
+z <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="s">&quot;green&quot;</span><span class="p">,</span><span class="s">&quot;green&quot;</span><span class="p">),</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&quot;red&quot;</span><span class="p">,</span><span class="s">&quot;green&quot;</span><span class="p">,</span><span class="s">&quot;blue&quot;</span><span class="p">))</span>
+df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>x<span class="p">,</span>y<span class="p">,</span>z<span class="p">)</span>
+
+<span class="c1"># Display the factors (with extra levels)</span>
+df<span class="o">$</span>x
+<span class="c1"># alpha beta  alpha</span>
+<span class="c1"># Levels: alpha beta gamma</span>
+df<span class="o">$</span>z
+<span class="c1"># red   green green</span>
+<span class="c1"># Levels: red green blue</span>
+
+<span class="c1"># Drop the extra levels</span>
+df <span class="o">&lt;-</span> <span class="kp">droplevels</span><span class="p">(</span>df<span class="p">)</span>
+
+
+<span class="c1"># Show the factors again, now without extra levels</span>
+df<span class="o">$</span>x
+<span class="c1"># alpha beta  alpha</span>
+<span class="c1"># Levels: alpha beta</span>
+df<span class="o">$</span>z
+<span class="c1"># red   green green</span>
+<span class="c1"># Levels: red green</span>
+</pre></div>
+
+
+<h2 id="see-also">See also</h2>
+<p>To re-compute the levels of all the factor columns in a data frame, see <a href="Re-computing_the_levels_of_all_factor_columns_in_a_data_frame.html">../Re-computing_the_levels_of_all_factor_columns_in_a_data_frame</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

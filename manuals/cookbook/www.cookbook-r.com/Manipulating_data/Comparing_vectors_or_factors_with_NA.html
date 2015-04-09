@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Comparing vectors or factors with NA
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Comparing_vectors_or_factors_with_NA
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="comparing-vectors-or-factors-with-na">Comparing vectors or factors with NA</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Comparing_vectors_or_factors_with_NA.html#comparing-vectors-or-factors-with-na">Comparing vectors or factors with NA</a><ul>
+<li><a href="Comparing_vectors_or_factors_with_NA.html#problem">Problem</a></li>
+<li><a href="Comparing_vectors_or_factors_with_NA.html#solution">Solution</a><ul>
+<li><a href="Comparing_vectors_or_factors_with_NA.html#a-function-for-comparing-with-nas">A function for comparing with NA's</a></li>
+<li><a href="Comparing_vectors_or_factors_with_NA.html#examples-of-the-function-in-use">Examples of the function in use</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to compare two vectors or factors but want comparisons with NA's to be reported as TRUE or FALSE (instead of NA).</p>
+<h2 id="solution">Solution</h2>
+<p>Suppose you have this data frame with two columns which consist of boolean vectors:</p>
+<div class="codehilite"><pre>df <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span> a<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">),</span>
+                  b<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span><span class="kc">TRUE</span><span class="p">,</span><span class="kc">FALSE</span><span class="p">,</span><span class="kc">NA</span><span class="p">))</span>
+<span class="c1">#     a     b</span>
+<span class="c1">#  TRUE  TRUE</span>
+<span class="c1">#  TRUE FALSE</span>
+<span class="c1">#  TRUE    NA</span>
+<span class="c1"># FALSE  TRUE</span>
+<span class="c1"># FALSE FALSE</span>
+<span class="c1"># FALSE    NA</span>
+<span class="c1">#    NA  TRUE</span>
+<span class="c1">#    NA FALSE</span>
+<span class="c1">#    NA    NA</span>
+</pre></div>
+
+
+<p>Normally, when you compare two vectors or factors containing NA values, the vector of results will have NAs where either of the original items was NA. Depending on your purposes, this may or not be desirable.</p>
+<div class="codehilite"><pre>df<span class="o">$</span>a <span class="o">==</span> df<span class="o">$</span>b
+<span class="c1"># TRUE FALSE    NA FALSE  TRUE    NA    NA    NA    NA</span>
+
+<span class="c1"># The same comparison, but presented as another column in the data frame:</span>
+<span class="kt">data.frame</span><span class="p">(</span>df<span class="p">,</span> isSame <span class="o">=</span> <span class="p">(</span>df<span class="o">$</span>a<span class="o">==</span>df<span class="o">$</span>b<span class="p">))</span>
+<span class="c1">#     a     b isSame</span>
+<span class="c1">#  TRUE  TRUE   TRUE</span>
+<span class="c1">#  TRUE FALSE  FALSE</span>
+<span class="c1">#  TRUE    NA     NA</span>
+<span class="c1"># FALSE  TRUE  FALSE</span>
+<span class="c1"># FALSE FALSE   TRUE</span>
+<span class="c1"># FALSE    NA     NA</span>
+<span class="c1">#    NA  TRUE     NA</span>
+<span class="c1">#    NA FALSE     NA</span>
+<span class="c1">#    NA    NA     NA</span>
+</pre></div>
+
+
+<h3 id="a-function-for-comparing-with-nas">A function for comparing with NA's</h3>
+<p>This comparison function will essentially treat NA's as just another value. If an item in both vectors is NA, then it reports TRUE for that item; if the item is NA in just one vector, it reports FALSE; all other comparisons (between non-NA items) behaves the same.</p>
+<div class="codehilite"><pre>compareNA <span class="o">&lt;-</span> <span class="kr">function</span><span class="p">(</span>v1<span class="p">,</span>v2<span class="p">)</span> <span class="p">{</span>
+    <span class="c1"># This function returns TRUE wherever elements are the same, including NA&#39;s,</span>
+    <span class="c1"># and false everywhere else.</span>
+    same <span class="o">&lt;-</span> <span class="p">(</span>v1 <span class="o">==</span> v2<span class="p">)</span>  <span class="o">|</span>  <span class="p">(</span><span class="kp">is.na</span><span class="p">(</span>v1<span class="p">)</span> <span class="o">&amp;</span> <span class="kp">is.na</span><span class="p">(</span>v2<span class="p">))</span>
+    same<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>same<span class="p">)]</span> <span class="o">&lt;-</span> <span class="kc">FALSE</span>
+    <span class="kr">return</span><span class="p">(</span>same<span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="examples-of-the-function-in-use">Examples of the function in use</h3>
+<p>Comparing boolean vectors:</p>
+<div class="codehilite"><pre>compareNA<span class="p">(</span>df<span class="o">$</span>a<span class="p">,</span> df<span class="o">$</span>b<span class="p">)</span>
+<span class="c1"># TRUE FALSE FALSE FALSE  TRUE FALSE FALSE FALSE  TRUE</span>
+
+<span class="c1"># Same comparison, presented as another column</span>
+<span class="kt">data.frame</span><span class="p">(</span>df<span class="p">,</span> isSame <span class="o">=</span> compareNA<span class="p">(</span>df<span class="o">$</span>a<span class="p">,</span>df<span class="o">$</span>b<span class="p">))</span>
+<span class="c1">#     a     b isSame</span>
+<span class="c1">#  TRUE  TRUE   TRUE</span>
+<span class="c1">#  TRUE FALSE  FALSE</span>
+<span class="c1">#  TRUE    NA  FALSE</span>
+<span class="c1"># FALSE  TRUE  FALSE</span>
+<span class="c1"># FALSE FALSE   TRUE</span>
+<span class="c1"># FALSE    NA  FALSE</span>
+<span class="c1">#    NA  TRUE  FALSE</span>
+<span class="c1">#    NA FALSE  FALSE</span>
+<span class="c1">#    NA    NA   TRUE</span>
+</pre></div>
+
+
+<p>It also works with factors, even if the levels of the factors are in different orders:</p>
+<div class="codehilite"><pre><span class="c1"># Create sample data frame with factors.</span>
+df1 <span class="o">&lt;-</span> <span class="kt">data.frame</span><span class="p">(</span>a <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span> <span class="kc">NA</span><span class="p">)),</span>
+                  b <span class="o">=</span> <span class="kp">factor</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">)))</span>
+
+<span class="c1"># Do the comparison</span>
+<span class="kt">data.frame</span><span class="p">(</span>df1<span class="p">,</span> isSame <span class="o">=</span> compareNA<span class="p">(</span>df1<span class="o">$</span>a<span class="p">,</span> df1<span class="o">$</span>b<span class="p">))</span>
+<span class="c1">#    a    b isSame</span>
+<span class="c1">#    x    x   TRUE</span>
+<span class="c1">#    x    y  FALSE</span>
+<span class="c1">#    x &lt;NA&gt;  FALSE</span>
+<span class="c1">#    y    x  FALSE</span>
+<span class="c1">#    y    y   TRUE</span>
+<span class="c1">#    y &lt;NA&gt;  FALSE</span>
+<span class="c1"># &lt;NA&gt;    x  FALSE</span>
+<span class="c1"># &lt;NA&gt;    y  FALSE</span>
+<span class="c1"># &lt;NA&gt; &lt;NA&gt;   TRUE</span>
+
+
+<span class="c1"># It still works if the factor levels are arranged in a different order</span>
+df1<span class="o">$</span>b <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>df1<span class="o">$</span>b<span class="p">,</span> levels<span class="o">=</span><span class="kt">c</span><span class="p">(</span><span class="s">&#39;y&#39;</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">))</span>
+<span class="c1">#  x    y    &lt;NA&gt; x    y    &lt;NA&gt; x    y    &lt;NA&gt;</span>
+<span class="c1"># Levels: y x</span>
+
+<span class="kt">data.frame</span><span class="p">(</span>df1<span class="p">,</span> isSame <span class="o">=</span> compareNA<span class="p">(</span>df1<span class="o">$</span>a<span class="p">,</span> df1<span class="o">$</span>b<span class="p">))</span>
+<span class="c1">#    a    b isSame</span>
+<span class="c1">#    x    x   TRUE</span>
+<span class="c1">#    x    y  FALSE</span>
+<span class="c1">#    x &lt;NA&gt;  FALSE</span>
+<span class="c1">#    y    x  FALSE</span>
+<span class="c1">#    y    y   TRUE</span>
+<span class="c1">#    y &lt;NA&gt;  FALSE</span>
+<span class="c1"># &lt;NA&gt;    x  FALSE</span>
+<span class="c1"># &lt;NA&gt;    y  FALSE</span>
+<span class="c1"># &lt;NA&gt; &lt;NA&gt;   TRUE</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>

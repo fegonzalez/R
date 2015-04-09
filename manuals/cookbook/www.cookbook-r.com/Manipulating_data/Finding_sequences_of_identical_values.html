@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Cookbook for R » 
+        Finding sequences of identical values
+      </title>
+      
+      
+        
+        <link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="../media/css/mystyle.css" media="screen, projection" />
+      
+      
+      
+      
+    
+  </head>
+  
+  <body >
+    
+      
+      <div id="header">
+        
+          <div id="wiki_name">
+          
+            Cookbook for R
+          
+          </div>
+           
+            
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="../index.html">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 not-last">
+          
+            <a href="../Manipulating_data.html">Manipulating_data</a>
+          
+        </li>
+      
+        <li class="crumb-2 last">
+          
+            Finding_sequences_of_identical_values
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+          
+        
+      </div>
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="finding-sequences-of-identical-values">Finding sequences of identical values</h1>
+<div class="toc"><span class="toctitle">Table of contents</span><ul>
+<li><a href="Finding_sequences_of_identical_values.html#finding-sequences-of-identical-values">Finding sequences of identical values</a><ul>
+<li><a href="Finding_sequences_of_identical_values.html#problem">Problem</a></li>
+<li><a href="Finding_sequences_of_identical_values.html#solution">Solution</a><ul>
+<li><a href="Finding_sequences_of_identical_values.html#working-with-factors">Working with factors</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="problem">Problem</h2>
+<p>You want to find sequences of identical values in a vector or factor.</p>
+<h2 id="solution">Solution</h2>
+<p>It is possible to search for sequences of identical values by simply iterating over a vector, but this is very slow in R. A much faster way to find sequences is to use the <code>rle()</code> function.</p>
+<div class="codehilite"><pre><span class="c1"># Example data</span>
+v <span class="o">&lt;-</span> <span class="kt">c</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span> <span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="kc">NA</span><span class="p">,</span><span class="kc">NA</span><span class="p">,</span> <span class="s">&quot;C&quot;</span><span class="p">,</span><span class="s">&quot;C&quot;</span><span class="p">,</span> <span class="s">&quot;B&quot;</span><span class="p">,</span> <span class="s">&quot;C&quot;</span><span class="p">,</span><span class="s">&quot;C&quot;</span><span class="p">,</span><span class="s">&quot;C&quot;</span><span class="p">)</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; NA  NA  &quot;C&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot;</span>
+
+vr <span class="o">&lt;-</span> <span class="kp">rle</span><span class="p">(</span>v<span class="p">)</span>
+<span class="c1"># Run Length Encoding</span>
+<span class="c1">#   lengths: int [1:7] 3 4 1 1 2 1 3</span>
+<span class="c1">#   values : chr [1:7] &quot;A&quot; &quot;B&quot; NA NA &quot;C&quot; &quot;B&quot; &quot;C&quot;</span>
+</pre></div>
+
+
+<p>The RLE coded data can be converted back to a vector with <code>inverse.rle()</code>.</p>
+<div class="codehilite"><pre><span class="kp">inverse.rle</span><span class="p">(</span>vr<span class="p">)</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; NA  NA  &quot;C&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot;</span>
+</pre></div>
+
+
+<p>One issue that might be problematic is that each NA is treated as a run of length 1, even if the NA's are next to each other. It is possible to workaround it by replacing the NA's with some special designated value. For numeric vectors, <code>Inf</code> or some other number can be used; for character vectors, any string may be used. Of course, the special value must not appear otherwise in the vector.</p>
+<div class="codehilite"><pre>w <span class="o">&lt;-</span> v
+w<span class="p">[</span><span class="kp">is.na</span><span class="p">(</span>w<span class="p">)]</span> <span class="o">&lt;-</span> <span class="s">&quot;ZZZ&quot;</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;ZZZ&quot; &quot;ZZZ&quot; &quot;C&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot;</span>
+
+wr <span class="o">&lt;-</span> <span class="kp">rle</span><span class="p">(</span>w<span class="p">)</span>
+<span class="c1"># Run Length Encoding</span>
+<span class="c1">#   lengths: int [1:6] 3 4 2 2 1 3</span>
+<span class="c1">#   values : chr [1:6] &quot;A&quot; &quot;B&quot; &quot;ZZZ&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot;</span>
+
+<span class="c1"># Replace the ZZZ&#39;s with NA in the RLE-coded data</span>
+wr<span class="p">[[</span><span class="m">2</span><span class="p">]][</span> wr<span class="p">[[</span><span class="m">2</span><span class="p">]]</span><span class="o">==</span><span class="s">&quot;ZZZ&quot;</span> <span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">NA</span>
+<span class="c1"># Run Length Encoding</span>
+<span class="c1">#   lengths: int [1:6] 3 4 2 2 1 3</span>
+<span class="c1">#   values : chr [1:6] &quot;A&quot; &quot;B&quot; NA &quot;C&quot; &quot;B&quot; &quot;C&quot;</span>
+
+w <span class="o">&lt;-</span> <span class="kp">inverse.rle</span><span class="p">(</span>wr<span class="p">)</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;ZZZ&quot; &quot;ZZZ&quot; &quot;C&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot;</span>
+</pre></div>
+
+
+<h3 id="working-with-factors">Working with factors</h3>
+<p>Even though factors are basically just integer vectors with some information about levels attached, the <code>rle()</code> function doesn't work with factors (though it is possible this will change in the future). The solution is to manually convert the factor to an integer vector or a character vector. Using an integer vector is fast and memory-efficient, which may matter for large data sets, but it is difficult to interpret. Using a character vector is slower and requires more memory, but can be much easier to interpret.</p>
+<div class="codehilite"><pre><span class="c1"># Suppose this is the factor we have to work with</span>
+f <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>v<span class="p">)</span>
+<span class="c1"># A    A    A    B    B    B    B    &lt;NA&gt; &lt;NA&gt; C    C    B    C    C    C   </span>
+<span class="c1"># Levels: A B C</span>
+
+<span class="c1"># Store the levels in the factor.</span>
+<span class="c1"># This isn&#39;t strictly necessary, but it is useful for preserving order of levels</span>
+flvl <span class="o">&lt;-</span> <span class="kp">levels</span><span class="p">(</span>f<span class="p">)</span>
+<span class="c1"># &quot;A&quot; &quot;B&quot; &quot;C&quot;</span>
+
+fc <span class="o">&lt;-</span> <span class="kp">as.character</span><span class="p">(</span>f<span class="p">)</span>
+fc<span class="p">[</span> <span class="kp">is.na</span><span class="p">(</span>fc<span class="p">)</span> <span class="p">]</span> <span class="o">&lt;-</span> <span class="s">&quot;ZZZ&quot;</span>
+<span class="c1"># &quot;A&quot; &quot;A&quot; &quot;A&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;B&quot; &quot;ZZZ&quot; &quot;ZZZ&quot; &quot;C&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot; &quot;C&quot; &quot;C&quot;</span>
+
+fr <span class="o">&lt;-</span> <span class="kp">rle</span><span class="p">(</span>fc<span class="p">)</span>
+<span class="c1"># Run Length Encoding</span>
+<span class="c1">#   lengths: int [1:6] 3 4 2 2 1 3</span>
+<span class="c1">#   values : chr [1:6] &quot;A&quot; &quot;B&quot; &quot;ZZZ&quot; &quot;C&quot; &quot;B&quot; &quot;C&quot;</span>
+
+<span class="c1"># Replace the ZZZ&#39;s with NA in the RLE-coded data</span>
+fr<span class="p">[[</span><span class="m">2</span><span class="p">]][</span> fr<span class="p">[[</span><span class="m">2</span><span class="p">]]</span><span class="o">==</span><span class="s">&quot;ZZZ&quot;</span> <span class="p">]</span> <span class="o">&lt;-</span> <span class="kc">NA</span>
+<span class="c1"># Run Length Encoding</span>
+<span class="c1">#   lengths: int [1:6] 3 4 2 2 1 3</span>
+<span class="c1">#   values : chr [1:6] &quot;A&quot; &quot;B&quot; NA &quot;C&quot; &quot;B&quot; &quot;C&quot;</span>
+
+
+<span class="c1"># Invert RLE coding and convert back to a factor</span>
+f <span class="o">&lt;-</span> <span class="kp">inverse.rle</span><span class="p">(</span>fr<span class="p">)</span>
+f <span class="o">&lt;-</span> <span class="kp">factor</span><span class="p">(</span>f<span class="p">,</span> levels<span class="o">=</span>flvl<span class="p">)</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Cookbook for R —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+          Please report errors to winston@stdout.org.
+        </p>
+      </div>
+      
+    
+    
+    
+    <hr class="clear" />
+
+  
+    
+      <!-- Google Analytics -->
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28886507-2']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ga);
+        })();
+      </script>
+    
+  
+
+  </body>
+</html>
