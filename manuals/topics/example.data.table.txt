@@ -1,0 +1,471 @@
+# ?data.table
+
+# ‘data.table’ _inherits_ from ‘data.frame’. It offers fast subset,
+#      fast grouping, fast update, fast ordered joins and list columns in
+#      a short and flexible syntax, for faster development.
+
+
+#\warning setkey() vs setkeyv()
+#
+# > DT
+#    x y v
+# 1: a 1 1
+#
+# > setkey(DT,x,y)             # 2-column key
+# > setkeyv(DT,c("x","y"))     # same
+#
+# > setkey(DT, c("x", "y"))
+# Error en setkeyv(x, cols, verbose = verbose) : 
+#   some columns are not in the data.table: c("x", "y")
+#
+# > setkeyv(DT, c("x", "y"))  # verbose
+
+
+> example(data.table)
+
+> ## Not run: 
+> ##D example(data.table)  # to run these examples at the prompt
+> ## End(Not run)
+> 
+> DF = data.frame(x=rep(c("a","b","c"),each=3), y=c(1,3,6), v=1:9)
+
+> DT = data.table(x=rep(c("a","b","c"),each=3), y=c(1,3,6), v=1:9)
+
+> DF
+  x y v
+1 a 1 1
+2 a 3 2
+3 a 6 3
+4 b 1 4
+5 b 3 5
+6 b 6 6
+7 c 1 7
+8 c 3 8
+9 c 6 9
+
+> DT
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+4: b 1 4
+5: b 3 5
+6: b 6 6
+7: c 1 7
+8: c 3 8
+9: c 6 9
+
+> identical(dim(DT),dim(DF)) # TRUE
+[1] TRUE
+
+> identical(DF$a, DT$a)      # TRUE
+[1] TRUE
+
+> is.list(DF)                # TRUE
+[1] TRUE
+
+> is.list(DT)                # TRUE
+[1] TRUE
+
+> is.data.frame(DT)          # TRUE
+[1] TRUE
+
+> tables()
+     NAME NROW MB COLS   KEY
+[1,] DT      9 1  x,y,v     
+[2,] X       2 1  V1,foo    
+Total: 2MB
+
+> DT[2]                      # 2nd row
+   x y v
+1: a 3 2
+
+> DT[,v]                     # v column (as vector)
+[1] 1 2 3 4 5 6 7 8 9
+
+> DT[,list(v)]               # v column (as data.table)
+   v
+1: 1
+2: 2
+3: 3
+4: 4
+5: 5
+6: 6
+7: 7
+8: 8
+9: 9
+
+> DT[2:3,sum(v)]             # sum(v) over rows 2 and 3
+[1] 5
+
+> DT[2:5,cat(v,"\n")]        # just for j's side effect
+2 3 4 5 
+NULL
+
+> DT[c(FALSE,TRUE)]          # even rows (usual recycling)
+   x y v
+1: a 3 2
+2: b 1 4
+3: b 6 6
+4: c 3 8
+
+> DT[,2,with=FALSE]          # 2nd column
+   y
+1: 1
+2: 3
+3: 6
+4: 1
+5: 3
+6: 6
+7: 1
+8: 3
+9: 6
+
+> colNum = 2
+
+> DT[,colNum,with=FALSE]     # same
+   y
+1: 1
+2: 3
+3: 6
+4: 1
+5: 3
+6: 6
+7: 1
+8: 3
+9: 6
+
+> setkey(DT,x)               # set a 1-column key. No quotes, for convenience.
+
+> setkeyv(DT,"x")            # same (v in setkeyv stands for vector)
+
+> v="x"
+
+> setkeyv(DT,v)              # same
+
+> # key(DT)<-"x"             # copies whole table, please use set* functions instead
+> 
+> DT["a"]                    # binary search (fast)
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[x=="a"]                 # vector scan (slow)
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[,sum(v),by=x]           # keyed by
+   x V1
+1: a  6
+2: b 15
+3: c 24
+
+> DT[,sum(v),by=key(DT)]     # same
+   x V1
+1: a  6
+2: b 15
+3: c 24
+
+> DT[,sum(v),by=y]           # ad hoc by
+   y V1
+1: 1 12
+2: 3 15
+3: 6 18
+
+> DT["a",sum(v)]             # j for one group
+   x V1
+1: a  6
+
+> DT[c("a","b"),sum(v)]      # j for two groups
+   x V1
+1: a  6
+2: b 15
+
+> X = data.table(c("b","c"),foo=c(4,2))
+
+> X
+   V1 foo
+1:  b   4
+2:  c   2
+
+> DT[X]                      # join
+   x y v foo
+1: b 1 4   4
+2: b 3 5   4
+3: b 6 6   4
+4: c 1 7   2
+5: c 3 8   2
+6: c 6 9   2
+
+> DT[X,sum(v)]               # join and eval j for each row in i
+   x V1
+1: b 15
+2: c 24
+
+> DT[X,mult="first"]         # first row of each group
+   x y v foo
+1: b 1 4   4
+2: c 1 7   2
+
+> DT[X,mult="last"]          # last row of each group
+   x y v foo
+1: b 6 6   4
+2: c 6 9   2
+
+> DT[X,sum(v)*foo]           # join inherited scope
+   x V1
+1: b 60
+2: c 48
+
+> setkey(DT,x,y)             # 2-column key
+
+> setkeyv(DT,c("x","y"))     # same
+
+> DT["a"]                    # join to 1st column of key
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[J("a")]                 # same. J() stands for Join, an alias for list()
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[list("a")]              # same
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[.("a")]                 # same. In the style of package plyr.
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+
+> DT[J("a",3)]               # join to 2 columns
+   x y v
+1: a 3 2
+
+> DT[.("a",3)]               # same
+   x y v
+1: a 3 2
+
+> DT[J("a",3:6)]             # join 4 rows (2 missing)
+   x y  v
+1: a 3  2
+2: a 4 NA
+3: a 5 NA
+4: a 6  3
+
+> DT[J("a",3:6),nomatch=0]   # remove missing
+   x y v
+1: a 3 2
+2: a 6 3
+
+> DT[J("a",3:6),roll=TRUE]   # rolling join (locf)
+   x y v
+1: a 3 2
+2: a 4 2
+3: a 5 2
+4: a 6 3
+
+> DT[,sum(v),by=list(y%%2)]  # by expression
+   y V1
+1: 1 27
+2: 0 18
+
+
+#\warning  ".SD": working with subsets of a data.table
+
+> DT[,.SD[2],by=x]           # 2nd row of each group
+   x y v
+1: a 3 2
+2: b 3 5
+3: c 3 8
+
+> DT[,tail(.SD,2),by=x]      # last 2 rows of each group
+   x y v
+1: a 3 2
+2: a 6 3
+3: b 3 5
+4: b 6 6
+5: c 3 8
+6: c 6 9
+
+> DT[,lapply(.SD,sum),by=x]  # apply through columns by group
+   x  y  v
+1: a 10  6
+2: b 10 15
+3: c 10 24
+
+> DT[,list(MySum=sum(v),
+dt.tbl+          MyMin=min(v),
+dt.tbl+          MyMax=max(v)),
+dt.tbl+     by=list(x,y%%2)]       # by 2 expressions
+   x y MySum MyMin MyMax
+1: a 1     3     1     2
+2: a 0     3     3     3
+3: b 1     9     4     5
+4: b 0     6     6     6
+5: c 1    15     7     8
+6: c 0     9     9     9
+
+> DT[,sum(v),x][V1<20]       # compound query
+   x V1
+1: a  6
+2: b 15
+
+> DT[,sum(v),x][order(-V1)]  # ordering results
+   x V1
+1: c 24
+2: b 15
+3: a  6
+
+> print(DT[,z:=42L])         # add new column by reference
+   x y v  z
+1: a 1 1 42
+2: a 3 2 42
+3: a 6 3 42
+4: b 1 4 42
+5: b 3 5 42
+6: b 6 6 42
+7: c 1 7 42
+8: c 3 8 42
+9: c 6 9 42
+
+> print(DT[,z:=NULL])        # remove column by reference
+   x y v
+1: a 1 1
+2: a 3 2
+3: a 6 3
+4: b 1 4
+5: b 3 5
+6: b 6 6
+7: c 1 7
+8: c 3 8
+9: c 6 9
+
+> print(DT["a",v:=42L])      # subassign to existing v column by reference
+   x y  v
+1: a 1 42
+2: a 3 42
+3: a 6 42
+4: b 1  4
+5: b 3  5
+6: b 6  6
+7: c 1  7
+8: c 3  8
+9: c 6  9
+
+> print(DT["b",v2:=84L])     # subassign to new column by reference (NA padded)
+   x y  v v2
+1: a 1 42 NA
+2: a 3 42 NA
+3: a 6 42 NA
+4: b 1  4 84
+5: b 3  5 84
+6: b 6  6 84
+7: c 1  7 NA
+8: c 3  8 NA
+9: c 6  9 NA
+
+> DT[,m:=mean(v),by=x][]     # add new column by reference by group
+   x y  v v2  m
+1: a 1 42 NA 42
+2: a 3 42 NA 42
+3: a 6 42 NA 42
+4: b 1  4 84  5
+5: b 3  5 84  5
+6: b 6  6 84  5
+7: c 1  7 NA  8
+8: c 3  8 NA  8
+9: c 6  9 NA  8
+
+>                            # NB: postfix [] is shortcut to print()
+> 
+> DT[,.SD[which.min(v)],by=x][]  # nested query by group
+   x y  v v2  m
+1: a 1 42 NA 42
+2: b 1  4 84  5
+3: c 1  7 NA  8
+
+> DT[!J("a")]                # not join
+   x y v v2 m
+1: b 1 4 84 5
+2: b 3 5 84 5
+3: b 6 6 84 5
+4: c 1 7 NA 8
+5: c 3 8 NA 8
+6: c 6 9 NA 8
+
+> DT[!"a"]                   # same
+   x y v v2 m
+1: b 1 4 84 5
+2: b 3 5 84 5
+3: b 6 6 84 5
+4: c 1 7 NA 8
+5: c 3 8 NA 8
+6: c 6 9 NA 8
+
+> DT[!2:4]                   # all rows other than 2:4
+   x y  v v2  m
+1: a 1 42 NA 42
+2: b 3  5 84  5
+3: b 6  6 84  5
+4: c 1  7 NA  8
+5: c 3  8 NA  8
+6: c 6  9 NA  8
+
+> DT[x!="b" | y!=3]          # multiple vector scanning approach, slow
+   x y  v v2  m
+1: a 1 42 NA 42
+2: a 3 42 NA 42
+3: a 6 42 NA 42
+4: b 1  4 84  5
+5: b 6  6 84  5
+6: c 1  7 NA  8
+7: c 3  8 NA  8
+8: c 6  9 NA  8
+
+> DT[!J("b",3)]              # same result but much faster
+   x y  v v2  m
+1: a 1 42 NA 42
+2: a 3 42 NA 42
+3: a 6 42 NA 42
+4: b 1  4 84  5
+5: b 6  6 84  5
+6: c 1  7 NA  8
+7: c 3  8 NA  8
+8: c 6  9 NA  8
+
+
+# Special vars. '.N': number of elements of a factor
+> DT[, .N, by=x]
+#    x N
+# 1: a 3
+# 2: b 3
+# 3: c 3
+
+
+> # Follow r-help posting guide, support is here (*not* r-help) :
+> # datatable-help@lists.r-forge.r-project.org
+> # or
+> # http://stackoverflow.com/questions/tagged/data.table
+> 
+> ## Not run: 
+> ##D vignette("datatable-intro")
+> ##D vignette("datatable-faq")
+> ##D vignette("datatable-timings")
+> ##D 
+> ##D test.data.table()          # over 1,200 low level tests
+> ##D 
+> ##D update.packages()          # keep up to date
+> ## End(Not run)
+> 
+> 

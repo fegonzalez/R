@@ -1,0 +1,472 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html class="js" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" dir="ltr" lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Syntax {base} | inside-R | A Community Site for R</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="shortcut icon" href="http://www.inside-r.org/sites/all/themes/rweb/favicon.ico" type="image/x-icon">
+    <link type="text/css" rel="stylesheet" media="all" href="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/css_e7e6890575179c6e19db2a7135928170.css">
+<link type="text/css" rel="stylesheet" media="print" href="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/css_2f8a9213003983ca173e57dd3b576aac.css">
+    <!--[if lte IE 6]><style type="text/css" media="all">@import "/sites/all/themes/rweb/css/ie6.css";</style><![endif]-->
+    <!--[if IE 7]><style type="text/css" media="all">@import "/sites/all/themes/rweb/css/ie7.css";</style><![endif]-->
+    <script src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/munchkin.js" async="" type="text/javascript"></script><script type="text/javascript" src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/js_2fb44906c3831b546f6f8f2a4909f2aa.js"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, {"basePath":"\/","fivestar":{"titleUser":"Your rating: ","titleAverage":"Average: ","feedbackSavingVote":"Saving your vote...","feedbackVoteSaved":"Your vote has been saved.","feedbackDeletingVote":"Deleting your vote...","feedbackVoteDeleted":"Your vote has been deleted."},"custom_search":{"form_target":"_self","solr":1}});
+//--><!]]>
+</script>
+  <style type="text/css">.clear { /* generic container (i.e. div) for floating buttons */
+	overflow: hidden !important;
+	width: 100% !important;
+}
+
+a.fantasybutton {
+	background: transparent url("chrome://aimersoft/content/img/button_normal.png") no-repeat !important;
+	color: #444 !important;
+	display: block !important;
+	float: left !important;
+	font: normal 12px arial, sans-serif !important;
+	height: 29px !important;
+	width: 112px !important;
+    
+}
+
+a.fantasybutton:active {
+	background: transparent url("chrome://aimersoft/content/img/button_down.png") no-repeat !important;
+	background-position: bottom right !important;
+	color: #000 !important;
+	outline: none !important; /* hide dotted outline in Firefox */
+}
+
+a.playlistbutton{
+    background: transparent url("chrome://aimersoft/content/img/down_all_normal.png") no-repeat !important;
+	color: #444 !important;
+	display: block !important;
+	float: left !important;
+	font: normal 12px arial, sans-serif !important;
+	height: 28px !important;
+	width: 124px !important;
+    margin-left:8px !important;
+    margin-top:2px !important;
+}
+
+a.playlistbutton:active{
+    background: transparent url("chrome://aimersoft/content/img/down_all_down.png") no-repeat !important;
+
+}
+
+button.wsplaylist {
+	background: transparent url("chrome://aimersoft/content/img/down_all_normal.png") no-repeat !important;
+	height: 28px !important;
+	width: 124px !important;
+    margin-left: 10px !important;
+    margin-top: 0px !important;
+    padding-left:1px !important;
+    padding-right:4px !important;
+    padding-top:6px !important;
+
+}
+
+button.wsplaylist:active {
+	background: transparent url("chrome://aimersoft/content/img/down_all_down.png") no-repeat !important;
+}
+
+#mytubem {
+	margin: 0 !important;
+	padding: 0 !important;
+	z-index: 30 !important;
+}
+
+#mytubem li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	float: left;
+	font: bold 11px arial
+}
+
+#mytubem div {
+	position: absolute;
+	top: 28px;
+	width: 110px;
+	visibility: hidden;
+	margin: 0;
+	padding: 0;
+	background: #9CC02B;
+	border: 1px solid #4C4C4C !important
+}
+
+#mytubem div a {
+	position: relative !important;
+	display: block !important;
+	margin: 0 !important;
+	padding: 5px 10px !important;
+	width: auto;
+	white-space: nowrap !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	background: #000000 !important;
+	color: #FFFFFF !important;
+	font: 12px arial, sans-serif !important
+}
+
+#mytubem div a:hover {
+	background: rgb(135,10,10) !important;
+	color: #FFFFFF !important
+}</style></head>
+
+  <body class="not-front not-logged-in page-r-doc one-sidebar sidebar-right show-grid">
+  
+         
+    <div id="skip-nav"><a href="#content">Skip to Content</a></div>  
+    <div id="page" class="container-12 clearfix">
+
+    <!-- ______________________ HEADER _______________________ -->
+
+  <div id="header">
+
+              <div id="navigation-secondary" class="grid-10 prefix-2 clearfix">
+          <ul class="links secondary-links">
+                      <li class="first"><a href="http://www.inside-r.org/user/login">log in</a></li>
+                      <li class="last"><a href="http://www.inside-r.org/rss">rss</a></li>
+          </ul>
+      </div><!-- /#navigation-secondary -->
+      
+    <div class="header-row clearfix">
+
+      <div id="logo" class="grid-2">
+        <a id="logo" href="http://www.inside-r.org/" title="inside-r home" rel="home nofollow"><img src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/logo.png" alt="inside-R logo"></a>
+      </div> <!-- /logo -->
+
+              <div id="navigation-primary" class=" grid-10 menu with-main-menu with-sub-menu">
+          <ul id="primary" class="links main-menu"><li class="menu-279 first"><a href="http://www.inside-r.org/blogs" title="R blogs and news">Blogs</a></li>
+<li class="menu-3022 active"><a href="http://www.inside-r.org/r-doc" title="R language documentation" class="active">R Language</a></li>
+<li class="menu-2815"><a href="http://www.inside-r.org/packages" title="Crantastic R packages">R Packages</a></li>
+<li class="menu-2897"><a href="http://www.inside-r.org/howto" title="Tips and tricks about R">How to</a></li>
+<li class="menu-3117"><a href="http://www.inside-r.org/pretty-r" title="Pretty R syntax highlighter">Pretty R</a></li>
+<li class="menu-3194 last"><a href="http://www.inside-r.org/download" title="Download R now">Get R</a></li>
+</ul>        </div> <!-- /navigation -->
+      
+    </div><!-- /header-row -->
+
+    <div class="header-row clearfix">
+
+              <div id="tagline" class="grid-6"><div id="tagline-inner">A Community Site for R – Sponsored by Revolution Analytics</div></div>
+      
+              <div id="search-box" class="grid-6"><div id="search-box-inner">
+          <form target="_self" action="/r-doc/base/Syntax" accept-charset="UTF-8" method="post" id="search-theme-form" class="search-form">
+<div><div id="search" class="container-inline">
+  <div class="form-item" id="edit-search-theme-form-1-wrapper">
+ <input maxlength="128" name="search_theme_form" id="edit-search-theme-form-1" size="15" value="Search..." class="form-text cleardefault" type="text">
+</div>
+<fieldset class="custom_search-popup custom_search-processed"><a class="custom_search-popup-close" href="#">Close</a></fieldset>
+<input name="op" id="edit-submit-1" value="GO" class="form-submit" type="submit">
+<input name="form_build_id" id="form-02a6f3457bbd612560e38af7fe5ef4cd" value="form-02a6f3457bbd612560e38af7fe5ef4cd" type="hidden">
+<input name="form_id" id="edit-search-theme-form" value="search_theme_form" type="hidden">
+<input name="default_text" id="edit-default-text-1" value="" class="default-text" type="hidden">
+</div>
+
+</div></form>
+        </div></div> <!-- /#search-box -->
+      
+    </div><!-- /header-row -->
+    
+      <div id="masthead" class="grid-12 clearfix">
+        <img src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/masthead.jpg" alt="RWeb masthead">
+      </div>
+
+  </div><!-- /#header -->
+
+    <!-- ______________________ MAIN _______________________ -->
+
+    <div id="main" class="grid-9 clearfix">
+    
+      <div id="content">
+        <div id="content-inner" class="inner column center">
+
+          
+                      <div id="content-header">
+
+              <div class="breadcrumb"><a href="http://www.inside-r.org/">Home</a> » <a href="http://www.inside-r.org/r-doc">Language reference</a> » Syntax {base}</div>
+                              <h1 class="title">Syntax {base}</h1>
+              
+              
+               
+
+              
+            </div> <!-- /#content-header -->
+          
+          <div id="content-area">
+            <ul class="tabs primary">
+
+</ul>
+<div id="node-35307" class="node node-rdoc clear-block">
+
+
+
+  <div class="meta">
+  
+    </div>
+
+  <div class="content">
+  
+    <div class="field field-type-text field-field-sub-title">
+    <div class="field-items">
+            <div class="field-item odd">
+                    Operator Syntax and Precedence        </div>
+        </div>
+</div>
+
+    <div class="rdoc-meta">
+      <div class="field field-type-text field-field-package">
+      <div class="field-label">Package:&nbsp;</div>
+    <div class="field-items">
+            <div class="field-item odd">
+                    base        </div>
+        </div>
+</div>
+      <div class="field field-type-text field-field-r-release">
+      <div class="field-label">Version:&nbsp;</div>
+    <div class="field-items">
+            <div class="field-item odd">
+                    R 3.0.2        </div>
+        </div>
+</div>
+    </div><!-- /rdoc-meta -->
+
+    <div class="rdoc-content">
+<div class="rdoc-description">
+<h3>Description</h3>
+<p>Outlines <span class="rdoc-r-proper">R</span> syntax and gives the precedence of operators.
+</p></div>
+<div class="rdoc-details">
+<h3>Details</h3>
+<p>The following unary and binary operators are defined.  They are listed   in precedence groups, from highest to lowest.<br>
+</p><table class="rd-tabular">
+<tbody><tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">::</span> <span style="">:::</span></code></span></td>
+<td class="rd-table-l">access variables in a namespace</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">$</span> <span style="">@</span></code></span></td>
+<td class="rd-table-l">component / slot extraction</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="color: #009900;">[</span> <span style="color: #009900;">[</span><span style="color: #009900;">[</span></code></span></td>
+<td class="rd-table-l">indexing</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">^</span></code></span></td>
+<td class="rd-table-l">exponentiation (right to left)</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">-</span> <span style="">+</span></code></span></td>
+<td class="rd-table-l">unary minus and plus</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">:</span></code></span></td>
+<td class="rd-table-l">sequence operator</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r">%any%</code></span></td>
+<td class="rd-table-l">special operators (including <span class="geshifilter"><code class="r geshifilter-r">%%</code></span> and <span class="geshifilter"><code class="r geshifilter-r"><span style="">%/%</span></code></span>)</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">*</span> <span style="">/</span></code></span></td>
+<td class="rd-table-l">multiply, divide</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">+</span> <span style="">-</span></code></span></td>
+<td class="rd-table-l">(binary) add, subtract</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">&lt;</span> <span style="">&gt;</span> <span style="">&lt;=</span> <span style="">&gt;=</span> <span style="">==</span> <span style="">!</span>=</code></span></td>
+<td class="rd-table-l">ordering and comparison</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">!</span></code></span></td>
+<td class="rd-table-l">negation</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">&amp;</span> &nbsp;<span style="">&amp;&amp;</span></code></span></td>
+<td class="rd-table-l">and</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">|</span> <span style="">||</span></code></span></td>
+<td class="rd-table-l">or</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">~</span></code></span></td>
+<td class="rd-table-l">as in formulae</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">-&gt;</span> <span style="">-&gt;&gt;</span></code></span></td>
+<td class="rd-table-l">rightwards assignment</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">&lt;-</span> <span style="">&lt;&lt;-</span></code></span></td>
+<td class="rd-table-l">assignment (right to left)</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r">=</code></span></td>
+<td class="rd-table-l">assignment (right to left)</td>
+</tr>
+<tr>
+<td class="rd-table-l"><span class="geshifilter"><code class="r geshifilter-r"><span style="">?</span></code></span></td>
+<td class="rd-table-l">help (unary and binary)</td>
+</tr>
+</tbody></table>
+<p></p><p>   Within an expression operators of equal precedence are evaluated   from left to right except where indicated.  (Note that <span class="geshifilter"><code class="r geshifilter-r">=</code></span> is not   necessarily an operator.)</p>
+<p>  The binary operators <span class="geshifilter"><code class="r geshifilter-r"><span style="">::</span></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><span style="">:::</span></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><span style="">$</span></code></span> and <span class="geshifilter"><code class="r geshifilter-r"><span style="">@</span></code></span> require   names or string constants on the right hand side, and the first two   also require them on the left.</p>
+<p>  The links in the <strong>See Also</strong> section cover most other aspects of   the basic syntax.
+</p></div>
+<div class="rdoc-references">
+<h3>References</h3>
+<p>Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988)   <em>The New S Language</em>.   Wadsworth &amp; Brooks/Cole.
+</p></div>
+<div class="rdoc-note">
+<h3>Note</h3>
+<p>There are substantial precedence differences between <span class="rdoc-r-proper">R</span> and S.  In   particular, in S <span class="geshifilter"><code class="r geshifilter-r"><span style="">?</span></code></span> has the same precedence as (binary) <span class="geshifilter"><code class="r geshifilter-r"><span style="">+</span> <span style="">-</span></code></span>   and <span class="geshifilter"><code class="r geshifilter-r"><span style="">&amp;</span> <span style="">&amp;&amp;</span> <span style="">|</span> <span style="">||</span></code></span> have equal precedence.
+</p></div>
+<div class="rdoc-seealso">
+<h3>See Also</h3>
+<p><span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Arithmetic"><span style="color: #003399; font-weight: bold;">Arithmetic</span></a></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Comparison"><span style="color: #003399; font-weight: bold;">Comparison</span></a></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Control"><span style="color: #003399; font-weight: bold;">Control</span></a></code></span>,   <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Extract"><span style="color: #003399; font-weight: bold;">Extract</span></a></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Logic"><span style="color: #003399; font-weight: bold;">Logic</span></a></code></span>,   <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/NumericConstants"><span style="color: #003399; font-weight: bold;">NumericConstants</span></a></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Paren"><span style="color: #003399; font-weight: bold;">Paren</span></a></code></span>,   <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Quotes"><span style="color: #003399; font-weight: bold;">Quotes</span></a></code></span>, <span class="geshifilter"><code class="r geshifilter-r"><a href="http://inside-r.org/r-doc/base/Reserved"><span style="color: #003399; font-weight: bold;">Reserved</span></a></code></span>.</p>
+<p>  The ‘R Language Definition’ manual.
+</p></div>
+<div class="rdoc-license">
+<p>
+Documentation reproduced from R 3.0.2. License: <a href="http://www.r-project.org/Licenses/GPL-2">GPL-2</a>.
+</p>
+</div>
+</div>
+
+  </div><!-- /content -->
+
+  <ul class="links inline"><li class="comment_forbidden first last"></li>
+</ul></div>          </div> <!-- /#content-area -->
+
+          
+          </div>
+        </div> <!-- /content-inner /content -->
+
+      </div> <!-- /main -->
+
+      <!-- ______________________ RIGHT SIDEBAR _______________________ -->
+
+              <div id="right-sidebar" class="column sidebar grid-3 clearfix">
+          <div id="right-sidebar-inner" class="inner">
+              <div id="block-custom_search_blocks-2" class="clear-block block block-custom_search_blocks ">
+
+
+  <div class="block-inner">
+
+          <h3 class="title block-title">Search Language Reference</h3>
+    
+    <div class="content">
+      <form target="_self" action="/r-doc/base/Syntax" accept-charset="UTF-8" method="post" id="custom-search-blocks-form-2" class="search-form">
+<div><div class="form-item" id="edit-custom-search-blocks-form-2-1-wrapper">
+ <label class="element-invisible" for="edit-custom-search-blocks-form-2-1">Search this site: </label>
+ <input maxlength="128" name="custom_search_blocks_form_2" id="edit-custom-search-blocks-form-2-1" size="15" title="Enter the terms you wish to search for." class="form-text  custom-search-default-value custom-search-box" type="text">
+</div>
+<fieldset class="custom_search-popup custom_search-processed"><a class="custom_search-popup-close" href="#">Close</a></fieldset>
+<input name="custom_search_types" id="edit-custom-search-types" value="c-rdoc" class="custom-search-selector custom-search-types" type="hidden">
+<input name="delta" id="edit-delta" value="2" type="hidden">
+<input name="form_build_id" id="form-186a93d22baa4a7562165ace3c6dbe8c" value="form-186a93d22baa4a7562165ace3c6dbe8c" type="hidden">
+<input name="form_id" id="edit-custom-search-blocks-form-2" value="custom_search_blocks_form_2" type="hidden">
+<input name="default_text" id="edit-default-text" value="" class="default-text" type="hidden">
+<input name="op" id="edit-submit" value="GO" class="form-submit" type="submit">
+
+</div></form>
+    </div>
+
+    
+  </div> <!-- /block-inner -->
+</div> <!-- /block -->              <div id="block-block-5" class="clear-block block block-block ">
+
+
+  <div class="block-inner">
+
+          <h3 class="title block-title">About Language Reference</h3>
+    
+    <div class="content">
+      <p>This is a collection of the help pages from every function and 
+dataset in the latest version of R (base and recommended packages). Add 
+your comments to the page to offer tips for using these functions, or 
+expand on the documentation. Your comments are tagged with the current R
+ version number, and will be preserved when these pages are updated with
+ the next R release.</p>
+<p>The URLs for these pages are stable, in the format:<br> <strong>http://www.inside-r.org/r-doc/PACKAGE/FUNCTION</strong></p>
+<p>Feel free to link to them from other pages.</p>
+    </div>
+
+    
+  </div> <!-- /block-inner -->
+</div> <!-- /block -->  <div id="block-block-2" class="clear-block block block-block ">
+
+
+  <div class="block-inner">
+
+          <h3 class="title block-title">About inside-R.org</h3>
+    
+    <div class="content">
+      <p>inside-R.org is a collection of resources about the open-source <a href="http://www.r-project.org/" target="_blank">R Project</a> for the R Statistics Community. This site is sponsored by Revolution Analytics.</p>
+<p>Follow <a href="http://twitter.com/inside_R" target="_blank">@inside_R</a> on Twitter for updates about this site.</p>
+<p>If you have questions or ideas for the site, please send us an email at <a href="mailto:community@inside-R.org">community@inside-R.org</a>.</p>
+    </div>
+
+    
+  </div> <!-- /block-inner -->
+</div> <!-- /block -->  <div id="block-block-3" class="clear-block block block-block ">
+
+
+  <div class="block-inner">
+
+          <h3 class="title block-title">Information about R</h3>
+    
+    <div class="content">
+      <ul>
+<li><a href="http://www.inside-r.org/what-is-r">What is R?</a></li>
+<li><a href="http://www.inside-r.org/why-use-r">Why use R?</a></li>
+<li><a href="http://www.inside-r.org/r-resources-web">Resources for R</a></li>
+</ul>
+    </div>
+
+    
+  </div> <!-- /block-inner -->
+</div> <!-- /block -->          </div> <!-- /sidebar-right-inner -->
+        </div> <!-- /sidebar-right -->
+       
+
+    </div> <!-- /page -->
+
+      <!-- ______________________ FOOTER _______________________ -->
+
+              <div id="footer" class="container-12 clearfix">
+          <div class="footer-menu">
+              <div id="block-menu-menu-footer" class="clear-block block block-menu ">
+
+
+  <div class="block-inner">
+
+    
+    <div class="content">
+      <ul class="menu"><li class="leaf first"><a href="http://www.inside-r.org/contact" title="">Contact us</a></li>
+<li class="leaf last"><a href="http://www.inside-r.org/terms-and-conditions" title="Terms and conditions">Terms and conditions</a></li>
+</ul>    </div>
+
+    
+  </div> <!-- /block-inner -->
+</div> <!-- /block -->          </div>
+        </div> <!-- /footer -->
+      
+        <script src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/munchkin_002.js" type="text/javascript"></script> <script>mktoMunchkin("224-FMR-259");</script>
+
+        <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script><script src="Syntax%20%7Bbase%7D%20%7C%20inside-R%20%7C%20A%20Community%20Site%20for%20R_files/ga.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      try { var pageTracker = _gat._getTracker("UA-6984166-8"); pageTracker._trackPageview(); } catch(err) {}
+    </script>
+
+      
+</body></html>

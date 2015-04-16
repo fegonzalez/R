@@ -1,0 +1,942 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"><title>R gsub Function Examples -- EndMemo</title>
+<meta name="description" content="R gsub function examples, R gsub usage">
+<meta name="keywords" content="R, gsub, function, usage, code">
+<link href="regular_expressions_files/defaultcore.css" rel="stylesheet" type="text/css">
+<link rel="shortcut icon" href="http://www.endmemo.com/images/endmemo.png" type="image/x-icon">
+<style type="text/css">
+.b{color: blue;}
+.r{color: red;}
+.g{color: green;}
+code{color:red;font-weight: bold;}
+</style><style type="text/css">.clear { /* generic container (i.e. div) for floating buttons */
+	overflow: hidden !important;
+	width: 100% !important;
+}
+
+a.fantasybutton {
+	background: transparent url("chrome://aimersoft/content/img/button_normal.png") no-repeat !important;
+	color: #444 !important;
+	display: block !important;
+	float: left !important;
+	font: normal 12px arial, sans-serif !important;
+	height: 29px !important;
+	width: 112px !important;
+    
+}
+
+a.fantasybutton:active {
+	background: transparent url("chrome://aimersoft/content/img/button_down.png") no-repeat !important;
+	background-position: bottom right !important;
+	color: #000 !important;
+	outline: none !important; /* hide dotted outline in Firefox */
+}
+
+a.playlistbutton{
+    background: transparent url("chrome://aimersoft/content/img/down_all_normal.png") no-repeat !important;
+	color: #444 !important;
+	display: block !important;
+	float: left !important;
+	font: normal 12px arial, sans-serif !important;
+	height: 28px !important;
+	width: 124px !important;
+    margin-left:8px !important;
+    margin-top:2px !important;
+}
+
+a.playlistbutton:active{
+    background: transparent url("chrome://aimersoft/content/img/down_all_down.png") no-repeat !important;
+
+}
+
+button.wsplaylist {
+	background: transparent url("chrome://aimersoft/content/img/down_all_normal.png") no-repeat !important;
+	height: 28px !important;
+	width: 124px !important;
+    margin-left: 10px !important;
+    margin-top: 0px !important;
+    padding-left:1px !important;
+    padding-right:4px !important;
+    padding-top:6px !important;
+
+}
+
+button.wsplaylist:active {
+	background: transparent url("chrome://aimersoft/content/img/down_all_down.png") no-repeat !important;
+}
+
+#mytubem {
+	margin: 0 !important;
+	padding: 0 !important;
+	z-index: 30 !important;
+}
+
+#mytubem li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	float: left;
+	font: bold 11px arial
+}
+
+#mytubem div {
+	position: absolute;
+	top: 28px;
+	width: 110px;
+	visibility: hidden;
+	margin: 0;
+	padding: 0;
+	background: #9CC02B;
+	border: 1px solid #4C4C4C !important
+}
+
+#mytubem div a {
+	position: relative !important;
+	display: block !important;
+	margin: 0 !important;
+	padding: 5px 10px !important;
+	width: auto;
+	white-space: nowrap !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	background: #000000 !important;
+	color: #FFFFFF !important;
+	font: 12px arial, sans-serif !important
+}
+
+#mytubem div a:hover {
+	background: rgb(135,10,10) !important;
+	color: #FFFFFF !important
+}</style></head>
+
+<body onload="">
+<div id="header"><div id="logo"><h1><a href="http://www.endmemo.com/index.php"><font style="text-shadow:3px 3px 3px #cccccc" color="#0000AA">ENDMEMO</font></a></h1></div>
+<div id="menu"><script src="regular_expressions_files/ca-pub-6520230378779797.js" type="text/javascript" async=""></script><script type="text/javascript">google_ad_client = "ca-pub-6520230378779797";google_ad_slot = "4894613303";google_ad_width = 728;google_ad_height = 90;</script>
+<script type="text/javascript" src="regular_expressions_files/show_ads.js"></script><ins id="aswift_0_expand" style="display:inline-table;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:728px;background-color:transparent"><ins id="aswift_0_anchor" style="display:block;border:none;height:90px;margin:0;padding:0;position:relative;visibility:visible;width:728px;background-color:transparent"><iframe marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_0" name="aswift_0" style="left:0;position:absolute;top:0;" width="728" frameborder="0" height="90"></iframe></ins></ins></div>
+</div><div id="content">
+<div id="main">
+<div id="nav">
+<ul>
+<li><a href="http://www.endmemo.com/index.php">Home</a></li>
+<li><span>»</span></li>
+<li><a href="http://www.endmemo.com/program/R/">R</a></li>
+<li><span>»</span></li>
+<li>gsub</li>
+</ul>
+</div>
+<div class="homeintro">
+<font style="font-size:16px"><center><u>
+<a href="http://www.endmemo.com/program/php/">PHP Tutorial</a>
+</u></center></font>
+</div><br><div class="homeintronoborder">
+<font style="color:black;font-size:14px">
+<center><h3>R gsub Function</h3></center>
+<br>
+<p>
+<code>gsub()</code> function replaces all matches of a string, if the 
+parameter is a string vector, returns a string vector of the same length
+ and with the same attributes
+ (after possible coercion to character). Elements of string vectors 
+which are not substituted 
+ will be returned unchanged (including any declared encoding). 
+ <br><br>
+</p><pre class="r">gsub(pattern, replacement, x, ignore.case = FALSE, perl = FALSE,
+    fixed = FALSE, useBytes = FALSE)
+</pre>
+<br>
+•&nbsp;<code>pattern</code>: string to be matched<br>
+•&nbsp;<code>replacement</code>: string for replacement<br>
+•&nbsp;<code>x</code>: string or string vector<br>
+•&nbsp;<code>ignore.case</code>: if TRUE, ignore case<br>
+<code>...</code>
+<br><br>
+<pre class="r">&gt; x &lt;- "R Tutorial"
+&gt; gsub("ut","ot",x)
+</pre>
+<pre class="b">[1] "R Totorial"
+</pre>
+<br>
+Case insensitive replace:<br>
+<pre class="r">&gt; gsub("tut","ot",x,ignore.case=T))
+</pre>
+<pre class="b">[1] "R otorial"
+</pre>
+<br>
+If ignore.case is not set to True, no replace take place:<br>
+<pre class="r">&gt; gsub("tut","ot",x)
+</pre>
+<pre class="b">[1] "R Tutorial"
+</pre>
+<br>
+<pre class="r">&gt; x &lt;- "line 4322: He is now 25 years old, and weights 130lbs"
+&gt; y &lt;- gsub("\\d+","---",x)
+&gt; y
+</pre>
+<pre class="b">[1] "line ---: He is now --- years old, and weights ---lbs"
+</pre>
+<br>
+<pre class="r">&gt; x &lt;- "line 4322: He is now 25 years old, and weights 130lbs"
+&gt; y &lt;- gsub("[[:lower:]]","-",x)
+&gt; y
+</pre>
+<pre class="b">[1] "---- 4322: H- -- --- 25 ----- ---, --- ------- 130---"
+</pre>
+<br>
+Vector replacement:<br>
+<pre class="r">&gt; x &lt;- c("R Tutorial","PHP Tutorial", "HTML Tutorial")
+&gt; gsub("Tutorial","Examples",x)
+</pre>
+<pre class="b">[1] "R Examples"    "PHP Examples"  "HTML Examples"
+</pre>
+<br>
+
+<pre class="r"></pre>
+<pre class="b"></pre>
+<br>
+<pre class="r"></pre>
+<pre class="b"></pre>
+<br>
+<h3><center>Regular Expression Syntax:</center></h3>
+<font style="color:black;font-size:14px">
+<table class="countrytable" width="580"><tbody>
+<tr bgcolor="#eeeeee"><td width="100">Syntax</td><td width="480">Description</td></tr>
+<tr><td>\\d</td><td>Digit, 0,1,2 ... 9</td></tr>
+<tr><td>\\D</td><td>Not Digit</td></tr>
+<tr><td>\\s</td><td>Space</td></tr>
+<tr><td>\\S</td><td>Not Space</td></tr>
+<tr><td>\\w</td><td>Word</td></tr>
+<tr><td>\\W</td><td>Not Word</td></tr>
+<tr><td>\\t</td><td>Tab</td></tr>
+<tr><td>\\n</td><td>New line</td></tr>
+<tr><td>^</td><td>Beginning of the string</td></tr>
+<tr><td>$</td><td>End of the string</td></tr>
+<tr><td>\</td><td>Escape special characters, e.g. \\ is "\", \+ is "+"</td></tr>
+<tr><td>|</td><td>Alternation match. e.g. /(e|d)n/ matches "en" and "dn"</td></tr>
+<tr><td>•</td><td>Any character, except \n or line terminator</td></tr>
+<tr><td>[ab]</td><td>a or b</td></tr>
+<tr><td>[^ab]</td><td>Any character except a and b</td></tr>
+<tr><td>[0-9]</td><td>All Digit</td></tr>
+<tr><td>[A-Z]</td><td>All uppercase A to Z letters</td></tr>
+<tr><td>[a-z]</td><td>All lowercase a to z letters</td></tr>
+<tr><td>[A-z]</td><td>All Uppercase and lowercase a to z letters</td></tr>
+<tr><td>i+</td><td>i at least one time</td></tr>
+<tr><td>i*</td><td>i zero or more times</td></tr>
+<tr><td>i?</td><td>i zero or 1 time</td></tr>
+<tr><td>i{n}</td><td>i occurs n times in sequence</td></tr>
+<tr><td>i{n1,n2}</td><td>i occurs n1 - n2 times in sequence</td></tr>
+<tr><td>i{n1,n2}?</td><td>non greedy match, see above example</td></tr>
+<tr><td>i{n,}</td><td>i occures &gt;= n times</td></tr>
+<!--
+<tr><td></td><td></td></tr>
+-->
+<tr><td>[:alnum:]</td><td>Alphanumeric characters: [:alpha:] and [:digit:]</td></tr>
+<tr><td>[:alpha:]</td><td>Alphabetic characters: [:lower:] and [:upper:]</td></tr>
+<tr><td>[:blank:]</td><td>Blank characters: e.g. space, tab</td></tr>
+<tr><td>[:cntrl:]</td><td>Control characters</td></tr>
+<tr><td>[:digit:]</td><td>Digits: 0 1 2 3 4 5 6 7 8 9</td></tr>
+<tr><td>[:graph:]</td><td>Graphical characters: [:alnum:] and [:punct:]</td></tr>
+<tr><td>[:lower:]</td><td>Lower-case letters in the current locale</td></tr>
+<tr><td>[:print:]</td><td>Printable characters: [:alnum:], [:punct:] and space</td></tr>
+<tr><td>[:punct:]</td><td>Punctuation character: ! " # $ % &amp; ' ( ) * + , - . / : ; &lt; = &gt; ? @ [ \ ] ^ _ ` { | } ~</td></tr>
+<tr><td>[:space:]</td><td>Space characters: tab, newline, vertical tab, form feed, carriage return, space</td></tr>
+<tr><td>[:upper:]</td><td>Upper-case letters in the current locale</td></tr>
+<tr><td>[:xdigit:]</td><td>Hexadecimal digits: 0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f</td></tr>
+</tbody></table>
+</font>
+</font></div><font style="color:black;font-size:14px">
+</font></div><font style="color:black;font-size:14px">
+<style type="text/css" media="screen">
+.boxed a{font-size:15px;}
+.imgbutton{
+width:20px;
+height: 22px;
+background:url(/pic/expand.png) no-repeat;
+border:none;
+}
+.hidebutton{
+width:20px;
+height: 22px;
+background:url(/pic/hide.png) no-repeat;
+border:none;
+}
+</style>
+<div id="sidebar">
+<div id="updates" class="boxed">
+<script type="text/javascript">
+google_ad_client = "ca-pub-6520230378779797";
+google_ad_slot = "9066398284";
+google_ad_width = 300;
+google_ad_height = 250;
+</script>
+<script type="text/javascript" src="regular_expressions_files/show_ads.js">
+</script><ins id="aswift_1_expand" style="display:inline-table;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><ins id="aswift_1_anchor" style="display:block;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><iframe marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_1" name="aswift_1" style="left:0;position:absolute;top:0;" width="300" frameborder="0" height="250"></iframe></ins></ins>
+</div><div id="updates" class="boxed"><div class="content"><table cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr><td colspan="3" class="titleline" bgcolor="#DDDDDD"><table><tbody><tr>
+<td align="center" valign="bottom" width="20"><img src="regular_expressions_files/rtitle.png">
+</td><td width="230"><a href="http://www.endmemo.com/program/R/index.php"><font style="font-size:16px" color="#111111">R Tutorials</font></a>
+</td><td width="20"></td></tr></tbody></table></td></tr></tbody></table>
+<font style="font-size:15px;color:black">
+<div id="rdatatype">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showdatatype()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showdatatype()">R Data Types</a>
+</td></tr></tbody></table>
+</div>
+<div id="rloop">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showloop()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showloop()">Loop, Condition Statements</a>
+</td></tr></tbody></table>
+</div>
+<div id="rplot">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showplot()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showplot()">Plotting and Graphics</a>
+</td></tr></tbody></table>
+</div>
+<div id="rstring"><table border="0" width="100%"><tbody><tr><td width="10"><a href="javascript:hidestring()"><img src="regular_expressions_files/hide.png" border="0"></a></td><td class="listline"><a href="javascript:hidestring()">String Manipulations</a></td></tr></tbody></table><table border="0" width="100%"><tbody><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/agrep.php">•&nbsp;agrep</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/char.expand.php">•&nbsp;char.expand</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/charmatch.php">•&nbsp;charmatch</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/chartoraw.php">•&nbsp;charToRaw</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/chartr.php">•&nbsp;chartr</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/dquote.php">•&nbsp;dquote</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/encodestring.php">•&nbsp;encodeString</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/grep.php">•&nbsp;grep</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/gsub.php">•&nbsp;gsub</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/nchar.php">•&nbsp;nchar</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/noquote.php">•&nbsp;noquote</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/paste.php">•&nbsp;paste</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/replace.php">•&nbsp;replace</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/strsplit.php">•&nbsp;strsplit</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/strtoi.php">•&nbsp;strtoi</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/strwrap.php">•&nbsp;strwrap</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/substr.php">•&nbsp;substr</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/tolower.php">•&nbsp;tolower</a></td></tr><tr><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/tostring.php">•&nbsp;toString</a></td><td width="10"></td><td class="listline" width="130">&nbsp;<a href="http://www.endmemo.com/program/R/toupper.php">•&nbsp;toupper</a></td></tr></tbody></table></div>
+<div id="rmath">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showmath()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showmath()">Math Functions</a>
+</td></tr></tbody></table>
+</div>
+<div id="rmatrix">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showmatrix()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showmatrix()">Matrix Manipulations</a>
+</td></tr></tbody></table>
+</div>
+<div id="rreadwrite">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showreadwrite()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showreadwrite()">Read &amp; Write Data</a>
+</td></tr></tbody></table>
+</div>
+<div id="rstatistics">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showstat()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showstat()">Statistical Analysis</a>
+</td></tr></tbody></table>
+</div>
+<div id="rfunction">
+<table border="0" width="100%">
+<tbody><tr><td width="10"><a href="javascript:showfunction()"><img src="regular_expressions_files/expand.png" border="0"></a></td><td class="listline" colspan="2"><a href="javascript:showfunction()">All Functions List</a>
+</td></tr></tbody></table>
+</div>
+</font></div></div><font style="font-size:15px;color:black">
+<div id="updates" class="boxed">
+<script type="text/javascript">
+google_ad_client = "ca-pub-6520230378779797";
+google_ad_slot = "6611724384";
+google_ad_width = 300;
+google_ad_height = 250;
+</script>
+<script type="text/javascript" src="regular_expressions_files/show_ads.js">
+</script><ins id="aswift_2_expand" style="display:inline-table;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><ins id="aswift_2_anchor" style="display:block;border:none;height:250px;margin:0;padding:0;position:relative;visibility:visible;width:300px;background-color:transparent"><iframe marginwidth="0" marginheight="0" vspace="0" hspace="0" allowtransparency="true" scrolling="no" allowfullscreen="true" onload="var i=this.id,s=window.google_iframe_oncopy,H=s&amp;&amp;s.handlers,h=H&amp;&amp;H[i],w=this.contentWindow,d;try{d=w.document}catch(e){}if(h&amp;&amp;d&amp;&amp;(!d.body||!d.body.firstChild)){if(h.call){setTimeout(h,0)}else if(h.match){try{h=s.upd(h,i)}catch(e){}w.location.replace(h)}}" id="aswift_2" name="aswift_2" style="left:0;position:absolute;top:0;" width="300" frameborder="0" height="250"></iframe></ins></ins>
+</div><div id="updates" class="boxed"><div class="content">
+<table cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td colspan="3" class="titleline" bgcolor="#DDDDDD">
+<table><tbody><tr><td>
+<font style="font-size:16px;color:#111111">:: Popular ::</font></td></tr></tbody></table>
+</td></tr></tbody></table>
+<table cellpadding="0" cellspacing="0" width="100%"><tbody><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/pchsymbols.php'">
+<a href="http://www.endmemo.com/program/R/pchsymbols.php">R PCH Symbols</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/color.php'">
+<a href="http://www.endmemo.com/program/R/color.php">R Color Names</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/grep.php'">
+<a href="http://www.endmemo.com/program/R/grep.php">R Regular Expression</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/tapply.php'">
+<a href="http://www.endmemo.com/program/R/tapply.php">R tapply Function</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/stringfunc.php'">
+<a href="http://www.endmemo.com/program/R/stringfunc.php">R String Functions</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/plot.php'">
+<a href="http://www.endmemo.com/program/R/plot.php">R Plot Function</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center">»</td><td class="listline" onclick="window.location.href='/program/R/builtin.php'">
+<a href="http://www.endmemo.com/program/R/builtin.php">R Builtin Datasets List</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/python.png">		
+</td><td class="listline" onclick="window.location.href='/program/python/'">
+<a href="http://www.endmemo.com/program/python/">Python Tutorials</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/html.png">		
+</td><td class="listline" onclick="window.location.href='/program/html/'">
+<a href="http://www.endmemo.com/program/html/">HTML Tutorials</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/php.png">		
+</td><td class="listline" onclick="window.location.href='/program/php/'">
+<a href="http://www.endmemo.com/program/php/">PHP Tutorials</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/js.png"></td><td class="listline" onclick="window.location.href='/program/js/'">
+<a href="http://www.endmemo.com/program/js/">JavaScript Tutorials</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/statistics.png"></td><td class="listline" onclick="window.location.href='/statistics/'">
+<a href="http://www.endmemo.com/statistics/">Statistics</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/world.png"></td><td class="listline" onclick="window.location.href='/events/yearevt.php'">
+<a href="http://www.endmemo.com/events/yearevt.php">News, Events Worldwide</a></td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/unit.png"></td><td class="listline" onclick="window.location.href='/convert/'">
+<a href="http://www.endmemo.com/convert/">Unit Conversions</a>
+</td></tr><tr height="2">
+</tr><tr><td align="center"><img src="regular_expressions_files/fav.png"></td><td class="listline" onclick="window.location.href='/fav/'">
+<a href="http://www.endmemo.com/fav/">Top Visited Websites Directory</a></td></tr><tr height="2">
+</tr></tbody></table></div></div>
+</font></div><font style="font-size:15px;color:black">
+<script language="javascript">
+function showmath()
+{
+var slist = document.getElementById('rmath');
+ss = "<table width=100% border=0>";
+ss += "<tr><td width=10><a href=\"javascript:hidemath()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidemath()\">Math Functions</a></table>";
+ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"abs.php\">&#8226;&nbsp;abs</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"acos.php\">&#8226;&nbsp;acos</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"atan.php\">&#8226;&nbsp;atan</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"atan2.php\">&#8226;&nbsp;atan2</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"beta.php\">&#8226;&nbsp;beta</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"ceiling.php\">&#8226;&nbsp;ceiling</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"choose.php\">&#8226;&nbsp;choose</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cos.php\">&#8226;&nbsp;cos</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"exp.php\">&#8226;&nbsp;exp</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"factorial.php\">&#8226;&nbsp;factorial</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"floor.php\">&#8226;&nbsp;floor</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gamma.php\">&#8226;&nbsp;gamma</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"log.php\">&#8226;&nbsp;log</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"log2.php\">&#8226;&nbsp;log2</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"log10.php\">&#8226;&nbsp;log10</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"max.php\">&#8226;&nbsp;max</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sqrt.php\">&#8226;&nbsp;sqrt</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tan.php\">&#8226;&nbsp;tan</a>";
+slist.innerHTML = ss;
+}
+function showdatatype()
+{
+ 	var slist = document.getElementById('rdatatype');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidedatatype()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidedatatype()\">Data Types</a></table>";
+	ss += "<table width=100% border=0>";
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"array.php\">&#8226;&nbsp;Array</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"complex.php\">&#8226;&nbsp;Complex</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dataframe.php\">&#8226;&nbsp;Data Frame</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"datetime.php\">&#8226;&nbsp;Date/Time</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"factor.php\">&#8226;&nbsp;Factor</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"list.php\">&#8226;&nbsp;List</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sortmatrix.php\">&#8226;&nbsp;Matrix</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"operators.php\">&#8226;&nbsp;Operators</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"vector.php\">&#8226;&nbsp;Vector</a>"
+	ss += "<td width=10><td width=130>&nbsp;"
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showloop()
+{
+ 	var slist = document.getElementById('rloop');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hideloop()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidedatatype()\">Loops, Condition Statements</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"forloop.php\">&#8226;&nbsp;for loop</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"ifelse.php\">&#8226;&nbsp;if else</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"repeat.php\">&#8226;&nbsp;repeat</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"which.php\">&#8226;&nbsp;which</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"while.php\">&#8226;&nbsp;while</a>"
+	ss += "<td width=10><td width=130>&nbsp;"
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showplot()
+{
+ 	var slist = document.getElementById('rplot');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hideplot()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hideplot()\">Plotting and Graphics</a></table>";
+	ss += "<table width=100% border=0>";
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"bar.php\">&#8226;&nbsp;Bar</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"Boxplot.php\">&#8226;&nbsp;Boxplot</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"circle.php\">&#8226;&nbsp;Circle</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"color.php\">&#8226;&nbsp;Color Names</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"heatmap.php\">&#8226;&nbsp;Heatmap</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"histogram.php\">&#8226;&nbsp;Histogram</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"legend.php\">&#8226;&nbsp;Legend</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"line.php\">&#8226;&nbsp;Lines</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"pchsymbols.php\">&#8226;&nbsp;PCH Symbols</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"pie.php\">&#8226;&nbsp;Pie</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"plot.php\">&#8226;&nbsp;Plot</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"points.php\">&#8226;&nbsp;Points</a>"
+	ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"qq.php\">&#8226;&nbsp;Quantile-Quantile</a>"
+	ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"scatterplot.php\">&#8226;&nbsp;Scatter Plot</a>"
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showmatrix()
+{
+ 	var slist = document.getElementById('rmatrix');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidematrix()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidematrix()\">Matrix Manipulations</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cbind.php\">&#8226;&nbsp;cbind</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"chol.php\">&#8226;&nbsp;chol</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"col.php\">&#8226;&nbsp;col</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"colmeans.php\">&#8226;&nbsp;colMeans</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"colnames.php\">&#8226;&nbsp;colnames</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"colsums.php\">&#8226;&nbsp;colSums</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"crossprod.php\">&#8226;&nbsp;crossprod</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"det.php\">&#8226;&nbsp;det</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"diag.php\">&#8226;&nbsp;diag</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"dim.php\">&#8226;&nbsp;dim</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dimnames.php\">&#8226;&nbsp;dimnames</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"matrix.php\">&#8226;&nbsp;matrix</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"ncol.php\">&#8226;&nbsp;ncol, nrow</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"outer.php\">&#8226;&nbsp;outer</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"prod.php\">&#8226;&nbsp;prod</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"rbind.php\">&#8226;&nbsp;rbind</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"row.php\">&#8226;&nbsp;row</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"rowname.php\">&#8226;&nbsp;rowname</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"svd.php\">&#8226;&nbsp;svd</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"t.php\">&#8226;&nbsp;t</a>"
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showstring()
+{
+ 	var slist = document.getElementById('rstring');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidestring()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidestring()\">String Manipulations</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"agrep.php\">&#8226;&nbsp;agrep</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"char.expand.php\">&#8226;&nbsp;char.expand</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"charmatch.php\">&#8226;&nbsp;charmatch</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"chartoraw.php\">&#8226;&nbsp;charToRaw</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"chartr.php\">&#8226;&nbsp;chartr</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"dquote.php\">&#8226;&nbsp;dquote</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"encodestring.php\">&#8226;&nbsp;encodeString</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"grep.php\">&#8226;&nbsp;grep</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"gsub.php\">&#8226;&nbsp;gsub</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"nchar.php\">&#8226;&nbsp;nchar</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"noquote.php\">&#8226;&nbsp;noquote</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"paste.php\">&#8226;&nbsp;paste</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"replace.php\">&#8226;&nbsp;replace</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"strsplit.php\">&#8226;&nbsp;strsplit</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"strtoi.php\">&#8226;&nbsp;strtoi</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"strwrap.php\">&#8226;&nbsp;strwrap</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"substr.php\">&#8226;&nbsp;substr</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tolower.php\">&#8226;&nbsp;tolower</a>"
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"tostring.php\">&#8226;&nbsp;toString</a>"
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"toupper.php\">&#8226;&nbsp;toupper</a>"
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showreadwrite()
+{
+ 	var slist = document.getElementById('rreadwrite');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidereadwrite()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidereadwrite()\">Read & Write Data</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"bzfile.php\">&#8226;&nbsp;bzfile</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"clipboard.php\">&#8226;&nbsp;clipboard</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"close.php\">&#8226;&nbsp;close</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"file.php\">&#8226;&nbsp;file</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"getsrclines.php\">&#8226;&nbsp;getSrcLines</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"open.php\">&#8226;&nbsp;open</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"readcsv.php\">&#8226;&nbsp;read.csv</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"readdelim.php\">&#8226;&nbsp;read.delim</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"readtable.php\">&#8226;&nbsp;read.table</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"scan.php\">&#8226;&nbsp;scan</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sink.php\">&#8226;&nbsp;sink</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tempfile.php\">&#8226;&nbsp;tempfile</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"textconnection.php\">&#8226;&nbsp;textConnection</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"write.php\">&#8226;&nbsp;write</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"writetable.php\">&#8226;&nbsp;write.table</a>";
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+function showstat()
+{
+ 	var slist = document.getElementById('rstatistics');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidestat()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidestat()\">Statistical Analysis</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"aov.php\">&#8226;&nbsp;ANOVA</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"binomial.php\">&#8226;&nbsp;Binomial</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"chisq.php\">&#8226;&nbsp;Chi Square</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"clustering.php\">&#8226;&nbsp;Clustering</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"coef.php\">&#8226;&nbsp;Coef</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"ftest.php\">&#8226;&nbsp;F-test</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"mean.php\">&#8226;&nbsp;Mean</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"normality.php\">&#8226;&nbsp;Normality</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"samr.php\">&#8226;&nbsp;SAMR</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sd.php\">&#8226;&nbsp;SD,SE</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"ttest.php\">&#8226;&nbsp;T-test</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"var.php\">&#8226;&nbsp;Variance</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"wilcoxon.php\">&#8226;&nbsp;Wilcoxon</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"ztest.php\">&#8226;&nbsp;Z-test</a>";
+ss += "<td>";
+    ss += "</table>";	
+	slist.innerHTML = ss;
+}
+
+
+
+function hidestat()
+{
+	var slist = document.getElementById('rstatistics');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showstat()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showstat()\">Statistical Analysis</a></table>";
+	slist.innerHTML = ss;
+}
+function hidereadwrite()
+{
+	var slist = document.getElementById('rreadwrite');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showreadwrite()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showreadwrite()\">Read & Write Data</a></table>";
+	slist.innerHTML = ss;
+}
+function hidestring()
+{
+	var slist = document.getElementById('rstring');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showstring()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showstring()\">String Manipulations</a></table>";
+	slist.innerHTML = ss;
+}
+function hidematrix()
+{
+	var slist = document.getElementById('rmatrix');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showmatrix()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showmatrix()\">Matrix Manipulations</a></table>";
+	slist.innerHTML = ss;
+}
+function hidemath()
+{
+	var slist = document.getElementById('rmath');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showmath()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showmath()\">Math Functions</a></table>";
+	slist.innerHTML = ss;
+}
+function hideplot()
+{
+ 	var slist = document.getElementById('rplot');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showplot()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showplot()\">Plotting and Graphics</a></table>";
+	slist.innerHTML = ss;
+}
+function hidedatatype()
+{
+	var slist = document.getElementById('rdatatype');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showdatatype()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showdatatype()\">Data Types</a></table>";
+	slist.innerHTML = ss;
+}
+function hideloop()
+{
+	var slist = document.getElementById('rloop');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showloop()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showloop()\">Loops, Condition Statement</a></table>";
+	slist.innerHTML = ss;
+}
+function hidefunction()
+{
+	var slist = document.getElementById('rfunction');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:showfunction()\"><img border=0 src=\"/pic/expand.png\"></img></a><td class=listline><a href=\"javascript:showfunction()\">All Functions List</a></table>";
+	slist.innerHTML = ss;
+}
+function showfunction()
+{
+	var slist = document.getElementById('rfunction');
+	ss = "<table width=100% border=0>";
+    ss += "<tr><td width=10><a href=\"javascript:hidefunction()\"><img border=0 src=\"/pic/hide.png\"></img></a><td class=listline><a href=\"javascript:hidefunction()\">All Functions List</a></table>";
+	ss += "<table width=100% border=0>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"abs.php\">&#8226;&nbsp;abs</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"acos.php\">&#8226;&nbsp;acos</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"acosh.php\">&#8226;&nbsp;acosh</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"addna.php\">&#8226;&nbsp;addNA</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"addtaskcallback.php\">&#8226;&nbsp;addTaskCallback</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"agrep.php\">&#8226;&nbsp;agrep</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"all.php\">&#8226;&nbsp;all</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"any.php\">&#8226;&nbsp;any</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"aov.php\">&#8226;&nbsp;aov</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"aov.php\">&#8226;&nbsp;aov</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"aperm.php\">&#8226;&nbsp;aperm</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"append.php\">&#8226;&nbsp;append</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"apply.php\">&#8226;&nbsp;apply</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"args.php\">&#8226;&nbsp;args</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"array.php\">&#8226;&nbsp;array</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"asinh.php\">&#8226;&nbsp;asinh</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"assign.php\">&#8226;&nbsp;assign</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"atan.php\">&#8226;&nbsp;atan</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"atan2.php\">&#8226;&nbsp;atan2</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"atanh.php\">&#8226;&nbsp;atanh</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"attach.php\">&#8226;&nbsp;attach</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"attachnamespace.php\">&#8226;&nbsp;attachNamespace</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"attr.php\">&#8226;&nbsp;attr</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"attributes.php\">&#8226;&nbsp;attributes</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"autoload.php\">&#8226;&nbsp;autoload</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"backsolve.php\">&#8226;&nbsp;backsolve</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"basename.php\">&#8226;&nbsp;basename</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"bessel.php\">&#8226;&nbsp;bessel</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"beta.php\">&#8226;&nbsp;beta</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"body.php\">&#8226;&nbsp;body</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"bquote.php\">&#8226;&nbsp;bquote</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"break.php\">&#8226;&nbsp;break</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"browser.php\">&#8226;&nbsp;browser</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"builtins.php\">&#8226;&nbsp;builtins</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"by.php\">&#8226;&nbsp;by</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"bzfile.php\">&#8226;&nbsp;bzfile</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"c.php\">&#8226;&nbsp;c</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"call.php\">&#8226;&nbsp;call</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"capabilities.php\">&#8226;&nbsp;capabilities</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"casefold.php\">&#8226;&nbsp;casefold</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cat.php\">&#8226;&nbsp;cat</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cbind.php\">&#8226;&nbsp;cbind</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"ceiling.php\">&#8226;&nbsp;ceiling</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"char.expand.php\">&#8226;&nbsp;char.expand</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"character.php\">&#8226;&nbsp;character</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"charmatch.php\">&#8226;&nbsp;charmatch</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"chartoraw.php\">&#8226;&nbsp;charToRaw</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"chartr.php\">&#8226;&nbsp;chartr</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"chisq.php\">&#8226;&nbsp;chisq</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"chol.php\">&#8226;&nbsp;chol</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"chol2inv.php\">&#8226;&nbsp;chol2inv</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"choose.php\">&#8226;&nbsp;choose</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"class.php\">&#8226;&nbsp;class</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"clipboard.php\">&#8226;&nbsp;clipboard</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"close.php\">&#8226;&nbsp;close</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"coef.php\">&#8226;&nbsp;coef</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"col.php\">&#8226;&nbsp;col</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"colmeans.php\">&#8226;&nbsp;colMeans</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"colnames.php\">&#8226;&nbsp;colnames</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"colsums.php\">&#8226;&nbsp;colSums</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"commandargs.php\">&#8226;&nbsp;commandArgs</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"comment.php\">&#8226;&nbsp;comment</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"complex.php\">&#8226;&nbsp;complex</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"compress.php\">&#8226;&nbsp;compress</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"condition.php\">&#8226;&nbsp;condition</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"conflicts.php\">&#8226;&nbsp;conflicts</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"connections.php\">&#8226;&nbsp;connections</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"constants.php\">&#8226;&nbsp;Constants</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"contributors.php\">&#8226;&nbsp;contributors</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cos.php\">&#8226;&nbsp;cos</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cosh.php\">&#8226;&nbsp;cosh</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"crossprod.php\">&#8226;&nbsp;crossprod</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cstack_info.php\">&#8226;&nbsp;Cstack_info</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cummax.php\">&#8226;&nbsp;cummax</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cummin.php\">&#8226;&nbsp;cummin</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cumprod.php\">&#8226;&nbsp;cumprod</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"cumsum.php\">&#8226;&nbsp;cumsum</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"cut.php\">&#8226;&nbsp;cut</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"data.php\">&#8226;&nbsp;data</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"debug.php\">&#8226;&nbsp;debug</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"defunct.php\">&#8226;&nbsp;Defunct</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"delayedassign.php\">&#8226;&nbsp;delayedAssign</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"density.php\">&#8226;&nbsp;density</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"deparse.php\">&#8226;&nbsp;deparse</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"deprecated.php\">&#8226;&nbsp;Deprecated</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"det.php\">&#8226;&nbsp;det</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dget.php\">&#8226;&nbsp;dget</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"diag.php\">&#8226;&nbsp;diag</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"diff.php\">&#8226;&nbsp;diff</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"difftime.php\">&#8226;&nbsp;difftime</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"digamma.php\">&#8226;&nbsp;digamma</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"dim.php\">&#8226;&nbsp;dim</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dimnames.php\">&#8226;&nbsp;dimnames</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"dir.php\">&#8226;&nbsp;dir</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dirname.php\">&#8226;&nbsp;dirname</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"double.php\">&#8226;&nbsp;double</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"dquote.php\">&#8226;&nbsp;dQuote</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"drop.php\">&#8226;&nbsp;drop</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"droplevels.php\">&#8226;&nbsp;droplevels</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"dump.php\">&#8226;&nbsp;dump</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"duplicated.php\">&#8226;&nbsp;duplicated</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"eapplay.php\">&#8226;&nbsp;eapplay</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"eigen.php\">&#8226;&nbsp;eigen</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"encodestring.php\">&#8226;&nbsp;encodeString</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"encoding.php\">&#8226;&nbsp;Encoding</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"enquote.php\">&#8226;&nbsp;enquote</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"environment.php\">&#8226;&nbsp;environment</a>";
+ss += "<td></td><tr><td width=10><td class=listline width=130>&nbsp;<a href=\"environmentislocked.php\">&#8226;&nbsp;environmentIsLocked</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"eval.php\">&#8226;&nbsp;eval</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"exists.php\">&#8226;&nbsp;exists</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"exp.php\">&#8226;&nbsp;exp</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"expand_grid.php\">&#8226;&nbsp;expand_grid</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"expm1.php\">&#8226;&nbsp;expm1</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"expression.php\">&#8226;&nbsp;expression</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"factor.php\">&#8226;&nbsp;factor</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"factorial.php\">&#8226;&nbsp;factorial</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"findinterval.php\">&#8226;&nbsp;findInterval</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"find_package.php\">&#8226;&nbsp;find_package</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"finite.php\">&#8226;&nbsp;finite</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"floor.php\">&#8226;&nbsp;floor</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"flush.php\">&#8226;&nbsp;flush</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"force.php\">&#8226;&nbsp;force</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"foreign.php\">&#8226;&nbsp;Foreign</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"formals.php\">&#8226;&nbsp;formals</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"format.php\">&#8226;&nbsp;format</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"forwardsolve.php\">&#8226;&nbsp;forwardsolve</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"gamma.php\">&#8226;&nbsp;gamma</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gc.php\">&#8226;&nbsp;gc</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"gctorture.php\">&#8226;&nbsp;gctorture</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"get.php\">&#8226;&nbsp;get</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"geterrmessage.php\">&#8226;&nbsp;geterrmessage</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"getloadeddlls.php\">&#8226;&nbsp;getLoadedDLLs</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"getnativesymbolinfo.php\">&#8226;&nbsp;getNativeSymbolInfo</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"getoption.php\">&#8226;&nbsp;getOption</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"getsrclines.php\">&#8226;&nbsp;getSrcLines</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gettext.php\">&#8226;&nbsp;gettext</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"getwd.php\">&#8226;&nbsp;getwd</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gl.php\">&#8226;&nbsp;gl</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"glm.php\">&#8226;&nbsp;glm</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gregexpr.php\">&#8226;&nbsp;gregexpr</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"grepl.php\">&#8226;&nbsp;grepl</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"gzcon.php\">&#8226;&nbsp;gzcon</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"hexmode.php\">&#8226;&nbsp;hexmode</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"i.php\">&#8226;&nbsp;I</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"iconv.php\">&#8226;&nbsp;iconv</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"icusetcollate.php\">&#8226;&nbsp;icuSetCollate</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"identical.php\">&#8226;&nbsp;identical</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"identity.php\">&#8226;&nbsp;identity</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"integer.php\">&#8226;&nbsp;integer</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"interaction.php\">&#8226;&nbsp;interaction</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"intersect.php\">&#8226;&nbsp;intersect</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"inttobits.php\">&#8226;&nbsp;intToBits</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"inttoutf8.php\">&#8226;&nbsp;intToUtf8</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"issymmetric.php\">&#8226;&nbsp;isSymmetric</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"istrue.php\">&#8226;&nbsp;isTRUE</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"jitter.php\">&#8226;&nbsp;jitter</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"kappa.php\">&#8226;&nbsp;kappa</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"kronecker.php\">&#8226;&nbsp;kronecker</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"l10n_info.php\">&#8226;&nbsp;l10n_info</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"labels.php\">&#8226;&nbsp;labels</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"lapply.php\">&#8226;&nbsp;lapply</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"length.php\">&#8226;&nbsp;length</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"levels.php\">&#8226;&nbsp;levels</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"library.php\">&#8226;&nbsp;library</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"list2env.php\">&#8226;&nbsp;list2env</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"load.php\">&#8226;&nbsp;load</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"log.php\">&#8226;&nbsp;log</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"log.php\">&#8226;&nbsp;log</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"log1p.php\">&#8226;&nbsp;log1p</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"log2.php\">&#8226;&nbsp;log2</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"log10.php\">&#8226;&nbsp;log10</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"match.php\">&#8226;&nbsp;match</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"max.php\">&#8226;&nbsp;max</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"mean.php\">&#8226;&nbsp;mean</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"memory.php\">&#8226;&nbsp;Memory</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"message.php\">&#8226;&nbsp;message</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"missing.php\">&#8226;&nbsp;missing</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"mode.php\">&#8226;&nbsp;mode</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"name.php\">&#8226;&nbsp;name</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"names.php\">&#8226;&nbsp;names</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"nargs.php\">&#8226;&nbsp;nargs</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"nchar.php\">&#8226;&nbsp;nchar</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"ncol.php\">&#8226;&nbsp;ncol</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"noquote.php\">&#8226;&nbsp;noquote</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"norm.php\">&#8226;&nbsp;norm</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"normalizepath.php\">&#8226;&nbsp;normalizePath</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"octmode.php\">&#8226;&nbsp;octmode</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"open.php\">&#8226;&nbsp;open</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"options.php\">&#8226;&nbsp;options</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"order.php\">&#8226;&nbsp;order</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"outer.php\">&#8226;&nbsp;outer</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"parse.php\">&#8226;&nbsp;parse</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"pmatch.php\">&#8226;&nbsp;pmatch</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"pmax.php\">&#8226;&nbsp;pmax</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"pmin.php\">&#8226;&nbsp;pmin</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"polyroot.php\">&#8226;&nbsp;polyroot</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"pretty.php\">&#8226;&nbsp;pretty</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"proc_time.php\">&#8226;&nbsp;proc_time</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"prod.php\">&#8226;&nbsp;prod</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"pushback.php\">&#8226;&nbsp;pushBack</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"qr.php\">&#8226;&nbsp;qr</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"quit.php\">&#8226;&nbsp;quit</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"random.php\">&#8226;&nbsp;Random</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"range.php\">&#8226;&nbsp;range</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"rank.php\">&#8226;&nbsp;rank</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"raw.php\">&#8226;&nbsp;raw</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"rawconnection.php\">&#8226;&nbsp;rawConnection</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"rbind.php\">&#8226;&nbsp;rbind</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"regexpr.php\">&#8226;&nbsp;regexpr</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"remove.php\">&#8226;&nbsp;remove</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"rep.php\">&#8226;&nbsp;rep</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"repeat.php\">&#8226;&nbsp;repeat</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"replace.php\">&#8226;&nbsp;replace</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"reserved.php\">&#8226;&nbsp;reserved</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"retracemem.php\">&#8226;&nbsp;retracemem</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"rev.php\">&#8226;&nbsp;rev</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"rle.php\">&#8226;&nbsp;rle</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"row.php\">&#8226;&nbsp;row</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sample.php\">&#8226;&nbsp;sample</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sapply.php\">&#8226;&nbsp;sapply</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sapply.php\">&#8226;&nbsp;sapply</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"save.php\">&#8226;&nbsp;save</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"saverds.php\">&#8226;&nbsp;saveRDS</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"scale.php\">&#8226;&nbsp;scale</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"scan.php\">&#8226;&nbsp;scan</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sd.php\">&#8226;&nbsp;sd</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"search.php\">&#8226;&nbsp;search</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"seek.php\">&#8226;&nbsp;seek</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"seq.php\">&#8226;&nbsp;seq</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sequence.php\">&#8226;&nbsp;sequence</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"serialize.php\">&#8226;&nbsp;serialize</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sign.php\">&#8226;&nbsp;sign</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sink.php\">&#8226;&nbsp;sink</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"solve.php\">&#8226;&nbsp;solve</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sort.php\">&#8226;&nbsp;sort</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"split.php\">&#8226;&nbsp;split</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sqrt.php\">&#8226;&nbsp;sqrt</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"strsplit.php\">&#8226;&nbsp;strsplit</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"strtoi.php\">&#8226;&nbsp;strtoi</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"strtrim.php\">&#8226;&nbsp;strtrim</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"structure.php\">&#8226;&nbsp;structure</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"strwrap.php\">&#8226;&nbsp;strwrap</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sub.php\">&#8226;&nbsp;sub</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"subset.php\">&#8226;&nbsp;subset</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"substr.php\">&#8226;&nbsp;substr</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"sum.php\">&#8226;&nbsp;sum</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"summary.php\">&#8226;&nbsp;summary</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"svd.php\">&#8226;&nbsp;svd</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sweep.php\">&#8226;&nbsp;sweep</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"switch.php\">&#8226;&nbsp;switch</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"sys.php\">&#8226;&nbsp;Sys</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"system.php\">&#8226;&nbsp;system</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"t.php\">&#8226;&nbsp;t</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"table.php\">&#8226;&nbsp;table</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"tabulate.php\">&#8226;&nbsp;tabulate</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tan.php\">&#8226;&nbsp;tan</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"tanh.php\">&#8226;&nbsp;tanh</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tapply.php\">&#8226;&nbsp;tapply</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"tempfile.php\">&#8226;&nbsp;tempfile</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"textconnection.php\">&#8226;&nbsp;textConnection</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"tolower.php\">&#8226;&nbsp;tolower</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"tostring.php\">&#8226;&nbsp;toString</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"toupper.php\">&#8226;&nbsp;toupper</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"trace.php\">&#8226;&nbsp;trace</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"transform.php\">&#8226;&nbsp;transform</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"try.php\">&#8226;&nbsp;try</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"type.php\">&#8226;&nbsp;type</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"unique.php\">&#8226;&nbsp;unique</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"unlink.php\">&#8226;&nbsp;unlink</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"unlist.php\">&#8226;&nbsp;unlist</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"unname.php\">&#8226;&nbsp;unname</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"var.php\">&#8226;&nbsp;var</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"version.php\">&#8226;&nbsp;version</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"warning.php\">&#8226;&nbsp;warning</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"which.php\">&#8226;&nbsp;which</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"while.php\">&#8226;&nbsp;while</a>";
+ss += "<tr><td width=10><td class=listline width=130>&nbsp;<a href=\"with.php\">&#8226;&nbsp;with</a>";
+ss += "<td width=10><td class=listline width=130>&nbsp;<a href=\"withvisible.php\">&#8226;&nbsp;withVisible</a>";
+ss += "<td>";
+
+    ss += "</table>";
+	
+	slist.innerHTML = ss;
+}
+</script></font></font></div><font style="color:black;font-size:14px"><font style="font-size:15px;color:black">
+<script language="javascript">
+showstring();
+</script>
+<div id="footer"><hr color="#9FA4FF" size="1">
+<table width="100%"><tbody><tr>
+<td bgcolor="#ffffff" width="100%" height="22"><center>
+<font style="font-size:13px" color="black">
+<a href="http://www.endmemo.com/"><font color="black">endmemo.com</font></a> © 2015
+&nbsp;<a href="http://www.endmemo.com/terms.php"><u>Terms of Use</u></a></font></center></td></tr></tbody></table></div>
+<script src="regular_expressions_files/urchin.js" type="text/javascript"></script><script type="text/javascript">_uacct="UA-4671150-1";urchinTracker();</script>
+</font></font></body></html>
