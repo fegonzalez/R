@@ -2,32 +2,49 @@
 
 *.R file
 
+##############################################
+# Index
+##############################################
+
+# 1.- Package managing
+
+# 2.- Help commands
+
+# 3.- Object management
+#     3.1.- Factors
+#     3.2.- Workspace and Files
+#     3.3.- Download data from the Internet
+#     3.4.- Sequences of numbers
+#     3.5.- Logical operators
+#     3.6.- Vectors
+#     3.7.- Dates & Times
+#     3.8.- Matrices and Data Frames
+#     3.9.- Handle Missing Values in Objects
+#     3.10.- loop functions: Split-Apply-Combine methodology
+#     3.11.- 'anonymous functions'
+#     3.12.- probability distribution in R
+#     3.13.- simulating random numbers (& permutations)
+#     3.14.- Base Graphics
+#     3.15.- I/O
+
+# 4.- Debugging
+#     4.1.- Debug commands
+#     4.2.- How to use:
+#     4.3.- Error modes
+#     4.4.- Recommended debugging routine.
+#     4.5.-  Optimization
+
+# Annex.- References
+
+
 
 ##############################################
-# Help
-##############################################
-
-# Packages & manuals
-http://cran.r-project.org/
-http://www.bioconductor.org/ #packages for bio. apps.
-
-# Using R in emacs
-http://ess.r-project.org/Manual/readme.html
-
-# Quick code reference
-http://cran.r-project.org/doc/contrib/Short-refcard.pdf
-
-# Advanced R
-http://adv-r.had.co.nz/
-
-##############################################
-# Package managing
+# 1.- Package managing
 ##############################################
 
 # See packages
->
-> a <- available.packages()
-> head(rownames(a), 3)
+a <- available.packages()
+head(rownames(a), 3)
 ## [1] "A3"       "abc"      "abcdeFBA"
 
 # Is a package already installed?
@@ -37,17 +54,14 @@ find.package("devtools")
 install.packages("slidify")
 install.packages(c("slidify", "ggplot2", "devtools"))
 
+## Install from an external URL (i.e. bioconductor)
+source("http://www.bioconductor.org/biocLite.R")
 
-Install from an external URL (i.e. bioconductor)
-> source("http://www.bioconductor.org/biocLite.R")
-
-> bioclite(c("GenomicFeatures", "AnnotationDbi"))
 # or  bioclite()  to download all
-
+bioclite(c("GenomicFeatures", "AnnotationDbi"))
 
 # Loading Packages:
 # this is necessary to make available installed packages
-
 library(ggplot2) # example of loading the "ggplot2" package into R.
 require(ggplot2) # idem library into a script (idem #include in C)
 
@@ -63,8 +77,9 @@ detach("package:ggplot2", unload=TRUE)
 # Loads specified data sets, or list the available data sets.
 data(set_name)
 
+
 ##############################################
-# Help
+# 2.- Help commands
 ##############################################
 
 # Access help file
@@ -83,7 +98,7 @@ args("rnorm")
 > rm(x)
 
 ##############################################
-# Objects management
+# 3.- Object management
 ##############################################
 
 # type of object "integer", ...
@@ -115,7 +130,7 @@ names(vect2) <- c("foo", "bar", "norf")
 
 
 #-------------------------
-# Factors
+# 3.1.- Factors
 #-------------------------
 
 # What is a factor: integer vector where each integer has a label
@@ -130,7 +145,7 @@ names(vect2) <- c("foo", "bar", "norf")
 # Levels: no yes
 
 #-------------------------
-# Workspace and Files
+# 3.2.- Workspace and Files
 #-------------------------
 
 getwd()  # working directory?
@@ -147,8 +162,9 @@ file.
 unlink() #rm dir
 tempfile()
 
+
 #-------------------------
-# Download data from the Internet
+# 3.3.- Download data from the Internet
 #-------------------------
 
 download.file()
@@ -164,7 +180,7 @@ download.file(url = url_value, destfile = destfile_value, method = method_value)
 
 
 #-------------------------
-# Sequences of numbers
+# 3.4.- Sequences of numbers
 #-------------------------
 
 seq()
@@ -172,7 +188,7 @@ rep()
 
 
 #-------------------------
-# Logical operators
+# 3.5.- Logical operators
 #-------------------------
 
 ! x
@@ -203,7 +219,7 @@ isTRUE(x)
 
 
 #-------------------------
-# Vectors
+# 3.6.- Vectors
 #-------------------------
 
 WARNING: vector first index = 1 # unlike C (0)
@@ -272,7 +288,7 @@ cut()
 
 
 #-------------------------
-# Dates & Times
+# 3.7.- Dates & Times
 #-------------------------
 
 Sys.Date()
@@ -292,7 +308,7 @@ rbind()
 
 
 #-------------------------
-# Matrices and Data Frames
+# 3.8.- Matrices and Data Frames
 #-------------------------
 
 # Matrices: can only contain a single class of data.
@@ -395,7 +411,7 @@ newdata <- subset(mydata, age >= 20 | age < 10, select=c(ID, Weight))
 
 
 #-------------------------
-# Handle Missing Values in Objects
+# 3.9.- Handle Missing Values in Objects
 #-------------------------
 
 na.omit()
@@ -425,7 +441,7 @@ is.na()
 
 
 #--------------------------------------------------
-# loop functions: Split-Apply-Combine methodology
+# 3.10.- loop functions: Split-Apply-Combine methodology
 #--------------------------------------------------
 
 lapply(object, function)   #returns a list
@@ -475,7 +491,7 @@ split(x,f)  # divides the data in the vector x into the groups defined by f
 
 
 #-------------------------
-# 'anonymous functions'
+# 3.11.- 'anonymous functions'
 #-------------------------
 
 functions: has no name and disappears as soon as lapply() is done using it.
@@ -484,7 +500,7 @@ functions: has no name and disappears as soon as lapply() is done using it.
 
 
 #------------------------------
-# probability distribution in R
+# 3.12.- probability distribution in R
 #------------------------------
 
 # Each probability distribution in R has an :
@@ -498,7 +514,7 @@ qbinom()
 rbinom()
 
 #------------------------------
-# simulating random numbers (& permutations)
+# 3.13.- simulating random numbers (& permutations)
 #------------------------------
 
 set.seed() #Setting the random number seed with set.seed ensures REPRODUCIBILITY
@@ -526,7 +542,7 @@ rbinom(n, size, prob) # Binomial Distribution
 # rbinom(n = 100, size=1, prob=0.7)
 
 #------------------------------
-# Base Graphics
+# 3.14.- Base Graphics
 #------------------------------
 
 # data(object)   #before pot, load the object to plot
@@ -542,7 +558,7 @@ hist()
 
 
 #------------------------------
-# I/O
+# 3.15.- I/O
 #------------------------------
 
 # outputs (cout like): standard output, file, ...
@@ -557,9 +573,11 @@ close()
 writeLines()
 
 
-#------------------------------
-# Debugging
-#------------------------------
+##############################################
+# 4.- Debugging
+##############################################
+
+# 4.1.- Debug commands
 
 assertCondition ## package ‘tools’ is related and useful for testing.
 ## returns true on any condition (ERROR, WARNING, ...)
@@ -601,7 +619,7 @@ findLineNum()
 setBreakpoint()  # functions in the utils package work with line number
 		 # references to compute locations for calls to trace().
 
-# How to use:
+# 4.2.- How to use:
 
 * inside a function code:
 
@@ -616,12 +634,12 @@ function(x)
     ...
 }
 
-* from the console:
+a) from the console:
 
   1) debug(function_name), trace(function_name)
   2) function_name() #debug beginning
 
-* Commands debug/browse mode:
+b) Commands debug/browse mode:
 
   n: next instruction
   s: step
@@ -632,16 +650,17 @@ function(x)
   HINT: options(browserNLdisabled = TRUE) #disable ENTER key in debug mode
 
 
-# Error modes
+# 4.3.- Error modes
+
   options(error = browser) # session in debug mode (debug mode upon an error)
   options(error = recover) # recover mode upon an error
   options(error = stop)    # stop debug mode upon an error
 
 
 
-# Recommended debugging routine.
+# 4.4.- Recommended debugging routine.
 
-1)traceback()
+1) traceback()
 
 2) options(error=recover): this immediately switches into browser mode WHERE
    the error occurs,
@@ -650,8 +669,8 @@ function(x)
 
 4) findLineNum() and setBreakpoint() functions.
 
+# 4.5.-  Optimization
 
-# Optimization
 system.time()
 
 
@@ -890,4 +909,27 @@ readJPEG()
 
 tracemem() # Trace Copying of Objects
 address()  # data.table,
+
+
+
+
+##############################################
+# Annex.- References
+##############################################
+
+# Packages & manuals
+http://cran.r-project.org/
+http://www.bioconductor.org/ #packages for bio. apps.
+
+# Using R in emacs
+http://ess.r-project.org/Manual/readme.html
+
+# Quick code reference
+http://cran.r-project.org/doc/contrib/Short-refcard.pdf
+
+# Advanced R
+http://adv-r.had.co.nz/
+
+# Debugging Tools in R:
+https://support.rstudio.com/hc/en-us/articles/200713843-Debugging-with-RStudio
 
