@@ -1,0 +1,81 @@
+getwd()
+setwd("~/u/workspace/R/manuals/")
+getwd()
+list.dirs()
+list.files()
+library(swirl
+)
+swirl()
+?dir.create
+getwd()
+dir.create("testdir2/testdir3")
+?dir.path
+??file.path
+file.path("testdir2/testdir3")
+dir.create(file("testdir2/testdir3"))
+dir.create(file("testdir2/testdir3"), recursive=TRUE)
+dir.create(file.path("testdir2/testdir3"), recursive=TRUE)
+dir.create(file.path('testdir2/testdir3'), recursive=TRUE)
+getwd()
+list.dirs()
+getwd()
+dir()
+dir("testdir2/")
+args(file.remove)
+file.remove("testdir2/")
+?file.remove
+file.remove("testdir2/", recursive=TRUE)
+file.remove("testdir2/testdir3/")
+file.remove("testdir2")
+list.dirs()
+list.dirs("testdir/")
+file.create(file.path("testdir2/testdir3"), recursive = TRUE)
+dir.create(file.path('testdir2', 'testdir3'), recursive = TRUE)
+unlink("testdir2/")
+unlink("testdir2/", recursive=TRUE)
+unlink("testdir2", recursive=TRUE)
+setwd()
+getwd()
+old.dir
+setwd(old.dir)
+file.remove("testdir")
+unlink("testdir")
+unlink("testdir", recursive=TRUE)
+1:20
+pi:10
+15:1
+':'
+´:´
+`:``
+''
+ggg
+`
+`:`
+?`:`
+seq(1, 20)
+seq(0, 10, by=0.5)
+seq(5.10, length=30)
+seq(5.10, length=5)
+my_seq <- seq(5, 10, length=5)
+my_seq <- seq(5, 10, length=30)
+length(my_seq)
+seq(1, length(my_seq))
+1:length(my_seq)
+seq(along.with=my_seq))
+seq(along.with=my_seq)
+seq_along(my_seq)
+rep(o, times=40)
+rep(0, times=40)
+rep(c(0,1,2), times=10)
+rep(c(0,1,2), each=10)
+c(0.5, 55, -10, 6)
+num_vect<-(0.5, 55, -10, 6)
+num_vect <- c(0.5, 55, -10, 6)
+tf <- num_vect[num_vect<1]
+tf <- num_vect<1
+tf
+num_vect>=6
+my_char<-c("My", "name", "is")
+my_char
+bye()
+quit()
