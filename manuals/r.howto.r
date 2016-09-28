@@ -96,7 +96,6 @@
 
 ## First select the download mirror
 chooseCRANmirror()
-chooseCRANmirror(15) # Madrid
 
 # See packages
 1a <- available.packages()
